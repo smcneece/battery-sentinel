@@ -106,15 +106,27 @@ sequence:
 
 ## Installation
 
-### Via Supervisor Add-on Store (Recommended)
+### Via App Store (Recommended)
 
-1. Click the button below to add this repository to your Supervisor:
+**Option A — One-click button** (requires [My Home Assistant](https://my.home-assistant.io/) to be configured):
 
 [![Add repository to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_store/?repository_url=https%3A%2F%2Fgithub.com%2Fsmcneece%2Fbattery-sentinel)
 
-2. Go to **Settings > Add-ons > Add-on Store** and find **Battery Sentinel** under the repository.
-3. Click **Install**, then **Start**.
-4. Enable **Show in sidebar** on the add-on page for quick access.
+**Option B — Manual repository add:**
+
+1. In Home Assistant go to **Settings → Apps → Install App**
+2. Click the **⋮** menu (top right) and select **Repositories**
+3. Click **+ Add** (bottom right corner)
+4. Paste `https://github.com/smcneece/battery-sentinel` in the box and click **Add**
+
+Once the repository is added:
+
+1. Find **Battery Sentinel** in the App Store and click it.
+2. Click **Install** and wait a moment for it to download.
+3. Enable **Start on boot** and **Auto-update**.
+4. Enable **Show in sidebar** for quick access from the HA menu.
+5. Click **Start**.
+6. Click **Open Web UI** or use the Battery Sentinel link in the sidebar.
 
 ### Manual Installation
 
