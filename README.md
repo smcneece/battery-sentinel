@@ -108,11 +108,11 @@ sequence:
 
 ### Via App Store (Recommended)
 
-**Option A — One-click button** (requires [My Home Assistant](https://my.home-assistant.io/) to be configured):
+**Option A — Shortcut button** (requires [My Home Assistant](https://my.home-assistant.io/) to be configured — opens the App Store directly):
 
 [![Add repository to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fsmcneece%2Fbattery-sentinel)
 
-**Option B — Manual repository add:**
+**Option B — Manual repository add** (works on all installations):
 
 1. In Home Assistant go to **Settings → Apps → Install App**
 2. Click the **⋮** menu (top right) and select **Repositories**
