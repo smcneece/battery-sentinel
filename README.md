@@ -108,9 +108,11 @@ sequence:
 
 ### Via App Store (Recommended)
 
-**Option A — Shortcut button** (requires [My Home Assistant](https://my.home-assistant.io/) to be configured — opens the App Store directly):
+**Option A — Shortcut button** (requires [My Home Assistant](https://my.home-assistant.io/) to be configured):
 
 [![Add repository to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fsmcneece%2Fbattery-sentinel)
+
+> ⚠️ **We are currently unable to confirm this button works on recent HA versions** — it opens the App Store but may not show the pre-filled add repository dialog. We have [filed a bug with Home Assistant](https://github.com/home-assistant/my.home-assistant.io/issues/698). If this button works for you, please let us know in [our issues](https://github.com/smcneece/battery-sentinel/issues). In the meantime, use Option B below.
 
 **Option B — Manual repository add** (works on all installations):
 
@@ -135,6 +137,12 @@ Once the repository is added:
 1. Copy the `addon` folder from this repository to `/addons/battery-sentinel/` on your Home Assistant host.
 2. Go to **Settings > Add-ons > Add-on Store**, click the menu and select **Check for updates**.
 3. Battery Sentinel will appear under **Local add-ons**. Click **Install**, then **Start**.
+
+---
+
+## Data & Backups
+
+Battery Sentinel stores all device metadata (notes, battery types, alert thresholds, last replaced dates) in a single file within the add-on's data directory. This file is included in standard Home Assistant full backups — no special steps required.
 
 ---
 
