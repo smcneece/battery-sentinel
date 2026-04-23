@@ -12,7 +12,7 @@ import storage
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.4.6"
+VERSION = "2026.04.6"
 
 _cache: list = []
 _startup_logged = False
