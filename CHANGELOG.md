@@ -1,5 +1,12 @@
 # Battery Sentinel — Changelog
 
+## 2026.04.7
+- HTML-formatted daily report email — dark header with icon and timestamp, color-coded battery levels (red/amber/green), two sections (Needs Attention + All Batteries) when full-list mode is enabled, footer with project link
+- "Send Report Now" button in Daily Report settings — sends the report immediately without waiting for the scheduled time; useful for testing email configuration
+- "Send report even when all batteries are OK" option — when disabled (default), the low-only report is suppressed if nothing is low
+- Add-on icon displayed in the web UI header
+- Fixed: battery sensors reporting decimal levels (e.g. `95.0%` instead of `95%`) were not sorted correctly, displayed gray instead of color-coded levels, and were not detected as low even when below threshold
+
 ## 2026.04.6
 - Script trigger per device with global fallback — run any HA script when a device crosses its threshold
 - Script column in the device list shows assigned script at a glance (device-specific in white, inherited global in gray, disabled shows "Off")

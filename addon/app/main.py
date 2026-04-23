@@ -12,7 +12,7 @@ import storage
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.04.6"
+VERSION = "2026.04.7"
 
 _cache: list = []
 _startup_logged = False
@@ -118,17 +118,22 @@ async def do_refresh():
 
     await ha_api.update_low_battery_notification(_cache, settings)
 
-    if settings.get("daily_report_enabled") and settings.get("notify_email_service"):
-        now = datetime.datetime.now()
-        try:
-            h, m = map(int, settings.get("daily_report_time", "08:00").split(":"))
-            report_dt = now.replace(hour=h, minute=m, second=0, microsecond=0)
-            today = now.strftime("%Y-%m-%d")
-            if now >= report_dt and storage.get_last_report_date() != today:
-                await ha_api.send_daily_report(_cache, settings)
-                storage.set_last_report_date(today)
-        except Exception:
-            _LOGGER.exception("Daily report check failed")
+    if settings.get("daily_report_enabled"):
+        if not settings.get("notify_email_service"):
+            _LOGGER.warning("Daily report enabled but no email service configured — skipping")
+        else:
+            now = datetime.datetime.now()
+            try:
+                h, m = map(int, settings.get("daily_report_time", "08:00").split(":"))
+                report_dt = now.replace(hour=h, minute=m, second=0, microsecond=0)
+                today = now.strftime("%Y-%m-%d")
+                if storage.get_last_report_date() == today:
+                    _LOGGER.debug("Daily report already sent today, skipping")
+                elif now >= report_dt:
+                    await ha_api.send_daily_report(_cache, settings)
+                    storage.set_last_report_date(today)
+            except Exception:
+                _LOGGER.exception("Daily report check failed")
 
 
 async def refresh_loop():
@@ -143,6 +148,10 @@ async def refresh_loop():
 async def handle_index(request):
     ingress_path = request.headers.get("X-Ingress-Path", "").rstrip("/")
     return web.Response(text=_build_html(ingress_path), content_type="text/html")
+
+
+async def handle_icon(request):
+    return web.FileResponse("/app/icon.png")
 
 
 async def handle_api_batteries(request):
@@ -167,6 +176,15 @@ async def handle_api_settings_post(request):
 async def handle_api_scan(request):
     _LOGGER.info("Manual scan requested")
     asyncio.ensure_future(do_refresh())
+    return web.Response(text='{"status":"ok"}', content_type="application/json")
+
+
+async def handle_api_report_now(request):
+    settings = storage.get_settings()
+    if not settings.get("notify_email_service"):
+        return web.Response(status=400, text="No email service configured")
+    _LOGGER.info("Manual daily report requested")
+    asyncio.ensure_future(ha_api.send_daily_report(_cache, settings))
     return web.Response(text='{"status":"ok"}', content_type="application/json")
 
 
@@ -243,6 +261,7 @@ def _build_html(base: str) -> str:
   body {{ font-family: var(--primary-font-family, sans-serif); background: #111; color: #e0e0e0; }}
 
   .header {{ padding: 1rem 1rem .5rem; display: flex; align-items: center; gap: .6rem; }}
+  .header img {{ width: 32px; height: 32px; border-radius: 4px; }}
   .header h1 {{ font-size: 1.3rem; color: #fff; }}
   .badge {{ font-size: .7rem; padding: .15rem .45rem; border-radius: 3px; background: #2a2a2a; color: #888; border: 1px solid #333; }}
 
@@ -344,6 +363,7 @@ def _build_html(base: str) -> str:
 <body>
 
 <div class="header">
+  <img src="{base}/icon.png" alt="Battery Sentinel">
   <h1>Battery Sentinel</h1>
   <span class="badge">{VERSION}</span>
 </div>
@@ -447,6 +467,10 @@ def _build_html(base: str) -> str:
         <input type="checkbox" id="setting-daily-enabled">
         <label for="setting-daily-enabled">Send daily battery report email</label>
       </div>
+      <div class="notify-row" style="margin-top:.25rem">
+        <input type="checkbox" id="setting-daily-send-if-ok">
+        <label for="setting-daily-send-if-ok">Send report even when all batteries are OK</label>
+      </div>
       <div class="setting-row" style="margin-top:.85rem">
         <label>Send time</label>
         <input type="time" id="setting-daily-time" style="max-width:130px" value="08:00">
@@ -461,6 +485,10 @@ def _build_html(base: str) -> str:
       <div class="notify-row" style="margin-top:.5rem">
         <input type="checkbox" id="setting-include-battery-type">
         <label for="setting-include-battery-type">Include battery type in reports and notifications</label>
+      </div>
+      <div class="scan-bar" style="margin-top:1rem">
+        <button class="btn btn-secondary" onclick="sendReportNow()">Send Report Now</button>
+        <span class="scan-status" id="report-status"></span>
       </div>
     </div>
 
@@ -949,6 +977,18 @@ async function scanNow() {{
   setTimeout(() => status.textContent = '', 3000);
 }}
 
+async function sendReportNow() {{
+  const status = document.getElementById("report-status");
+  status.textContent = "Sending...";
+  try {{
+    const r = await fetch(BASE + "/api/report-now", {{ method: "POST" }});
+    status.textContent = r.ok ? "Report sent." : "Failed — check email settings.";
+  }} catch {{
+    status.textContent = "Error sending report.";
+  }}
+  setTimeout(() => status.textContent = '', 4000);
+}}
+
 // ── Settings ──────────────────────────────────────────────────────────
 function renderTypeList() {{
   document.getElementById("type-list").innerHTML =
@@ -988,7 +1028,8 @@ async function saveSettings() {{
   _settings.notify_script                 = document.getElementById("setting-notify-script").value;
   _settings.notify_email_to        = document.getElementById("setting-notify-to").value.trim();
   _settings.notify_email_cc        = document.getElementById("setting-notify-cc").value.trim();
-  _settings.daily_report_enabled   = document.getElementById("setting-daily-enabled").checked;
+  _settings.daily_report_enabled    = document.getElementById("setting-daily-enabled").checked;
+  _settings.daily_report_send_if_ok = document.getElementById("setting-daily-send-if-ok").checked;
   _settings.daily_report_time      = document.getElementById("setting-daily-time").value;
   _settings.daily_report_include_all    = document.getElementById("setting-daily-include").value === 'all';
   _settings.report_include_battery_type = document.getElementById("setting-include-battery-type").checked;
@@ -1033,7 +1074,8 @@ async function init() {{
     document.getElementById("setting-check-interval").value     = _settings.check_interval || 10;
     document.getElementById("setting-notify-to").value         = _settings.notify_email_to || '';
     document.getElementById("setting-notify-cc").value         = _settings.notify_email_cc || '';
-    document.getElementById("setting-daily-enabled").checked   = !!_settings.daily_report_enabled;
+    document.getElementById("setting-daily-enabled").checked    = !!_settings.daily_report_enabled;
+    document.getElementById("setting-daily-send-if-ok").checked = !!_settings.daily_report_send_if_ok;
     document.getElementById("setting-daily-time").value        = _settings.daily_report_time || '08:00';
     document.getElementById("setting-daily-include").value          = _settings.daily_report_include_all ? 'all' : 'low';
     document.getElementById("setting-include-battery-type").checked = !!_settings.report_include_battery_type;
@@ -1071,10 +1113,12 @@ def main():
     app = web.Application()
     app.on_startup.append(on_startup)
     app.router.add_get("/",                          handle_index)
+    app.router.add_get("/icon.png",                  handle_icon)
     app.router.add_get("/api/batteries",             handle_api_batteries)
     app.router.add_get("/api/settings",              handle_api_settings_get)
     app.router.add_post("/api/settings",             handle_api_settings_post)
     app.router.add_post("/api/scan",                 handle_api_scan)
+    app.router.add_post("/api/report-now",           handle_api_report_now)
     app.router.add_get("/api/notify-services",       handle_api_notify_services)
     app.router.add_get("/api/scripts",               handle_api_scripts)
     app.router.add_post("/api/device/{entity_id}",     handle_api_device_post)

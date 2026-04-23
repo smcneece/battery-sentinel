@@ -20,6 +20,8 @@ Monitor and manage every battery-powered device in your Home Assistant installat
 
 ![Settings Page](images/settings-page.png)
 
+![Daily Report Email](images/email.png)
+
 ---
 
 ## Features
@@ -62,9 +64,11 @@ Battery Sentinel supports three notification channels, each configurable globall
 
 ### Daily Report
 - Scheduled daily email report at a configurable time
-- Choose between low batteries only or a full status list of all devices
-- Optional battery type included in each line (e.g. `- Kitchen Smoke Detector (Living Room): 8% [9V]`)
-- Report is sorted lowest battery first
+- HTML-formatted email with a header (Battery Sentinel icon + date/time stamp), color-coded battery levels (red/amber/green), and a footer link to the project
+- Full-list mode splits into two sections — **Needs Attention** (below threshold) and **All Batteries** (above threshold) — each sorted lowest battery first
+- Low-only mode sends only the devices below their threshold, sorted lowest first; suppressed automatically when nothing is low (configurable)
+- Optional battery type column in each row
+- **Send Report Now** button in Settings sends the report immediately without waiting for the scheduled time — useful for testing your email setup
 
 ### Script Triggers
 Run any Home Assistant script when a device crosses its threshold — useful for Alexa announcements, SMS notifications, flashing lights, or any other automation.
@@ -193,7 +197,9 @@ All configuration is done within the add-on UI. There is no YAML to edit.
 | Send daily report | Off | Enables the scheduled daily email |
 | Send time | 08:00 | Time of day to send the report |
 | Include | Low batteries only | Choose low batteries only or a full status list |
-| Include battery type | Off | Appends the battery type to each line when set |
+| Include battery type | Off | Adds a battery type column to each row when set |
+| Send report even when all batteries are OK | Off | When off, the low-only report is suppressed if nothing is below threshold |
+| Send Report Now | button | Sends the daily report immediately, bypassing the schedule |
 
 ### Per-device settings (device detail panel)
 

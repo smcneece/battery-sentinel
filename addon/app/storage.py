@@ -22,6 +22,7 @@ DEFAULT_SETTINGS = {
     "daily_report_enabled": False,
     "daily_report_time": "08:00",
     "daily_report_include_all": False,
+    "daily_report_send_if_ok": False,
     "report_include_battery_type": False,
 }
 
@@ -64,7 +65,7 @@ def save_settings(updates: dict) -> dict:
         "notify_mobile_default_service", "notify_script",
         "notify_new_device", "check_interval",
         "daily_report_enabled", "daily_report_time", "daily_report_include_all",
-        "report_include_battery_type",
+        "daily_report_send_if_ok", "report_include_battery_type",
     )
     for key in allowed:
         if key in updates:
@@ -178,7 +179,7 @@ def set_last_report_date(date_str: str):
 def _sort_key(d):
     if d["entity_id"].startswith("binary_sensor."):
         return 0 if d["state"] == "on" else 100
-    s = d["state"]
-    if s.lstrip("-").isdigit():
-        return int(s)
-    return 999
+    try:
+        return float(d["state"])
+    except (ValueError, TypeError):
+        return 999

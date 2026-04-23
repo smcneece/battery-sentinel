@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import json
 import logging
 import os
@@ -152,7 +153,7 @@ def device_is_low(device: dict) -> bool:
     if device["entity_id"].startswith("binary_sensor."):
         return device["state"] == "on"
     try:
-        return int(device["state"]) < threshold
+        return float(device["state"]) < threshold
     except (ValueError, TypeError):
         return False
 
@@ -160,15 +161,18 @@ def device_is_low(device: dict) -> bool:
 def level_str(device: dict) -> str:
     if device["entity_id"].startswith("binary_sensor."):
         return "Low" if device["state"] == "on" else "OK"
-    return f"{device['state']}%"
+    try:
+        return f"{float(device['state']):.0f}%"
+    except (ValueError, TypeError):
+        return f"{device['state']}%"
 
 
-def _report_sort_key(device: dict) -> int:
+def _report_sort_key(device: dict) -> float:
     """Sort key: binary 'on' (low) = 0, numeric ascending, binary 'off' = 101."""
     if device["entity_id"].startswith("binary_sensor."):
         return 0 if device["state"] == "on" else 101
     try:
-        return int(device["state"])
+        return float(device["state"])
     except (ValueError, TypeError):
         return 100
 
@@ -253,26 +257,130 @@ async def fire_notification(title: str, message: str, settings: dict, device: di
 
 # ── Daily report ───────────────────────────────────────────────────────
 
+_ICON_URL = "https://raw.githubusercontent.com/smcneece/battery-sentinel/main/addon/icon.png"
+_REPO_URL = "https://github.com/smcneece/battery-sentinel"
+
+
+def _level_color(device: dict) -> str:
+    if device["entity_id"].startswith("binary_sensor."):
+        return "#cc3333" if device["state"] == "on" else "#4c4"
+    try:
+        pct = float(device["state"])
+        if pct < 10:  return "#cc3333"
+        if pct < 25:  return "#cc8800"
+        return "#4c4"
+    except (ValueError, TypeError):
+        return "#888"
+
+
+def _build_report_html(low: list, ok: list, settings: dict, now: datetime.datetime, include_all: bool) -> str:
+    include_type = settings.get("report_include_battery_type", False)
+    timestamp = now.strftime("%B %d, %Y at %I:%M %p")
+    cols = 4 if include_type else 3
+
+    def device_row(d, stripe):
+        bg    = "#fff9f9" if stripe and device_is_low(d) else ("#f9f9f9" if stripe else "#fff")
+        color = _level_color(d)
+        lvl   = level_str(d)
+        area  = d.get("area") or ""
+        btype = f"<td style='padding:7px 14px;color:#888;font-size:.85em'>{d.get('battery_type','')}</td>" if include_type else ""
+        return (
+            f"<tr style='background:{bg}'>"
+            f"<td style='padding:7px 14px;color:#222'>{d['name']}</td>"
+            f"<td style='padding:7px 14px;color:#666;font-size:.9em'>{area}</td>"
+            f"<td style='padding:7px 14px;font-weight:bold;text-align:right;color:{color}'>{lvl}</td>"
+            f"{btype}</tr>"
+        )
+
+    def section(heading, accent, devices):
+        if not devices:
+            return ""
+        type_th = f"<th style='padding:7px 14px;text-align:left;color:#aaa;font-weight:normal;font-size:.82em;border-bottom:1px solid #eee'>Type</th>" if include_type else ""
+        hdr = (
+            f"<tr><td colspan='{cols}' style='padding:16px 14px 6px;font-weight:bold;"
+            f"color:{accent};border-bottom:2px solid {accent};font-size:.92em'>"
+            f"{heading} <span style='font-weight:normal;color:#aaa'>({len(devices)})</span></td></tr>"
+            f"<tr style='background:#f8f8f8'>"
+            f"<th style='padding:7px 14px;text-align:left;color:#aaa;font-weight:normal;font-size:.82em;border-bottom:1px solid #eee'>Device</th>"
+            f"<th style='padding:7px 14px;text-align:left;color:#aaa;font-weight:normal;font-size:.82em;border-bottom:1px solid #eee'>Room</th>"
+            f"<th style='padding:7px 14px;text-align:right;color:#aaa;font-weight:normal;font-size:.82em;border-bottom:1px solid #eee'>Level</th>"
+            f"{type_th}</tr>"
+        )
+        rows = "".join(device_row(d, i % 2 == 0) for i, d in enumerate(devices))
+        spacer = f"<tr><td colspan='{cols}' style='padding:8px'></td></tr>"
+        return hdr + rows + spacer
+
+    if not low and not ok:
+        body = (
+            f"<tr><td colspan='{cols}' style='padding:32px;text-align:center;color:#4c4;font-size:1.05em'>"
+            f"&#10003; All batteries are OK &mdash; nothing to report."
+            f"</td></tr>"
+        )
+    elif include_all:
+        body = section("&#9888; Needs Attention", "#cc3333", low) + section("&#10003; All Batteries", "#555", ok)
+    else:
+        body = section("&#9888; Low Batteries", "#cc3333", low)
+
+    return (
+        f"<!DOCTYPE html><html><body style='margin:0;padding:20px;background:#efefef;"
+        f"font-family:Arial,Helvetica,sans-serif'>"
+        f"<table width='100%' cellpadding='0' cellspacing='0' style='max-width:640px;margin:0 auto;"
+        f"border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.15)'>"
+        f"<tr><td style='background:#1a1a2e;padding:18px 20px'>"
+        f"<img src='{_ICON_URL}' width='30' height='30' style='vertical-align:middle;border-radius:4px' alt=''>"
+        f"<span style='color:#fff;font-size:1.1em;font-weight:bold;vertical-align:middle;margin-left:8px'>Battery Sentinel</span>"
+        f"<div style='color:#888;font-size:.8em;margin-top:5px;padding-left:38px'>Daily Battery Report &mdash; {timestamp}</div>"
+        f"</td></tr>"
+        f"<tr><td style='background:#fff;padding:4px 0'>"
+        f"<table width='100%' cellpadding='0' cellspacing='0'>{body}</table>"
+        f"</td></tr>"
+        f"<tr><td style='background:#f5f5f5;padding:12px 20px;text-align:center;"
+        f"border-top:1px solid #e0e0e0'>"
+        f"<span style='color:#aaa;font-size:.78em'>"
+        f"<a href='{_REPO_URL}' style='color:#58a6ff;text-decoration:none'>Battery Sentinel</a>"
+        f" &mdash; Home Assistant Battery Monitor</span>"
+        f"</td></tr></table></body></html>"
+    )
+
+
 async def send_daily_report(devices: list, settings: dict):
     """Build and send the daily battery report email."""
     include_all  = settings.get("daily_report_include_all", False)
     include_type = settings.get("report_include_battery_type", False)
+    now = datetime.datetime.now()
 
-    report_devices = list(devices) if include_all else [d for d in devices if device_is_low(d)]
-    report_devices = sorted(report_devices, key=_report_sort_key)
+    if include_all:
+        low = sorted([d for d in devices if device_is_low(d)], key=_report_sort_key)
+        ok  = sorted([d for d in devices if not device_is_low(d) and d.get("alert_threshold", 15) != -1], key=_report_sort_key)
+        all_devices = low + ok
+    else:
+        low = sorted([d for d in devices if device_is_low(d)], key=_report_sort_key)
+        ok  = []
+        all_devices = low
 
-    if not report_devices:
-        _LOGGER.info("Daily report: nothing to report, skipping send")
+    if not all_devices:
+        if settings.get("daily_report_send_if_ok"):
+            _LOGGER.info("Daily report: all batteries OK, sending all-clear")
+        else:
+            _LOGGER.info("Daily report: nothing to report, skipping send")
+            return
+
+    service = settings.get("notify_email_service", "").strip()
+    if not service:
         return
 
-    lines = [_format_line(d, include_type) for d in report_devices]
-    await fire_notification(
-        "Battery Sentinel: Daily Report",
-        "\n".join(lines),
-        settings,
-        use_bell=False,
-    )
-    _LOGGER.info("Daily report sent (%d device(s))", len(report_devices))
+    addr = settings.get("notify_email_to", "")
+    targets = [a.strip() for a in addr.split(",") if a.strip()] if addr else []
+    cc = settings.get("notify_email_cc", "")
+    if cc:
+        targets.extend(a.strip() for a in cc.split(",") if a.strip())
+    if not targets:
+        return
+
+    html = _build_report_html(low, ok, settings, now, include_all)
+
+    await _fire_notify_service(service, "Battery Sentinel: Daily Battery Report", html, targets, html=html)
+    _LOGGER.info("Daily report sent (%d device(s))", len(all_devices))
 
 
 # ── Script trigger ────────────────────────────────────────────────────
@@ -371,13 +479,16 @@ async def _dismiss_persistent(notification_id: str):
         _LOGGER.exception("Failed to dismiss persistent notification %s", notification_id)
 
 
-async def _fire_notify_service(service: str, title: str, message: str, targets: list):
+async def _fire_notify_service(service: str, title: str, message: str, targets: list, html: str = None):
     payload = {"title": title, "message": message}
     if targets:
         payload["target"] = targets
     if not service.startswith("mobile_app_"):
-        html_body = "<br>".join(message.split("\n"))
-        payload["data"] = {"html": f"<html><body>{html_body}</body></html>"}
+        if html:
+            payload["data"] = {"html": html}
+        else:
+            html_body = "<br>".join(message.split("\n"))
+            payload["data"] = {"html": f"<html><body>{html_body}</body></html>"}
     try:
         async with aiohttp.ClientSession() as session:
             await session.post(
