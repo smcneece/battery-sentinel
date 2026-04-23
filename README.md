@@ -150,7 +150,7 @@ Once the repository is added:
 
 ## Data & Backups
 
-Battery Sentinel stores all device metadata (notes, battery types, alert thresholds, last replaced dates) in a single file within the add-on's data directory. This file is included in standard Home Assistant full backups — no special steps required.
+Battery Sentinel stores all device metadata (notes, battery types, alert thresholds, last replaced dates) in a single JSON file managed by the Home Assistant Supervisor. This is separate from the add-on code and is included automatically in standard Home Assistant full backups — no special steps required. You do not need to back it up manually.
 
 ---
 
