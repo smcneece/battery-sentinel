@@ -18,6 +18,7 @@ DEFAULT_SETTINGS = {
     "notify_mobile_default_service": "",
     "notify_script": "",
     "notify_new_device": True,
+    "notify_unavailable": False,
     "check_interval": 10,
     "daily_report_enabled": False,
     "daily_report_time": "08:00",
@@ -66,6 +67,7 @@ def save_settings(updates: dict) -> dict:
         "notify_new_device", "check_interval",
         "daily_report_enabled", "daily_report_time", "daily_report_include_all",
         "daily_report_send_if_ok", "report_include_battery_type",
+        "notify_unavailable",
     )
     for key in allowed:
         if key in updates:
@@ -93,6 +95,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
                 "battery_type": "",
                 "alert_threshold": default_threshold,
                 "alert_sent": False,
+                "unavailable_sent": False,
                 "last_replaced": None,
                 "notify_bell": True,
                 "notify_email": True,
@@ -106,6 +109,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
             devices[eid]["name"] = entity["name"]
             devices[eid].setdefault("alert_threshold", default_threshold)
             devices[eid].setdefault("alert_sent", False)
+            devices[eid].setdefault("unavailable_sent", False)
             devices[eid].setdefault("notify_bell", True)
             devices[eid].setdefault("notify_email", True)
             devices[eid].setdefault("notify_mobile", False)
@@ -156,6 +160,13 @@ def set_alert_sent(entity_id: str, sent: bool):
     data = _load()
     if entity_id in data.get("devices", {}):
         data["devices"][entity_id]["alert_sent"] = sent
+        _save(data)
+
+
+def set_unavailable_sent(entity_id: str, sent: bool):
+    data = _load()
+    if entity_id in data.get("devices", {}):
+        data["devices"][entity_id]["unavailable_sent"] = sent
         _save(data)
 
 

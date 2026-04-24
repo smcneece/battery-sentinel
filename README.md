@@ -18,6 +18,8 @@ Monitor and manage every battery-powered device in your Home Assistant installat
 
 ![Devices Page](images/devices-page.png)
 
+![Device Detail](images/device-modal.png)
+
 ![Settings Page](images/settings-page.png)
 
 ![Daily Report Email](images/email.png)
@@ -33,19 +35,19 @@ Monitor and manage every battery-powered device in your Home Assistant installat
 - Room/area column sourced from the HA area registry
 - Sortable columns: name, level, or room
 - Resizable columns with widths saved across browser sessions
-- Inline alert threshold and battery type selectors per row — no need to open the device panel
-- Live filter box above the device list — type any part of a device name to narrow the list instantly
-- Battery Type column header filter — show only devices with a specific type, or find all unassigned devices at a glance
-- Column visibility controls in Settings — show or hide any column (Level, Battery Type, Alert Threshold, Notifications, Script, Room)
+- Inline alert threshold and battery type selectors per row, no need to open the device panel
+- Live filter box above the device list; type any part of a device name to narrow the list instantly
+- Battery Type column header filter: show only devices with a specific type, or find all unassigned devices at a glance
+- Column visibility controls in Settings: show or hide any column (Level, Battery Type, Alert Threshold, Notifications, Script, Room)
 
 ### Bulk Edit
-- **Battery Type toolbar** — pick a type from the dropdown and apply it to all text-filtered devices at once; useful for tagging a whole category (e.g., all smoke detectors) in one step
-- **Alert Threshold toolbar** — same bulk-set pattern for thresholds; filter by name, pick a threshold, apply to all matching devices with one confirmation
+- **Battery Type toolbar**: pick a type from the dropdown and apply it to all text-filtered devices at once; useful for tagging a whole category (e.g., all smoke detectors) in one step
+- **Alert Threshold toolbar**: same bulk-set pattern for thresholds; filter by name, pick a threshold, apply to all matching devices with one confirmation
 
 ### Per-device Management
 Click any device in the list to open its detail panel.
 
-- **Inline rename** — click the device name at the top of the panel to edit it; saving writes the new friendly name back to Home Assistant via the entity registry (entity ID is unchanged, so automations and dashboards are unaffected). Note: this renames the battery *entity* only, not the parent device — the device name in HA's device registry is separate and will not change
+- **Inline rename**: click the device name at the top of the panel to edit it; saving writes the new friendly name back to Home Assistant via the entity registry (entity ID is unchanged, so automations and dashboards are unaffected). Note: this renames the battery *entity* only, not the parent device; the device name in HA's device registry is separate and will not change
 - Battery type dropdown (AA, AAA, C, 9V, CR2032, CR2025, CR123A, CR2, 18650, or custom)
 - Per-device alert threshold (5% to 60% in 5% increments, or Ignore)
 - Notes field for free-text information about the device or its battery
@@ -61,6 +63,7 @@ Battery Sentinel supports three notification channels, each configurable globall
 - Each device has individual UI / Email / Mobile toggles in the device list and in the device panel; column header checkboxes let you enable or disable a channel for all devices at once
 - Configurable check interval (default 10 minutes)
 - Optional alert when a new battery device is discovered
+- Optional alert when a battery device goes unavailable or unknown (useful for Z-Wave/Zigbee devices that stop reporting after firmware updates or radio changes)
 
 ### Email
 - Select any HA notify service from a dropdown (populated from your installed integrations)
@@ -79,9 +82,9 @@ Battery Sentinel supports three notification channels, each configurable globall
 ### Script Triggers
 Run any Home Assistant script when a device crosses its threshold — useful for Alexa announcements, SMS notifications, flashing lights, or any other automation.
 
-- **Global script** — set once in Settings; runs for every device that has no per-device override
-- **Per-device script** — overrides the global for that device; can also be set to *Disabled* to suppress the global for a specific device
-- Rate-limited to **once per calendar day** per device — if a battery sits at the threshold and fluctuates up and down, the script fires only once that day
+- **Global script**: set once in Settings; runs for every device that has no per-device override
+- **Per-device script**: overrides the global for that device; can also be set to *Disabled* to suppress the global for a specific device
+- Rate-limited to **once per calendar day** per device; if a battery sits at the threshold and fluctuates up and down, the script fires only once that day
 - The Script column in the device list shows the assigned script at a glance (device-specific in white, inherited global in gray, disabled shows "Off")
 
 Battery Sentinel passes the following variables to the script automatically:
@@ -127,13 +130,13 @@ sequence:
 
 ### Via App Store (Recommended)
 
-**Option A — Shortcut button** (requires [My Home Assistant](https://my.home-assistant.io/) to be configured):
+**Option A: Shortcut button** (requires [My Home Assistant](https://my.home-assistant.io/) to be configured):
 
 [![Add repository to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fsmcneece%2Fbattery-sentinel)
 
 > ⚠️ **I'm currently unable to confirm this button works on recent HA versions** — it opens the App Store but may not show the pre-filled add repository dialog. I have [filed a bug with Home Assistant](https://github.com/home-assistant/my.home-assistant.io/issues/698). If this button works for you, please let me know in [issues](https://github.com/smcneece/battery-sentinel/issues). In the meantime, use Option B below.
 
-**Option B — Manual repository add** (works on all installations):
+**Option B: Manual repository add** (works on all installations):
 
 1. In Home Assistant go to **Settings → Apps → Install App**
 2. Click the **⋮** menu (top right) and select **Repositories**
@@ -191,6 +194,7 @@ All configuration is done within the add-on UI. There is no YAML to edit.
 | Default alert threshold | 15% | Alert level applied to newly discovered devices |
 | UI notification | On | Creates/updates a single HA persistent notification listing all low batteries |
 | New device alert | On | Fires a notification when a new battery device is first discovered |
+| Unavailable device alert | Off | Fires a notification when a battery device transitions to unavailable or unknown state |
 | Email notify service | none | Dropdown of your installed HA notify services |
 | Default To address | none | Primary email recipient for all alerts and reports |
 | CC addresses | none | Additional recipients, comma-separated |
@@ -254,12 +258,19 @@ Battery Sentinel avoids notification spam by design across all three channels.
 - **Email:** each device fires one email when it first crosses its threshold and resets when the battery recovers or is replaced — no repeat emails for a battery that stays low
 - **Mobile:** same single-fire behaviour as email; uses the device-specific `mobile_app_*` service if set, otherwise falls back to the global default
 - The check interval is configurable; changing it in Settings takes effect after the current cycle completes without restarting the add-on
+- **Unavailable device alerts** fire once per device when it transitions to unavailable or unknown state, and reset automatically when it recovers. The alert is suppressed on the first scan after add-on startup — this prevents a flood of notifications when HA itself is rebooting and integrations like Zigbee2MQTT or Z-Wave JS have not finished loading yet. Devices may briefly show N/A in the list during this window; a manual Scan Now will refresh their state immediately once the integration is back up.
 
 ---
 
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for the full version history.
+
+---
+
+## Contributors
+
+- [Marc Easen](https://github.com/Easen) — responsive mobile/tablet layout and HTML extraction into a standalone file
 
 ---
 

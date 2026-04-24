@@ -1,10 +1,10 @@
-FROM python:3.12-alpine
-
-ENV LANG=C.UTF-8
+FROM ghcr.io/home-assistant/base-python:latest
 
 RUN pip3 install --no-cache-dir aiohttp
 
 COPY app/ /app/
 COPY icon.png /app/icon.png
 
-CMD ["python3", "/app/main.py"]
+COPY run.sh /
+RUN chmod a+x /run.sh
+CMD [ "/run.sh" ]

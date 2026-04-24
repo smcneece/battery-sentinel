@@ -51,7 +51,6 @@ async def get_battery_entities():
             }
             for s in states
             if s.get("attributes", {}).get("device_class") == "battery"
-            and s.get("state") not in ("unavailable", "unknown")
         ]
 
         _LOGGER.info("Found %d battery entities", len(batteries))
@@ -67,8 +66,7 @@ async def get_entity_metadata():
     template = (
         "{% set ns = namespace(r={}) %}"
         "{% for s in states %}"
-        "{% if s.attributes.device_class == 'battery'"
-        " and s.state not in ['unavailable','unknown'] %}"
+        "{% if s.attributes.device_class == 'battery' %}"
         "{% set ns.r = dict(ns.r, **{s.entity_id: {"
         "'area': area_name(s.entity_id) or '',"
         "'device_id': device_id(s.entity_id) or ''"
@@ -147,6 +145,8 @@ async def get_notify_services() -> list:
 
 def device_is_low(device: dict) -> bool:
     """True if the device is currently below its alert threshold."""
+    if device["state"] in ("unavailable", "unknown"):
+        return False
     threshold = device.get("alert_threshold", 15)
     if threshold == -1:
         return False
@@ -159,6 +159,8 @@ def device_is_low(device: dict) -> bool:
 
 
 def level_str(device: dict) -> str:
+    if device["state"] in ("unavailable", "unknown"):
+        return "Unavailable"
     if device["entity_id"].startswith("binary_sensor."):
         return "Low" if device["state"] == "on" else "OK"
     try:
@@ -168,7 +170,9 @@ def level_str(device: dict) -> str:
 
 
 def _report_sort_key(device: dict) -> float:
-    """Sort key: binary 'on' (low) = 0, numeric ascending, binary 'off' = 101."""
+    """Sort key: binary 'on' (low) = 0, numeric ascending, binary 'off' = 101, unavailable = 102."""
+    if device["state"] in ("unavailable", "unknown"):
+        return 102
     if device["entity_id"].startswith("binary_sensor."):
         return 0 if device["state"] == "on" else 101
     try:
@@ -255,10 +259,76 @@ async def fire_notification(title: str, message: str, settings: dict, device: di
             await _fire_notify_service(mobile.removeprefix("notify."), title, message, [])
 
 
-# ── Daily report ───────────────────────────────────────────────────────
+# ── Unavailable device notification ───────────────────────────────────
 
 _ICON_URL = "https://raw.githubusercontent.com/smcneece/battery-sentinel/main/addon/icon.png"
 _REPO_URL = "https://github.com/smcneece/battery-sentinel"
+
+
+def _build_unavailable_html(devices: list, now: datetime.datetime) -> str:
+    timestamp = now.strftime("%B %d, %Y at %I:%M %p")
+    header_row = (
+        "<tr style='background:#f8f8f8'>"
+        "<th style='padding:7px 14px;text-align:left;color:#aaa;font-weight:normal;font-size:.82em;border-bottom:1px solid #eee'>Device</th>"
+        "<th style='padding:7px 14px;text-align:left;color:#aaa;font-weight:normal;font-size:.82em;border-bottom:1px solid #eee'>Entity ID</th>"
+        "<th style='padding:7px 14px;text-align:left;color:#aaa;font-weight:normal;font-size:.82em;border-bottom:1px solid #eee'>Room</th>"
+        "</tr>"
+    )
+    rows = "".join(
+        f"<tr style='background:{'#f9f9f9' if i % 2 == 0 else '#fff'}'>"
+        f"<td style='padding:7px 14px;color:#222'>{d['name']}</td>"
+        f"<td style='padding:7px 14px;color:#888;font-size:.85em'>{d['entity_id']}</td>"
+        f"<td style='padding:7px 14px;color:#666;font-size:.9em'>{d.get('area', '')}</td>"
+        f"</tr>"
+        for i, d in enumerate(devices)
+    )
+    return (
+        f"<!DOCTYPE html><html><body style='margin:0;padding:20px;background:#efefef;"
+        f"font-family:Arial,Helvetica,sans-serif'>"
+        f"<table width='100%' cellpadding='0' cellspacing='0' style='max-width:640px;margin:0 auto;"
+        f"border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.15)'>"
+        f"<tr><td style='background:#1a1a2e;padding:18px 20px'>"
+        f"<img src='{_ICON_URL}' width='30' height='30' style='vertical-align:middle;border-radius:4px' alt=''>"
+        f"<span style='color:#fff;font-size:1.1em;font-weight:bold;vertical-align:middle;margin-left:8px'>Battery Sentinel</span>"
+        f"<div style='color:#888;font-size:.8em;margin-top:5px;padding-left:38px'>Device Unavailable Alert &mdash; {timestamp}</div>"
+        f"</td></tr>"
+        f"<tr><td style='background:#fff;padding:4px 0'>"
+        f"<table width='100%' cellpadding='0' cellspacing='0'>"
+        f"<tr><td colspan='3' style='padding:16px 14px 6px;font-weight:bold;color:#cc8800;"
+        f"border-bottom:2px solid #cc8800;font-size:.92em'>"
+        f"&#9888; Went Unavailable <span style='font-weight:normal;color:#aaa'>({len(devices)})</span></td></tr>"
+        f"{header_row}{rows}"
+        f"</table></td></tr>"
+        f"<tr><td style='background:#f5f5f5;padding:12px 20px;text-align:center;"
+        f"border-top:1px solid #e0e0e0'>"
+        f"<span style='color:#aaa;font-size:.78em'>"
+        f"<a href='{_REPO_URL}' style='color:#58a6ff;text-decoration:none'>Battery Sentinel</a>"
+        f" &mdash; Home Assistant Battery Monitor</span>"
+        f"</td></tr></table></body></html>"
+    )
+
+
+async def fire_unavailable_notification(devices: list, settings: dict):
+    title = f"Battery Sentinel: {len(devices)} device(s) went unavailable"
+    lines = [f"- {d['name']} ({d['entity_id']})" for d in devices]
+    message = "\n".join(lines)
+
+    if settings.get("notify_persistent", True):
+        await _fire_persistent(title, message)
+
+    service = settings.get("notify_email_service", "").strip()
+    if service:
+        addr = settings.get("notify_email_to", "")
+        targets = [a.strip() for a in addr.split(",") if a.strip()] if addr else []
+        cc = settings.get("notify_email_cc", "")
+        if cc:
+            targets.extend(a.strip() for a in cc.split(",") if a.strip())
+        if targets:
+            html = _build_unavailable_html(devices, datetime.datetime.now())
+            await _fire_notify_service(service, title, message, targets, html=html)
+
+
+# ── Daily report ───────────────────────────────────────────────────────
 
 
 def _level_color(device: dict) -> str:
