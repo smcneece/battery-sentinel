@@ -1,5 +1,10 @@
 # Battery Sentinel Changelog
 
+## 2026.04.12
+- Fixed: battery types auto-filled by the lookup were not being added to the battery type list, causing them to appear blank in the device list and as "(custom)" in the device detail panel
+- The lookup now sweeps all devices in the cache for orphaned types (set on devices but missing from the list) and adds them in one pass, cleaning up types set by the previous broken run
+- Fixed: the inline battery type selector in the device list now shows the current value even if it is not in the managed list, matching the device detail panel behavior
+
 ## 2026.04.11
 - Battery type auto-lookup: new "Look Up Battery Types" button in Settings > General queries the Battery Notes community database (maintained by andrew-codechimp) and suggests battery types based on each device's manufacturer and model from the HA device registry
 - Devices with no type set are updated automatically in the background; a brief status message shows how many were filled in

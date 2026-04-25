@@ -214,12 +214,14 @@ def lookup_battery_types(devices: list, registry: dict, db: list) -> tuple:
     auto_fill: no type set, db has a match.
     conflicts: type already set but differs from db suggestion.
     """
+    _SKIP_TYPES = {"MANUAL"}
+
     db_lookup: dict = {}
     for entry in db:
         mfr   = (entry.get("manufacturer") or "").strip().lower()
         mdl   = (entry.get("model")        or "").strip().lower()
         btype = (entry.get("battery_type") or "").strip()
-        if mfr and mdl and btype:
+        if mfr and mdl and btype and btype.upper() not in _SKIP_TYPES:
             db_lookup[(mfr, mdl)] = btype
 
     auto_fill: list = []

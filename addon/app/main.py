@@ -12,7 +12,7 @@ import storage
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.04.11"
+VERSION = "2026.04.12"
 
 _cache: list = []
 _startup_logged = False
@@ -286,9 +286,37 @@ async def handle_api_battery_lookup(request):
                 if d["entity_id"] == item["entity_id"]:
                     _cache[i]["battery_type"] = item["suggested_type"]
                     break
-        _LOGGER.info("Battery lookup: %d auto-filled, %d conflicts", len(auto_fill), len(conflicts))
+
+        # Add any new types from both auto_fill and conflicts to the battery_types list.
+        # Also sweep the cache for orphaned types (set on devices but missing from the list)
+        # so that types added by a previous broken run get cleaned up too.
+        settings = storage.get_settings()
+        existing = set(settings.get("battery_types", []))
+        seen: set = set()
+        new_types = []
+        for item in auto_fill + conflicts:
+            t = item["suggested_type"]
+            if t and t not in existing and t not in seen:
+                new_types.append(t)
+                seen.add(t)
+        for device in _cache:
+            t = device.get("battery_type", "")
+            if t and t.upper() != "MANUAL" and t not in existing and t not in seen:
+                new_types.append(t)
+                seen.add(t)
+        updated_types = settings.get("battery_types", [])
+        if new_types:
+            updated_types = updated_types + new_types
+            storage.save_settings({"battery_types": updated_types})
+
+        _LOGGER.info("Battery lookup: %d auto-filled, %d conflicts, %d new types added",
+                     len(auto_fill), len(conflicts), len(new_types))
         return web.Response(
-            text=json.dumps({"auto_fill": auto_fill, "conflicts": conflicts}),
+            text=json.dumps({
+                "auto_fill": auto_fill,
+                "conflicts": conflicts,
+                "updated_types": updated_types,
+            }),
             content_type="application/json",
         )
     except Exception:

@@ -591,7 +591,8 @@ function renderTable() {
   ).join('') + `<option value="-1"${val===-1?' selected':''}>Ignore</option>`;
 
   const typeOptions = val => '<option value="">—</option>' +
-    types.map(t => `<option value="${t}"${val===t?' selected':''}>${t}</option>`).join('');
+    types.map(t => `<option value="${t}"${val===t?' selected':''}>${t}</option>`).join('') +
+    (val && !types.includes(val) ? `<option value="${val}" selected>${val}</option>` : '');
 
   const rows = sorted.map(d => {
     const ignored  = d.alert_threshold === -1;
@@ -1197,6 +1198,11 @@ async function lookupBatteryTypes() {
       return;
     }
     const data = await r.json();
+    if (data.updated_types) {
+      _settings.battery_types = data.updated_types;
+      renderTypeList();
+      renderTypeFilter();
+    }
     data.auto_fill.forEach(item => {
       const idx = _devices.findIndex(d => d.entity_id === item.entity_id);
       if (idx !== -1) _devices[idx].battery_type = item.suggested_type;
