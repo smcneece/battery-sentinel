@@ -12,7 +12,7 @@ import storage
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.04.9"
+VERSION = "2026.04.10"
 
 _cache: list = []
 _startup_logged = False
@@ -244,7 +244,32 @@ async def handle_api_device_delete(request):
         _cache = [d for d in _cache if d["entity_id"] != entity_id]
         return web.Response(text='{"status":"ok"}', content_type="application/json")
     except Exception:
-        _LOGGER.exception("Failed to delete device %s", entity_id)
+        _LOGGER.exception("Failed to hide device %s", entity_id)
+        return web.Response(status=400, text="Bad request")
+
+
+async def handle_api_hidden_devices(request):
+    return web.Response(text=json.dumps(storage.get_hidden_devices()), content_type="application/json")
+
+
+async def handle_api_device_purge(request):
+    entity_id = request.match_info["entity_id"]
+    try:
+        storage.purge_device(entity_id)
+        return web.Response(text='{"status":"ok"}', content_type="application/json")
+    except Exception:
+        _LOGGER.exception("Failed to purge device %s", entity_id)
+        return web.Response(status=400, text="Bad request")
+
+
+async def handle_api_device_restore(request):
+    entity_id = request.match_info["entity_id"]
+    try:
+        storage.restore_device(entity_id)
+        asyncio.ensure_future(do_refresh())
+        return web.Response(text='{"status":"ok"}', content_type="application/json")
+    except Exception:
+        _LOGGER.exception("Failed to restore device %s", entity_id)
         return web.Response(status=400, text="Bad request")
 
 
@@ -289,9 +314,12 @@ def main():
     app.router.add_post("/api/report-now",           handle_api_report_now)
     app.router.add_get("/api/notify-services",       handle_api_notify_services)
     app.router.add_get("/api/scripts",               handle_api_scripts)
-    app.router.add_post("/api/device/{entity_id}",     handle_api_device_post)
-    app.router.add_delete("/api/device/{entity_id}",   handle_api_device_delete)
-    app.router.add_post("/api/rename/{entity_id}",     handle_api_rename)
+    app.router.add_post("/api/device/{entity_id}",          handle_api_device_post)
+    app.router.add_delete("/api/device/{entity_id}",        handle_api_device_delete)
+    app.router.add_post("/api/device/{entity_id}/restore",  handle_api_device_restore)
+    app.router.add_delete("/api/device/{entity_id}/purge",  handle_api_device_purge)
+    app.router.add_get("/api/hidden-devices",               handle_api_hidden_devices)
+    app.router.add_post("/api/rename/{entity_id}",          handle_api_rename)
 
     port = int(os.environ.get("INGRESS_PORT", 8099))
     _LOGGER.info("Starting Battery Sentinel on port %d", port)

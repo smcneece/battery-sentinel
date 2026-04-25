@@ -189,6 +189,13 @@
   </div>
 
   <div id="content"><p class="loading">Loading devices...</p></div>
+
+  <div id="hidden-section" style="display:none;margin-top:.5rem;border-top:1px solid #1e1e1e">
+    <div onclick="toggleHiddenSection()" style="padding:.5rem 1rem;color:#555;font-size:.82rem;cursor:pointer;user-select:none">
+      <span id="hidden-toggle-icon">&#9654;</span> Hidden devices (<span id="hidden-count">0</span>)
+    </div>
+    <div id="hidden-list" style="display:none"></div>
+  </div>
 </div>
 
 <div id="tab-settings" class="tab-content">
@@ -402,17 +409,17 @@
     </div>
     <div class="modal-footer" style="display:block;padding:.85rem 1.25rem">
       <div id="modal-footer-normal" style="display:flex;justify-content:space-between;align-items:center">
-        <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">Hide</button>
         <div style="display:flex;gap:.5rem">
           <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
           <button class="btn btn-primary" onclick="saveDevice()">Save</button>
         </div>
       </div>
       <div id="modal-footer-confirm" style="display:none;justify-content:space-between;align-items:center">
-        <span style="color:#f88;font-size:.85rem">Remove from Battery Sentinel?</span>
+        <span style="color:#f88;font-size:.85rem">Hide this device?</span>
         <div style="display:flex;gap:.5rem">
           <button class="btn btn-secondary" onclick="cancelDelete()">Keep</button>
-          <button class="btn btn-danger" onclick="deleteDevice()">Yes, Delete</button>
+          <button class="btn btn-danger" onclick="deleteDevice()">Yes, Hide</button>
         </div>
       </div>
     </div>
@@ -634,6 +641,7 @@ function renderTable() {
   document.querySelectorAll("th[data-col]").forEach(th => {
     th.addEventListener("click", e => {
       if (e.target.classList.contains("resize-handle")) return;
+      if (e.target.closest("input, label")) return;
       if (_wasDragging) { _wasDragging = false; return; }
       _sortCol === th.dataset.col ? (_sortDir *= -1) : (_sortCol = th.dataset.col, _sortDir = 1);
       renderTable();
@@ -850,6 +858,60 @@ async function deleteDevice() {
     closeModal();
     if (_devices.length) renderTable();
     else document.getElementById("content").innerHTML = '<p class="loading">No battery devices found.</p>';
+    await loadHiddenDevices();
+  } catch {
+    alert("Failed to hide device.");
+  }
+}
+
+async function loadHiddenDevices() {
+  try {
+    const r = await fetch(BASE + "/api/hidden-devices");
+    const hidden = await r.json();
+    document.getElementById("hidden-count").textContent = hidden.length;
+    document.getElementById("hidden-section").style.display = hidden.length ? "" : "none";
+    document.getElementById("hidden-list").innerHTML = hidden.map(d =>
+      `<div style="display:flex;justify-content:space-between;align-items:center;padding:.4rem 1rem;border-top:1px solid #1a1a1a">
+        <div>
+          <span style="color:#888">${d.name}</span>
+          <span style="color:#444;font-size:.75rem;margin-left:.5rem;font-family:monospace">${d.entity_id}</span>
+        </div>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn btn-secondary" style="font-size:.8rem;padding:.25rem .6rem" onclick="restoreDevice('${d.entity_id}')">Restore</button>
+          <button class="btn btn-danger" style="font-size:.8rem;padding:.25rem .6rem" onclick="purgeDevice('${d.entity_id}')">Delete</button>
+        </div>
+      </div>`
+    ).join("");
+  } catch { /* silent */ }
+}
+
+function toggleHiddenSection() {
+  const list = document.getElementById("hidden-list");
+  const icon = document.getElementById("hidden-toggle-icon");
+  const open = list.style.display === "none";
+  list.style.display = open ? "" : "none";
+  icon.innerHTML = open ? "&#9660;" : "&#9654;";
+}
+
+async function restoreDevice(entityId) {
+  try {
+    const r = await fetch(BASE + "/api/device/" + encodeURIComponent(entityId) + "/restore", { method: "POST" });
+    if (!r.ok) throw new Error();
+    const devRes = await fetch(BASE + "/api/batteries");
+    _devices = await devRes.json();
+    renderTable();
+    await loadHiddenDevices();
+  } catch {
+    alert("Failed to restore device.");
+  }
+}
+
+async function purgeDevice(entityId) {
+  if (!confirm("Permanently delete this device from Battery Sentinel?\n\nIf the entity still exists in Home Assistant, it will be re-added automatically on the next scan.")) return;
+  try {
+    const r = await fetch(BASE + "/api/device/" + encodeURIComponent(entityId) + "/purge", { method: "DELETE" });
+    if (!r.ok) throw new Error();
+    await loadHiddenDevices();
   } catch {
     alert("Failed to delete device.");
   }
@@ -1091,6 +1153,7 @@ async function init() {
       const cb = document.getElementById("col-" + col);
       if (cb) cb.checked = _colVisible[col] !== false;
     });
+    await loadHiddenDevices();
   } catch(e) {
     document.getElementById("content").innerHTML = '<p class="error">Failed to load battery data.</p>';
   }

@@ -1,5 +1,10 @@
 # Battery Sentinel Changelog
 
+## 2026.04.10
+- Hide device: the Delete button in the device panel now hides the device instead of removing it from storage, preventing it from reappearing on the next scan; hidden devices are excluded from the list and do not trigger any alerts or notifications
+- Restore hidden devices: a collapsible "Hidden devices (N)" section appears at the bottom of the device list whenever there are hidden devices; each entry has a Restore button that returns it to the main list immediately and a Delete button for permanent removal (with a confirmation prompt noting the device will reappear on the next scan if its entity still exists in HA)
+- Fixed: clicking the UI, Email, or Mobile checkboxes in the Notifications column header was triggering a column sort instead of toggling all devices; the click handler now correctly ignores clicks that originate from inside a label or checkbox
+
 ## 2026.04.9
 - Unavailable and unknown battery entities now appear in the device list with an N/A indicator; they do not trigger alerts or notifications
 - Optional alert when a battery device goes unavailable or unknown: Settings checkbox, fires bell and HTML-formatted email notification (off by default); suppressed on the first scan after startup to avoid false positives while integrations are still loading

@@ -53,6 +53,7 @@ Click any device in the list to open its detail panel.
 - Notes field for free-text information about the device or its battery
 - Last replaced date, manually editable or stamped with the Replaced/Recharged Today button
 - Per-device notification controls: UI, Email, and Mobile toggles; email address override; mobile app service selector
+- Hide device: removes it from the list and suppresses all alerts; hidden devices are accessible in a collapsible section at the bottom of the Devices tab where they can be restored or permanently deleted. Note: if the entity still exists in Home Assistant, permanently deleted devices will reappear on the next scan.
 
 ### Notifications
 Battery Sentinel supports three notification channels, each configurable globally and per device.
@@ -225,7 +226,7 @@ All configuration is done within the add-on UI. There is no YAML to edit.
 | Notes | Free-text field for any relevant notes |
 | Last replaced | Date of last battery replacement; set automatically via the button or edited manually |
 | Replaced/Recharged Today | Stamps today's date as the last replacement date |
-| Delete | Removes the device from Battery Sentinel. Use this to clear out devices that have been removed from Home Assistant or that you no longer want to track. The device will reappear automatically on the next scan if its entity still exists in HA. |
+| Hide | Removes the device from the list and suppresses all alerts for it. Hidden devices do not reappear on the next scan. A collapsible "Hidden devices" section at the bottom of the Devices tab lets you restore any hidden device at any time, or permanently delete it. Note: permanently deleted devices will be re-added automatically on the next scan if their entity still exists in Home Assistant. |
 
 ---
 

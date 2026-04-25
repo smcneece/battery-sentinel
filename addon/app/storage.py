@@ -96,6 +96,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
                 "alert_threshold": default_threshold,
                 "alert_sent": False,
                 "unavailable_sent": False,
+                "hidden": False,
                 "last_replaced": None,
                 "notify_bell": True,
                 "notify_email": True,
@@ -110,6 +111,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
             devices[eid].setdefault("alert_threshold", default_threshold)
             devices[eid].setdefault("alert_sent", False)
             devices[eid].setdefault("unavailable_sent", False)
+            devices[eid].setdefault("hidden", False)
             devices[eid].setdefault("notify_bell", True)
             devices[eid].setdefault("notify_email", True)
             devices[eid].setdefault("notify_mobile", False)
@@ -124,6 +126,8 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
     result = []
     for entity in live_entities:
         eid = entity["entity_id"]
+        if devices[eid].get("hidden"):
+            continue
         result.append({
             **devices[eid],
             "state": entity["state"],
@@ -152,8 +156,27 @@ def save_device(entity_id: str, fields: dict) -> dict:
 
 def delete_device(entity_id: str):
     data = _load()
+    if entity_id in data.get("devices", {}):
+        data["devices"][entity_id]["hidden"] = True
+        _save(data)
+
+
+def restore_device(entity_id: str):
+    data = _load()
+    if entity_id in data.get("devices", {}):
+        data["devices"][entity_id]["hidden"] = False
+        _save(data)
+
+
+def purge_device(entity_id: str):
+    data = _load()
     data.get("devices", {}).pop(entity_id, None)
     _save(data)
+
+
+def get_hidden_devices() -> list:
+    data = _load()
+    return [d for d in data.get("devices", {}).values() if d.get("hidden")]
 
 
 def set_alert_sent(entity_id: str, sent: bool):
