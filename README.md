@@ -1,16 +1,16 @@
 # Battery Sentinel - Home Assistant App / Add-on
 
-Monitor and manage every battery-powered device in your Home Assistant installation. Battery Sentinel provides a dedicated management page accessible from the HA sidebar, with per-device tracking, configurable alerts, email notifications, and a daily battery report.
+Dead batteries break automations. Battery Sentinel finds every battery-powered device in Home Assistant, alerts you before they die, and gives you a proper management page to track them all.
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/smcneece/battery-sentinel)](https://github.com/smcneece/battery-sentinel/releases)
 [![GitHub](https://img.shields.io/github/license/smcneece/battery-sentinel)](LICENSE)
 
-> [![Sponsor](https://img.shields.io/badge/Sponsor-💖-pink)](https://github.com/sponsors/smcneece) — If Battery Sentinel saves you from dead Z-Wave sensors, drained Zigbee devices, or a phone or tablet that's quietly hitting 10% in the background, consider sponsoring! Even a small one-time amount shows appreciation and keeps the project going. Check out my [other HA projects](https://github.com/smcneece?tab=repositories) while you're here.
+> ⚠️ **Supervisor Required** — Battery Sentinel is a Home Assistant **add-on** and requires a Supervisor-managed installation. It will **not** work on Home Assistant Core (Python package) or Home Assistant Container (Docker-only). If you are running **Home Assistant OS** or **Home Assistant Supervised**, you're good to go.
+
+> [![Sponsor](https://img.shields.io/badge/Sponsor-💖-pink)](https://github.com/sponsors/smcneece) — If Battery Sentinel saves you from dead Z-Wave sensors, drained Zigbee devices, or a phone or tablet that's quietly hitting 10% in the background, consider sponsoring! Even a small one-time amount shows appreciation. Check out my [other HA projects](https://github.com/smcneece?tab=repositories) while you're here.
 >
 > ⭐ **Finding this useful?** Star the repo so other HA users can find it!
 > [![GitHub stars](https://img.shields.io/github/stars/smcneece/battery-sentinel?style=social)](https://github.com/smcneece/battery-sentinel/stargazers)
-
-> ⚠️ **Supervisor Required** — Battery Sentinel is a Home Assistant **add-on** and requires a Supervisor-managed installation. It will **not** work on Home Assistant Core (Python package) or Home Assistant Container (Docker-only). If you are running **Home Assistant OS** or **Home Assistant Supervised**, you're good to go.
 
 ---
 
