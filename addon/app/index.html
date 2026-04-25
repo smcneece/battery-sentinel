@@ -222,6 +222,11 @@
         <input type="text" id="type-input" placeholder="Add type, e.g. CR2477">
         <button class="btn btn-secondary" onclick="addType()">Add</button>
       </div>
+      <div class="scan-bar" style="margin-top:.85rem">
+        <button id="lookup-btn" class="btn btn-secondary" onclick="lookupBatteryTypes()">Look Up Battery Types</button>
+        <span class="scan-status" id="lookup-status"></span>
+      </div>
+      <p class="muted" style="font-size:.82rem;margin-top:.35rem">Queries the Battery Notes community database to auto-fill missing battery types.</p>
     </div>
 
     <div class="settings-card">
@@ -422,6 +427,24 @@
           <button class="btn btn-danger" onclick="deleteDevice()">Yes, Hide</button>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="conflict-modal">
+  <div class="modal-box" style="width:600px;max-width:95vw">
+    <div class="modal-header">
+      <h2>Battery Type Conflicts</h2>
+      <button class="modal-close" onclick="closeConflictModal()">&times;</button>
+    </div>
+    <div class="modal-body" style="padding:0;gap:0">
+      <p style="padding:1rem 1.25rem .5rem;color:#888;font-size:.85rem">These devices already have a battery type set that differs from the database. Choose which to keep for each one.</p>
+      <div id="conflict-list"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="keepAllConflicts()">Keep All Mine</button>
+      <button class="btn btn-primary" onclick="useAllConflicts()">Use All Database</button>
+      <button class="btn btn-secondary" onclick="closeConflictModal()">Close</button>
     </div>
   </div>
 </div>
@@ -1158,6 +1181,114 @@ async function init() {
     document.getElementById("content").innerHTML = '<p class="error">Failed to load battery data.</p>';
   }
 }
+// ── Battery type lookup ───────────────────────────────────────────────
+let _conflictData = [];
+
+async function lookupBatteryTypes() {
+  const btn    = document.getElementById("lookup-btn");
+  const status = document.getElementById("lookup-status");
+  btn.disabled = true;
+  status.textContent = "Looking up...";
+  try {
+    const r = await fetch(BASE + "/api/battery-lookup", { method: "POST" });
+    if (!r.ok) {
+      status.textContent = r.status === 502 ? "Could not reach Battery Notes database." : "Lookup failed.";
+      setTimeout(() => status.textContent = '', 4000);
+      return;
+    }
+    const data = await r.json();
+    data.auto_fill.forEach(item => {
+      const idx = _devices.findIndex(d => d.entity_id === item.entity_id);
+      if (idx !== -1) _devices[idx].battery_type = item.suggested_type;
+    });
+    if (data.auto_fill.length) { renderTable(); renderTypeFilter(); }
+    const parts = [];
+    if (data.auto_fill.length) parts.push(`${data.auto_fill.length} type${data.auto_fill.length !== 1 ? 's' : ''} filled in`);
+    if (data.conflicts.length) parts.push(`${data.conflicts.length} conflict${data.conflicts.length !== 1 ? 's' : ''} to review`);
+    status.textContent = (parts.length ? parts.join(', ') : 'No matches found') + '.';
+    if (data.conflicts.length) {
+      _conflictData = data.conflicts;
+      renderConflictList();
+      document.getElementById("conflict-modal").classList.add("open");
+    } else {
+      setTimeout(() => status.textContent = '', 4000);
+    }
+  } catch {
+    status.textContent = "Lookup failed.";
+    setTimeout(() => status.textContent = '', 4000);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderConflictList() {
+  document.getElementById("conflict-list").innerHTML = _conflictData.map((item, i) =>
+    `<div style="padding:.6rem 1.25rem;border-top:1px solid #2a2a2a;display:flex;align-items:center;gap:.75rem">
+      <div style="flex:1;min-width:0">
+        <div style="color:#ccc;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.name}</div>
+        <div style="font-size:.82rem;margin-top:.2rem;color:#888">
+          Mine: <strong style="color:#e0e0e0">${item.current_type}</strong>
+          &nbsp;vs&nbsp;
+          DB: <strong style="color:#58a6ff">${item.suggested_type}</strong>
+        </div>
+      </div>
+      <div style="display:flex;gap:.35rem;flex-shrink:0">
+        <button class="btn btn-secondary" style="font-size:.78rem;padding:.25rem .6rem" onclick="resolveConflict(${i},false)">Keep Mine</button>
+        <button class="btn btn-primary"   style="font-size:.78rem;padding:.25rem .6rem" onclick="resolveConflict(${i},true)">Use DB</button>
+      </div>
+    </div>`
+  ).join('');
+}
+
+async function resolveConflict(idx, useDb) {
+  const item = _conflictData[idx];
+  if (!item) return;
+  if (useDb) await applyBatteryType(item.entity_id, item.suggested_type);
+  _conflictData.splice(idx, 1);
+  if (_conflictData.length) {
+    renderConflictList();
+  } else {
+    closeConflictModal();
+    const status = document.getElementById("lookup-status");
+    status.textContent = "All conflicts resolved.";
+    setTimeout(() => status.textContent = '', 3000);
+  }
+}
+
+async function keepAllConflicts() {
+  closeConflictModal();
+}
+
+async function useAllConflicts() {
+  await Promise.allSettled(_conflictData.map(item => applyBatteryType(item.entity_id, item.suggested_type)));
+  closeConflictModal();
+  renderTable();
+  renderTypeFilter();
+  const status = document.getElementById("lookup-status");
+  status.textContent = "All conflicts updated.";
+  setTimeout(() => status.textContent = '', 3000);
+}
+
+async function applyBatteryType(entityId, btype) {
+  const idx = _devices.findIndex(d => d.entity_id === entityId);
+  if (idx !== -1) _devices[idx].battery_type = btype;
+  try {
+    await fetch(BASE + "/api/device/" + encodeURIComponent(entityId), {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({battery_type: btype}),
+    });
+  } catch {}
+}
+
+function closeConflictModal() {
+  document.getElementById("conflict-modal").classList.remove("open");
+  _conflictData = [];
+}
+
+document.getElementById("conflict-modal").addEventListener("click", e => {
+  if (e.target.id === "conflict-modal") closeConflictModal();
+});
+
 init();
 </script>
 </body>

@@ -1,5 +1,11 @@
 # Battery Sentinel Changelog
 
+## 2026.04.11
+- Battery type auto-lookup: new "Look Up Battery Types" button in Settings > General queries the Battery Notes community database (maintained by andrew-codechimp) and suggests battery types based on each device's manufacturer and model from the HA device registry
+- Devices with no type set are updated automatically in the background; a brief status message shows how many were filled in
+- Devices where your existing type differs from the database are shown in a conflict modal with per-row "Keep Mine" / "Use DB" buttons and bulk "Keep All Mine" / "Use All Database" options in the footer
+- Fixed: device_id was not being passed through merge_entities into the device cache; this caused the lookup to silently find no matches and would have affected any future feature relying on device_id
+
 ## 2026.04.10
 - Hide device: the Delete button in the device panel now hides the device instead of removing it from storage, preventing it from reappearing on the next scan; hidden devices are excluded from the list and do not trigger any alerts or notifications
 - Restore hidden devices: a collapsible "Hidden devices (N)" section appears at the bottom of the device list whenever there are hidden devices; each entry has a Restore button that returns it to the main list immediately and a Delete button for permanent removal (with a confirmation prompt noting the device will reappear on the next scan if its entity still exists in HA)

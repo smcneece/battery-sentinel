@@ -132,6 +132,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
             **devices[eid],
             "state": entity["state"],
             "area": entity.get("area", ""),
+            "device_id": entity.get("device_id", ""),
         })
 
     return new_eids, sorted(result, key=_sort_key)

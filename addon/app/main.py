@@ -12,7 +12,7 @@ import storage
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.04.10"
+VERSION = "2026.04.11"
 
 _cache: list = []
 _startup_logged = False
@@ -273,6 +273,29 @@ async def handle_api_device_restore(request):
         return web.Response(status=400, text="Bad request")
 
 
+async def handle_api_battery_lookup(request):
+    try:
+        registry = await ha_api.get_device_registry()
+        db = await ha_api.fetch_battery_notes_db()
+        if not db:
+            return web.Response(status=502, text="Could not fetch Battery Notes database")
+        auto_fill, conflicts = ha_api.lookup_battery_types(_cache, registry, db)
+        for item in auto_fill:
+            storage.save_device(item["entity_id"], {"battery_type": item["suggested_type"]})
+            for i, d in enumerate(_cache):
+                if d["entity_id"] == item["entity_id"]:
+                    _cache[i]["battery_type"] = item["suggested_type"]
+                    break
+        _LOGGER.info("Battery lookup: %d auto-filled, %d conflicts", len(auto_fill), len(conflicts))
+        return web.Response(
+            text=json.dumps({"auto_fill": auto_fill, "conflicts": conflicts}),
+            content_type="application/json",
+        )
+    except Exception:
+        _LOGGER.exception("Battery lookup failed")
+        return web.Response(status=500, text="Lookup failed")
+
+
 async def handle_api_device_post(request):
     entity_id = request.match_info["entity_id"]
     try:
@@ -319,6 +342,7 @@ def main():
     app.router.add_post("/api/device/{entity_id}/restore",  handle_api_device_restore)
     app.router.add_delete("/api/device/{entity_id}/purge",  handle_api_device_purge)
     app.router.add_get("/api/hidden-devices",               handle_api_hidden_devices)
+    app.router.add_post("/api/battery-lookup",              handle_api_battery_lookup)
     app.router.add_post("/api/rename/{entity_id}",          handle_api_rename)
 
     port = int(os.environ.get("INGRESS_PORT", 8099))

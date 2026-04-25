@@ -141,6 +141,116 @@ async def get_notify_services() -> list:
         return []
 
 
+# ── Battery Notes lookup ───────────────────────────────────────────────
+
+_BATTERY_NOTES_URL = (
+    "https://raw.githubusercontent.com/andrew-codechimp/HA-Battery-Notes"
+    "/main/library/library.json"
+)
+
+
+async def get_device_registry() -> dict:
+    """Returns dict of device_id -> {manufacturer, model} for all HA devices."""
+    token = os.environ.get("SUPERVISOR_TOKEN", "")
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.ws_connect(_HA_WS_URL) as ws:
+                msg = await asyncio.wait_for(ws.receive_json(), timeout=5)
+                if msg.get("type") != "auth_required":
+                    return {}
+                await ws.send_json({"type": "auth", "access_token": token})
+                msg = await asyncio.wait_for(ws.receive_json(), timeout=5)
+                if msg.get("type") != "auth_ok":
+                    return {}
+                await ws.send_json({"id": 1, "type": "config/device_registry/list"})
+                msg = await asyncio.wait_for(ws.receive_json(), timeout=10)
+                if not msg.get("success"):
+                    return {}
+                return {
+                    dev["id"]: {
+                        "manufacturer": dev.get("manufacturer") or "",
+                        "model":        dev.get("model") or "",
+                    }
+                    for dev in msg.get("result", [])
+                    if dev.get("id")
+                }
+    except asyncio.TimeoutError:
+        _LOGGER.error("Timeout fetching device registry")
+        return {}
+    except Exception:
+        _LOGGER.exception("Failed to fetch device registry")
+        return {}
+
+
+async def fetch_battery_notes_db() -> list:
+    """Fetch the Battery Notes community database JSON from GitHub."""
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                _BATTERY_NOTES_URL,
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as resp:
+                if resp.status != 200:
+                    _LOGGER.warning("Battery Notes DB returned HTTP %s", resp.status)
+                    return []
+                raw = await resp.json(content_type=None)
+        if isinstance(raw, dict):
+            return raw.get("devices", raw.get("data", []))
+        if isinstance(raw, list):
+            return raw
+        return []
+    except Exception:
+        _LOGGER.exception("Failed to fetch Battery Notes database")
+        return []
+
+
+def _normalize_type(s: str) -> str:
+    return re.sub(r'[\s\-]', '', s).upper()
+
+
+def lookup_battery_types(devices: list, registry: dict, db: list) -> tuple:
+    """Match devices against the Battery Notes DB.
+    Returns (auto_fill, conflicts) — lists of {entity_id, name, current_type, suggested_type}.
+    auto_fill: no type set, db has a match.
+    conflicts: type already set but differs from db suggestion.
+    """
+    db_lookup: dict = {}
+    for entry in db:
+        mfr   = (entry.get("manufacturer") or "").strip().lower()
+        mdl   = (entry.get("model")        or "").strip().lower()
+        btype = (entry.get("battery_type") or "").strip()
+        if mfr and mdl and btype:
+            db_lookup[(mfr, mdl)] = btype
+
+    auto_fill: list = []
+    conflicts: list = []
+    for device in devices:
+        did = device.get("device_id", "")
+        if not did:
+            continue
+        reg = registry.get(did, {})
+        mfr = (reg.get("manufacturer") or "").strip().lower()
+        mdl = (reg.get("model")        or "").strip().lower()
+        if not mfr or not mdl:
+            continue
+        suggested = db_lookup.get((mfr, mdl))
+        if not suggested:
+            continue
+        current = device.get("battery_type", "")
+        row = {
+            "entity_id":      device["entity_id"],
+            "name":           device["name"],
+            "current_type":   current,
+            "suggested_type": suggested,
+        }
+        if not current:
+            auto_fill.append(row)
+        elif _normalize_type(current) != _normalize_type(suggested):
+            conflicts.append(row)
+
+    return auto_fill, conflicts
+
+
 # ── Helpers ────────────────────────────────────────────────────────────
 
 def device_is_low(device: dict) -> bool:

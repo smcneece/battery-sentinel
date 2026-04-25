@@ -1,6 +1,6 @@
 name: Battery Sentinel
 description: Monitor and manage battery-powered devices in Home Assistant
-version: "2026.04.10"
+version: "2026.04.11"
 slug: battery_sentinel
 init: false
 arch:

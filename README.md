@@ -24,6 +24,8 @@ Dead batteries break automations. Battery Sentinel finds every battery-powered d
 
 ![Daily Report Email](images/email.png)
 
+![Battery Type Conflict Modal](images/conflict-modal.png)
+
 ---
 
 ## Features
@@ -121,6 +123,7 @@ sequence:
 ### Settings
 - All configuration through the built-in Settings tab; no YAML to edit
 - Battery type list is fully manageable: add or remove types
+- **Look Up Battery Types** button queries the [Battery Notes](https://github.com/andrew-codechimp/HA-Battery-Notes) community database and auto-fills missing battery types based on each device's manufacturer and model; devices where your existing type differs from the database are shown in a conflict modal with per-row and bulk resolve options
 - Column visibility card — checkboxes to show or hide each column in the device list; saved across browser sessions
 - Scan Now button for an immediate manual refresh
 - Card-based layout fills the screen on desktop, wraps on mobile
@@ -185,6 +188,7 @@ All configuration is done within the add-on UI. There is no YAML to edit.
 | Setting | Default | Description |
 |---------|---------|-------------|
 | Battery types | AA, AAA, C, 9V, CR2032, CR2025, CR123A, CR2, 18650 | Managed list available in the per-device dropdown |
+| Look Up Battery Types | button | Queries the Battery Notes community database to auto-fill missing types; shows a conflict modal for devices where your type differs from the database |
 | Check interval | 10 min | How often the add-on scans for low batteries and updates the notification |
 | Scan Now | button | Triggers an immediate refresh of all device data |
 
@@ -272,6 +276,10 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 ## Contributors
 
 - [Marc Easen](https://github.com/Easen) — responsive mobile/tablet layout and HTML extraction into a standalone file
+
+## Acknowledgments
+
+- [andrew-codechimp](https://github.com/andrew-codechimp) — maintains the [Battery Notes](https://github.com/andrew-codechimp/HA-Battery-Notes) community database that powers the battery type auto-lookup feature
 
 ---
 
