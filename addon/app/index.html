@@ -272,9 +272,18 @@
         <input type="checkbox" id="setting-notify-new-device">
         <label for="setting-notify-new-device">Alert when a new battery device is discovered</label>
       </div>
-      <div class="notify-row" style="margin-bottom:.85rem">
+      <div class="notify-row" style="margin-bottom:.5rem">
         <input type="checkbox" id="setting-notify-unavailable">
         <label for="setting-notify-unavailable">Alert when a battery device goes unavailable or unknown</label>
+      </div>
+      <div class="setting-row" style="margin-bottom:.85rem;padding-left:1.6rem">
+        <label style="font-size:.85rem;color:#888">Alert delay</label>
+        <p style="font-size:.8rem">Wait this many minutes before sending the offline alert. Devices that recover before the delay expires are silently ignored. A recovery alert is sent when the device comes back online.</p>
+        <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
+          <input type="number" id="setting-unavailable-delay" min="0" max="60" step="1"
+            style="width:5rem;background:#111;border:1px solid #333;border-radius:4px;color:#e0e0e0;padding:.35rem .5rem;font-size:.9rem">
+          <span style="color:#888;font-size:.9rem">minutes (0 = immediate)</span>
+        </div>
       </div>
       <div class="setting-row">
         <label>Email notify service</label>
@@ -295,7 +304,7 @@
     </div>
 
     <div class="settings-card">
-      <h3>Daily Report</h3>
+      <h3>Daily Email Report</h3>
       <div class="notify-row">
         <input type="checkbox" id="setting-daily-enabled">
         <label for="setting-daily-enabled">Send daily battery report email</label>
@@ -320,7 +329,7 @@
         <label for="setting-include-battery-type">Include battery type in reports and notifications</label>
       </div>
       <div class="scan-bar" style="margin-top:1rem">
-        <button class="btn btn-secondary" onclick="sendReportNow()">Send Report Now</button>
+        <button class="btn btn-secondary" onclick="sendReportNow()">Send Email Report Now</button>
         <span class="scan-status" id="report-status"></span>
       </div>
     </div>
@@ -349,6 +358,7 @@
       <div style="flex:1;min-width:0">
         <input type="text" class="modal-name-input" id="modal-name-input" title="Click to rename in Home Assistant">
         <div class="entity-id" id="modal-entity" style="margin-top:.2rem"></div>
+        <div class="entity-id" id="modal-hw-info" style="margin-top:.15rem"></div>
       </div>
       <button class="modal-close" onclick="closeModal()" title="Close">&times;</button>
     </div>
@@ -808,6 +818,8 @@ function openModal(eid) {
 
   document.getElementById("modal-name-input").value    = d.name;
   document.getElementById("modal-entity").textContent  = eid;
+  const hwParts = [d.manufacturer, d.model].filter(Boolean);
+  document.getElementById("modal-hw-info").textContent = hwParts.join(" | ");
   document.getElementById("modal-notes").value         = d.notes || '';
   document.getElementById("modal-replaced").value      = d.last_replaced || '';
 
@@ -1086,8 +1098,9 @@ async function saveSettings() {
   _settings.default_threshold      = parseInt(document.getElementById("setting-threshold").value, 10);
   _settings.notify_persistent      = document.getElementById("setting-notify-persistent").checked;
   _settings.notify_new_device      = document.getElementById("setting-notify-new-device").checked;
-  _settings.notify_unavailable     = document.getElementById("setting-notify-unavailable").checked;
-  _settings.check_interval         = Math.max(1, parseInt(document.getElementById("setting-check-interval").value, 10) || 10);
+  _settings.notify_unavailable       = document.getElementById("setting-notify-unavailable").checked;
+  _settings.notify_unavailable_delay = Math.max(0, parseInt(document.getElementById("setting-unavailable-delay").value, 10) || 0);
+  _settings.check_interval           = Math.max(1, parseInt(document.getElementById("setting-check-interval").value, 10) || 10);
   _settings.notify_email_service          = document.getElementById("setting-notify-service").value;
   _settings.notify_mobile_default_service = document.getElementById("setting-mobile-default").value;
   _settings.notify_script                 = document.getElementById("setting-notify-script").value;
@@ -1137,6 +1150,7 @@ async function init() {
     document.getElementById("setting-notify-persistent").checked = _settings.notify_persistent !== false;
     document.getElementById("setting-notify-new-device").checked = _settings.notify_new_device !== false;
     document.getElementById("setting-notify-unavailable").checked = !!_settings.notify_unavailable;
+    document.getElementById("setting-unavailable-delay").value  = _settings.notify_unavailable_delay ?? 5;
     document.getElementById("setting-check-interval").value     = _settings.check_interval || 10;
     document.getElementById("setting-notify-to").value         = _settings.notify_email_to || '';
     document.getElementById("setting-notify-cc").value         = _settings.notify_email_cc || '';
@@ -1146,9 +1160,11 @@ async function init() {
     document.getElementById("setting-daily-include").value          = _settings.daily_report_include_all ? 'all' : 'low';
     document.getElementById("setting-include-battery-type").checked = !!_settings.report_include_battery_type;
 
+    const _emailKeywords = ["gmail", "smtp", "email", "mail", "sendgrid", "mailgun"];
+    const emailSvcs = _notifyServices.filter(s => _emailKeywords.some(k => s.toLowerCase().includes(k)));
     const svcEl = document.getElementById("setting-notify-service");
     svcEl.innerHTML = '<option value="">-- None --</option>' +
-      _notifyServices.map(s => `<option value="${s}"${_settings.notify_email_service === s ? ' selected' : ''}>${s}</option>`).join('');
+      emailSvcs.map(s => `<option value="${s}"${_settings.notify_email_service === s ? ' selected' : ''}>${s}</option>`).join('');
 
     const mobileSvcs = _notifyServices.filter(s => s.startsWith("mobile_app_"));
     const mobEl = document.getElementById("setting-mobile-default");

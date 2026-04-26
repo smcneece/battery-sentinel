@@ -29,6 +29,24 @@ def _clean_name(name: str) -> str:
 
 # ── HA data fetchers ───────────────────────────────────────────────────
 
+async def get_ha_timezone() -> str:
+    """Fetch the HA configured timezone string (e.g. 'America/Denver')."""
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"{HA_API_URL}/config",
+                headers=_headers(),
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as resp:
+                if resp.status != 200:
+                    return ""
+                data = await resp.json()
+                return data.get("time_zone", "")
+    except Exception:
+        _LOGGER.exception("Failed to fetch HA config for timezone")
+        return ""
+
+
 async def get_battery_entities():
     try:
         async with aiohttp.ClientSession() as session:
@@ -143,10 +161,7 @@ async def get_notify_services() -> list:
 
 # ── Battery Notes lookup ───────────────────────────────────────────────
 
-_BATTERY_NOTES_URL = (
-    "https://raw.githubusercontent.com/andrew-codechimp/HA-Battery-Notes"
-    "/main/library/library.json"
-)
+_BATTERY_NOTES_PATH = os.path.join(os.path.dirname(__file__), "library.json")
 
 
 async def get_device_registry() -> dict:
@@ -182,25 +197,18 @@ async def get_device_registry() -> dict:
         return {}
 
 
-async def fetch_battery_notes_db() -> list:
-    """Fetch the Battery Notes community database JSON from GitHub."""
+def fetch_battery_notes_db() -> list:
+    """Load the bundled Battery Notes community database JSON."""
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                _BATTERY_NOTES_URL,
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as resp:
-                if resp.status != 200:
-                    _LOGGER.warning("Battery Notes DB returned HTTP %s", resp.status)
-                    return []
-                raw = await resp.json(content_type=None)
+        with open(_BATTERY_NOTES_PATH, "r", encoding="utf-8") as f:
+            raw = json.load(f)
         if isinstance(raw, dict):
             return raw.get("devices", raw.get("data", []))
         if isinstance(raw, list):
             return raw
         return []
     except Exception:
-        _LOGGER.exception("Failed to fetch Battery Notes database")
+        _LOGGER.exception("Failed to load bundled Battery Notes database")
         return []
 
 
@@ -437,6 +445,69 @@ async def fire_unavailable_notification(devices: list, settings: dict):
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
         if targets:
             html = _build_unavailable_html(devices, datetime.datetime.now())
+            await _fire_notify_service(service, title, message, targets, html=html)
+
+
+def _build_recovery_html(devices: list, now: datetime.datetime) -> str:
+    timestamp = now.strftime("%B %d, %Y at %I:%M %p")
+    header_row = (
+        "<tr style='background:#f8f8f8'>"
+        "<th style='padding:7px 14px;text-align:left;color:#aaa;font-weight:normal;font-size:.82em;border-bottom:1px solid #eee'>Device</th>"
+        "<th style='padding:7px 14px;text-align:left;color:#aaa;font-weight:normal;font-size:.82em;border-bottom:1px solid #eee'>Entity ID</th>"
+        "<th style='padding:7px 14px;text-align:left;color:#aaa;font-weight:normal;font-size:.82em;border-bottom:1px solid #eee'>Room</th>"
+        "</tr>"
+    )
+    rows = "".join(
+        f"<tr style='background:{'#f9f9f9' if i % 2 == 0 else '#fff'}'>"
+        f"<td style='padding:7px 14px;color:#222'>{d['name']}</td>"
+        f"<td style='padding:7px 14px;color:#888;font-size:.85em'>{d['entity_id']}</td>"
+        f"<td style='padding:7px 14px;color:#666;font-size:.9em'>{d.get('area', '')}</td>"
+        f"</tr>"
+        for i, d in enumerate(devices)
+    )
+    return (
+        f"<!DOCTYPE html><html><body style='margin:0;padding:20px;background:#efefef;"
+        f"font-family:Arial,Helvetica,sans-serif'>"
+        f"<table width='100%' cellpadding='0' cellspacing='0' style='max-width:640px;margin:0 auto;"
+        f"border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.15)'>"
+        f"<tr><td style='background:#1a1a2e;padding:18px 20px'>"
+        f"<img src='{_ICON_URL}' width='30' height='30' style='vertical-align:middle;border-radius:4px' alt=''>"
+        f"<span style='color:#fff;font-size:1.1em;font-weight:bold;vertical-align:middle;margin-left:8px'>Battery Sentinel</span>"
+        f"<div style='color:#888;font-size:.8em;margin-top:5px;padding-left:38px'>Device Recovery Alert &mdash; {timestamp}</div>"
+        f"</td></tr>"
+        f"<tr><td style='background:#fff;padding:4px 0'>"
+        f"<table width='100%' cellpadding='0' cellspacing='0'>"
+        f"<tr><td colspan='3' style='padding:16px 14px 6px;font-weight:bold;color:#2a7d2a;"
+        f"border-bottom:2px solid #2a7d2a;font-size:.92em'>"
+        f"&#10003; Back Online <span style='font-weight:normal;color:#aaa'>({len(devices)})</span></td></tr>"
+        f"{header_row}{rows}"
+        f"</table></td></tr>"
+        f"<tr><td style='background:#f5f5f5;padding:12px 20px;text-align:center;"
+        f"border-top:1px solid #e0e0e0'>"
+        f"<span style='color:#aaa;font-size:.78em'>"
+        f"<a href='{_REPO_URL}' style='color:#58a6ff;text-decoration:none'>Battery Sentinel</a>"
+        f" &mdash; Home Assistant Battery Monitor</span>"
+        f"</td></tr></table></body></html>"
+    )
+
+
+async def fire_recovery_notification(devices: list, settings: dict):
+    title = f"Battery Sentinel: {len(devices)} device(s) back online"
+    lines = [f"- {d['name']} ({d['entity_id']})" for d in devices]
+    message = "\n".join(lines)
+
+    if settings.get("notify_persistent", True):
+        await _fire_persistent(title, message)
+
+    service = settings.get("notify_email_service", "").strip()
+    if service:
+        addr = settings.get("notify_email_to", "")
+        targets = [a.strip() for a in addr.split(",") if a.strip()] if addr else []
+        cc = settings.get("notify_email_cc", "")
+        if cc:
+            targets.extend(a.strip() for a in cc.split(",") if a.strip())
+        if targets:
+            html = _build_recovery_html(devices, datetime.datetime.now())
             await _fire_notify_service(service, title, message, targets, html=html)
 
 

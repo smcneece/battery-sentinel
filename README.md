@@ -50,6 +50,7 @@ Dead batteries break automations. Battery Sentinel finds every battery-powered d
 Click any device in the list to open its detail panel.
 
 - **Inline rename**: click the device name at the top of the panel to edit it; saving writes the new friendly name back to Home Assistant via the entity registry (entity ID is unchanged, so automations and dashboards are unaffected). Note: this renames the battery *entity* only, not the parent device; the device name in HA's device registry is separate and will not change
+- Manufacturer and model number shown below the entity ID (pulled from the HA device registry; blank if the device has no registry entry)
 - Battery type dropdown (AA, AAA, C, 9V, CR2032, CR2025, CR123A, CR2, 18650, or custom)
 - Per-device alert threshold (5% to 60% in 5% increments, or Ignore)
 - Notes field for free-text information about the device or its battery
@@ -66,7 +67,7 @@ Battery Sentinel supports three notification channels, each configurable globall
 - Each device has individual UI / Email / Mobile toggles in the device list and in the device panel; column header checkboxes let you enable or disable a channel for all devices at once
 - Configurable check interval (default 10 minutes)
 - Optional alert when a new battery device is discovered
-- Optional alert when a battery device goes unavailable or unknown (useful for Z-Wave/Zigbee devices that stop reporting after firmware updates or radio changes)
+- Optional alert when a battery device goes unavailable or unknown (useful for Z-Wave/Zigbee devices that stop reporting after firmware updates or radio changes); configurable delay (default 5 minutes) filters out brief communication blips before firing; a matching recovery notification is sent when the device comes back online
 
 ### Email
 - Select any HA notify service from a dropdown (populated from your installed integrations)
@@ -207,7 +208,8 @@ All configuration is done within the add-on UI. There is no YAML to edit.
 | Default alert threshold | 15% | Alert level applied to newly discovered devices |
 | UI notification | On | Creates/updates a single HA persistent notification listing all low batteries |
 | New device alert | On | Fires a notification when a new battery device is first discovered |
-| Unavailable device alert | Off | Fires a notification when a battery device transitions to unavailable or unknown state |
+| Unavailable device alert | Off | Fires a notification when a battery device transitions to unavailable or unknown state; paired with a recovery notification when it comes back online |
+| Unavailable alert delay | 5 min | Minutes to wait before firing the offline alert; devices that recover before the delay expires are silently ignored; set to 0 for immediate alerts |
 | Email notify service | none | Dropdown of your installed HA notify services |
 | Default To address | none | Primary email recipient for all alerts and reports |
 | CC addresses | none | Additional recipients, comma-separated |

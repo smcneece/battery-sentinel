@@ -1,5 +1,14 @@
 # Battery Sentinel Changelog
 
+## 2026.04.13
+- Device modal now shows manufacturer and model number (pulled from the HA device registry) below the entity ID, so you can identify hardware without leaving Battery Sentinel
+- Recovery notification: when a device that triggered an unavailable alert comes back online, a separate bell and email notification is sent confirming it has recovered
+- Configurable unavailable alert delay: a new "Alert delay" field (default 5 minutes) in Notification Settings lets you set how long a device must stay offline before the alert fires; devices that recover before the delay expires are silently ignored, avoiding noise from brief communication blips; set to 0 for immediate alerts as before
+- Fixed: daily report send time now uses the HA configured timezone instead of the container's UTC clock; users outside UTC will no longer see the report fire at the wrong local time
+- Email notify service dropdown now filters out non-email services (persistent_notification, mobile_app_*, alexa_media_*) to prevent misconfiguration
+- Renamed "Daily Report" section and button to "Daily Email Report" / "Send Email Report Now" to make clear it requires an email service
+- Battery Notes community database is now bundled with the add-on; no external network calls are made during the battery type lookup
+
 ## 2026.04.12
 - Fixed: battery types auto-filled by the lookup were not being added to the battery type list, causing them to appear blank in the device list and as "(custom)" in the device detail panel
 - The lookup now sweeps all devices in the cache for orphaned types (set on devices but missing from the list) and adds them in one pass, cleaning up types set by the previous broken run

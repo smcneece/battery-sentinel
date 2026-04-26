@@ -19,6 +19,7 @@ DEFAULT_SETTINGS = {
     "notify_script": "",
     "notify_new_device": True,
     "notify_unavailable": False,
+    "notify_unavailable_delay": 5,
     "check_interval": 10,
     "daily_report_enabled": False,
     "daily_report_time": "08:00",
@@ -67,7 +68,7 @@ def save_settings(updates: dict) -> dict:
         "notify_new_device", "check_interval",
         "daily_report_enabled", "daily_report_time", "daily_report_include_all",
         "daily_report_send_if_ok", "report_include_battery_type",
-        "notify_unavailable",
+        "notify_unavailable", "notify_unavailable_delay",
     )
     for key in allowed:
         if key in updates:
@@ -96,6 +97,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
                 "alert_threshold": default_threshold,
                 "alert_sent": False,
                 "unavailable_sent": False,
+                "unavailable_since": None,
                 "hidden": False,
                 "last_replaced": None,
                 "notify_bell": True,
@@ -111,6 +113,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
             devices[eid].setdefault("alert_threshold", default_threshold)
             devices[eid].setdefault("alert_sent", False)
             devices[eid].setdefault("unavailable_sent", False)
+            devices[eid].setdefault("unavailable_since", None)
             devices[eid].setdefault("hidden", False)
             devices[eid].setdefault("notify_bell", True)
             devices[eid].setdefault("notify_email", True)
@@ -130,9 +133,11 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
             continue
         result.append({
             **devices[eid],
-            "state": entity["state"],
-            "area": entity.get("area", ""),
-            "device_id": entity.get("device_id", ""),
+            "state":        entity["state"],
+            "area":         entity.get("area", ""),
+            "device_id":    entity.get("device_id", ""),
+            "manufacturer": entity.get("manufacturer", ""),
+            "model":        entity.get("model", ""),
         })
 
     return new_eids, sorted(result, key=_sort_key)
@@ -191,6 +196,13 @@ def set_unavailable_sent(entity_id: str, sent: bool):
     data = _load()
     if entity_id in data.get("devices", {}):
         data["devices"][entity_id]["unavailable_sent"] = sent
+        _save(data)
+
+
+def set_unavailable_since(entity_id: str, value):
+    data = _load()
+    if entity_id in data.get("devices", {}):
+        data["devices"][entity_id]["unavailable_since"] = value
         _save(data)
 
 

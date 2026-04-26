@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import os
+import zoneinfo
 
 from aiohttp import web
 
@@ -12,22 +13,41 @@ import storage
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.04.12"
+VERSION = "2026.04.13"
 
 _cache: list = []
 _startup_logged = False
 _first_run = True
+_ha_tz: datetime.timezone = None
+
+
+def _local_now() -> datetime.datetime:
+    if _ha_tz:
+        return datetime.datetime.now(_ha_tz).replace(tzinfo=None)
+    return datetime.datetime.now()
 
 
 async def do_refresh():
-    global _cache, _startup_logged, _first_run
+    global _cache, _startup_logged, _first_run, _ha_tz
     _LOGGER.info("Refreshing battery entities from HA")
+    if _ha_tz is None:
+        tz_name = await ha_api.get_ha_timezone()
+        if tz_name:
+            try:
+                _ha_tz = zoneinfo.ZoneInfo(tz_name)
+                _LOGGER.info("Using HA timezone: %s", tz_name)
+            except Exception:
+                _LOGGER.warning("Unknown timezone '%s', falling back to system time", tz_name)
     live = await ha_api.get_battery_entities()
     metadata = await ha_api.get_entity_metadata()
+    registry = await ha_api.get_device_registry()
     for entity in live:
         meta = metadata.get(entity["entity_id"], {})
         entity["area"]      = meta.get("area", "")
         entity["device_id"] = meta.get("device_id", "")
+        dev = registry.get(entity["device_id"], {}) if entity["device_id"] else {}
+        entity["manufacturer"] = dev.get("manufacturer", "")
+        entity["model"]        = dev.get("model", "")
 
     # Deduplicate battery sensors that share a physical device
     by_device = {}
@@ -117,19 +137,47 @@ async def do_refresh():
                         _cache[i]["script_last_run"] = today
                         break
 
+    delay_seconds = int(settings.get("notify_unavailable_delay", 5)) * 60
+    now = datetime.datetime.now()
+
     newly_unavailable = []
+    newly_recovered = []
     for device in _cache:
+        eid = device["entity_id"]
         is_unavail = device["state"] in ("unavailable", "unknown")
-        if is_unavail and not device.get("unavailable_sent"):
-            storage.set_unavailable_sent(device["entity_id"], True)
-            newly_unavailable.append(device)
-        elif not is_unavail and device.get("unavailable_sent"):
-            storage.set_unavailable_sent(device["entity_id"], False)
+
+        if is_unavail:
+            if not device.get("unavailable_since"):
+                ts = now.isoformat()
+                storage.set_unavailable_since(eid, ts)
+                device["unavailable_since"] = ts
+            if not device.get("unavailable_sent"):
+                try:
+                    since = datetime.datetime.fromisoformat(device["unavailable_since"])
+                    if (now - since).total_seconds() >= delay_seconds:
+                        storage.set_unavailable_sent(eid, True)
+                        device["unavailable_sent"] = True
+                        newly_unavailable.append(device)
+                except Exception:
+                    pass
+        else:
+            if device.get("unavailable_since"):
+                storage.set_unavailable_since(eid, None)
+                device["unavailable_since"] = None
+            if device.get("unavailable_sent"):
+                storage.set_unavailable_sent(eid, False)
+                device["unavailable_sent"] = False
+                newly_recovered.append(device)
+
     if newly_unavailable and settings.get("notify_unavailable") and not _first_run:
         _LOGGER.info("Unavailable alert: %d device(s)", len(newly_unavailable))
         await ha_api.fire_unavailable_notification(newly_unavailable, settings)
     elif newly_unavailable and _first_run:
         _LOGGER.info("Suppressed unavailable alert for %d device(s) on first scan (integration startup)", len(newly_unavailable))
+
+    if newly_recovered and settings.get("notify_unavailable"):
+        _LOGGER.info("Recovery alert: %d device(s) back online", len(newly_recovered))
+        await ha_api.fire_recovery_notification(newly_recovered, settings)
 
     _first_run = False
 
@@ -139,7 +187,7 @@ async def do_refresh():
         if not settings.get("notify_email_service"):
             _LOGGER.warning("Daily report enabled but no email service configured — skipping")
         else:
-            now = datetime.datetime.now()
+            now = _local_now()
             try:
                 h, m = map(int, settings.get("daily_report_time", "08:00").split(":"))
                 report_dt = now.replace(hour=h, minute=m, second=0, microsecond=0)
@@ -276,9 +324,9 @@ async def handle_api_device_restore(request):
 async def handle_api_battery_lookup(request):
     try:
         registry = await ha_api.get_device_registry()
-        db = await ha_api.fetch_battery_notes_db()
+        db = ha_api.fetch_battery_notes_db()
         if not db:
-            return web.Response(status=502, text="Could not fetch Battery Notes database")
+            return web.Response(status=502, text="Could not load Battery Notes database")
         auto_fill, conflicts = ha_api.lookup_battery_types(_cache, registry, db)
         for item in auto_fill:
             storage.save_device(item["entity_id"], {"battery_type": item["suggested_type"]})
