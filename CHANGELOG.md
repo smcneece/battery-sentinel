@@ -1,5 +1,12 @@
 # Battery Sentinel Changelog
 
+## 2026.04.15
+- Daily Email Report now has day-of-week scheduling: seven checkboxes (Mon through Sun) let you pick which days the report sends; defaults to all days so existing behavior is unchanged
+- Fixed: email notify service dropdown now excludes only persistent_notification, mobile_app_*, and alexa_media_*; ISP-branded and custom-named email services such as zoom_internet were incorrectly filtered out in 2026.04.13
+- Fixed: device list now re-renders immediately after saving settings, so changes to global script and other inherited settings are reflected without a manual page refresh
+- Scan Now description updated to clarify it refreshes battery levels and discovers new devices without re-triggering notifications for already-flagged devices
+- Check interval description now shows the valid range (1 to 120 minutes)
+
 ## 2026.04.13
 - Device modal now shows manufacturer and model number (pulled from the HA device registry) below the entity ID, so you can identify hardware without leaving Battery Sentinel
 - Recovery notification: when a device that triggered an unavailable alert comes back online, a separate bell and email notification is sent confirming it has recovered

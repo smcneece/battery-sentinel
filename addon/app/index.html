@@ -207,10 +207,10 @@
         <button class="btn btn-secondary" onclick="scanNow()">Scan Now</button>
         <span class="scan-status" id="scan-status"></span>
       </div>
-      <p class="muted" style="font-size:.82rem;margin-bottom:1.25rem">Refreshes automatically per the check interval. Use Scan Now to refresh immediately.</p>
+      <p class="muted" style="font-size:.82rem;margin-bottom:1.25rem">Refreshes battery levels and discovers new devices. Notifications only fire if a device newly crosses its threshold.</p>
       <div class="setting-row">
         <label>Check interval (minutes)</label>
-        <p>How often to scan and update the low-battery notification.</p>
+        <p>How often Battery Sentinel polls HA for new devices and current battery levels. Range: 1 to 120 minutes.</p>
         <input type="number" id="setting-check-interval" min="1" max="120" style="max-width:80px" value="10">
       </div>
       <div class="setting-row">
@@ -287,7 +287,7 @@
       </div>
       <div class="setting-row">
         <label>Email notify service</label>
-        <p>Which HA notify service sends email alerts.</p>
+        <p>Which HA notify service sends email alerts. Select a Gmail, SMTP, or similar email-capable service. Do not select persistent_notification.</p>
         <select id="setting-notify-service">
           <option value="">-- None --</option>
         </select>
@@ -316,6 +316,18 @@
       <div class="setting-row" style="margin-top:.85rem">
         <label>Send time</label>
         <input type="time" id="setting-daily-time" style="max-width:130px" value="08:00">
+      </div>
+      <div class="setting-row">
+        <label>Send on</label>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.25rem">
+          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-0"> Mon</label>
+          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-1"> Tue</label>
+          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-2"> Wed</label>
+          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-3"> Thu</label>
+          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-4"> Fri</label>
+          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-5"> Sat</label>
+          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-6"> Sun</label>
+        </div>
       </div>
       <div class="setting-row">
         <label>Include in report</label>
@@ -1109,6 +1121,7 @@ async function saveSettings() {
   _settings.daily_report_enabled    = document.getElementById("setting-daily-enabled").checked;
   _settings.daily_report_send_if_ok = document.getElementById("setting-daily-send-if-ok").checked;
   _settings.daily_report_time      = document.getElementById("setting-daily-time").value;
+  _settings.daily_report_days      = [0,1,2,3,4,5,6].filter(d => document.getElementById("setting-daily-day-"+d).checked);
   _settings.daily_report_include_all    = document.getElementById("setting-daily-include").value === 'all';
   _settings.report_include_battery_type = document.getElementById("setting-include-battery-type").checked;
   try {
@@ -1121,6 +1134,8 @@ async function saveSettings() {
     const status = document.getElementById("settings-status");
     status.textContent = "Saved.";
     setTimeout(() => status.textContent = '', 2500);
+    renderTable();
+    renderTypeFilter();
   } catch {
     alert("Failed to save settings.");
   }
@@ -1157,14 +1172,19 @@ async function init() {
     document.getElementById("setting-daily-enabled").checked    = !!_settings.daily_report_enabled;
     document.getElementById("setting-daily-send-if-ok").checked = !!_settings.daily_report_send_if_ok;
     document.getElementById("setting-daily-time").value        = _settings.daily_report_time || '08:00';
+    const _reportDays = _settings.daily_report_days ?? [0,1,2,3,4,5,6];
+    [0,1,2,3,4,5,6].forEach(d => { document.getElementById("setting-daily-day-"+d).checked = _reportDays.includes(d); });
     document.getElementById("setting-daily-include").value          = _settings.daily_report_include_all ? 'all' : 'low';
     document.getElementById("setting-include-battery-type").checked = !!_settings.report_include_battery_type;
 
-    const _emailKeywords = ["gmail", "smtp", "email", "mail", "sendgrid", "mailgun"];
-    const emailSvcs = _notifyServices.filter(s => _emailKeywords.some(k => s.toLowerCase().includes(k)));
+    const _emailExclude = ["persistent_notification", "hass", "notify", "send_message"];
+    const _emailExcludePrefix = ["mobile_app_", "alexa_media"];
+    const emailSvcs = _notifyServices.filter(s => !_emailExclude.includes(s) && !_emailExcludePrefix.some(p => s.startsWith(p)));
     const svcEl = document.getElementById("setting-notify-service");
+    const savedSvc = _settings.notify_email_service || '';
     svcEl.innerHTML = '<option value="">-- None --</option>' +
-      emailSvcs.map(s => `<option value="${s}"${_settings.notify_email_service === s ? ' selected' : ''}>${s}</option>`).join('');
+      emailSvcs.map(s => `<option value="${s}"${savedSvc === s ? ' selected' : ''}>${s}</option>`).join('') +
+      (savedSvc && !emailSvcs.includes(savedSvc) ? `<option value="${savedSvc}" selected>${savedSvc}</option>` : '');
 
     const mobileSvcs = _notifyServices.filter(s => s.startsWith("mobile_app_"));
     const mobEl = document.getElementById("setting-mobile-default");

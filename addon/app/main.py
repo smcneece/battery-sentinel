@@ -13,7 +13,7 @@ import storage
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.04.13"
+VERSION = "2026.04.15"
 
 _cache: list = []
 _startup_logged = False
@@ -189,14 +189,18 @@ async def do_refresh():
         else:
             now = _local_now()
             try:
-                h, m = map(int, settings.get("daily_report_time", "08:00").split(":"))
-                report_dt = now.replace(hour=h, minute=m, second=0, microsecond=0)
-                today = now.strftime("%Y-%m-%d")
-                if storage.get_last_report_date() == today:
-                    _LOGGER.debug("Daily report already sent today, skipping")
-                elif now >= report_dt:
-                    await ha_api.send_daily_report(_cache, settings)
-                    storage.set_last_report_date(today)
+                report_days = settings.get("daily_report_days", list(range(7)))
+                if now.weekday() not in report_days:
+                    _LOGGER.debug("Daily report not scheduled for today (%s), skipping", now.strftime("%A"))
+                else:
+                    h, m = map(int, settings.get("daily_report_time", "08:00").split(":"))
+                    report_dt = now.replace(hour=h, minute=m, second=0, microsecond=0)
+                    today = now.strftime("%Y-%m-%d")
+                    if storage.get_last_report_date() == today:
+                        _LOGGER.debug("Daily report already sent today, skipping")
+                    elif now >= report_dt:
+                        await ha_api.send_daily_report(_cache, settings)
+                        storage.set_last_report_date(today)
             except Exception:
                 _LOGGER.exception("Daily report check failed")
 

@@ -134,7 +134,7 @@ Battery Sentinel can automatically identify battery types for your devices using
 - All configuration through the built-in Settings tab; no YAML to edit
 - Battery type list is fully manageable: add or remove types
 - Column visibility card — checkboxes to show or hide each column in the device list; saved across browser sessions
-- Scan Now button for an immediate manual refresh
+- Scan Now button to immediately refresh battery levels and discover new devices without waiting for the next check interval
 - Card-based layout fills the screen on desktop, wraps on mobile
 
 ---
@@ -198,8 +198,8 @@ All configuration is done within the add-on UI. There is no YAML to edit.
 |---------|---------|-------------|
 | Battery types | AA, AAA, C, 9V, CR2032, CR2025, CR123A, CR2, 18650 | Managed list available in the per-device dropdown |
 | Look Up Battery Types | button | Queries the Battery Notes community database to auto-fill missing types; shows a conflict modal for devices where your type differs from the database |
-| Check interval | 10 min | How often the add-on scans for low batteries and updates the notification |
-| Scan Now | button | Triggers an immediate refresh of all device data |
+| Check interval | 10 min | How often Battery Sentinel polls HA for new devices and current battery levels (1 to 120 minutes) |
+| Scan Now | button | Refreshes battery levels and discovers new devices immediately; does not re-trigger notifications for devices already flagged |
 
 ### Notifications (Settings tab)
 
@@ -298,7 +298,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 ## Support
 
 - **Issues & bug reports**: [GitHub Issues](https://github.com/smcneece/battery-sentinel/issues)
-- **Feature requests & questions**: [GitHub Discussions](https://github.com/smcneece/battery-sentinel/discussions)
+- **Feature requests & general questions**: [GitHub Issues](https://github.com/smcneece/battery-sentinel/issues)
 - **Community**: [Home Assistant Community Forum](https://community.home-assistant.io/)
 
 ---

@@ -23,6 +23,7 @@ DEFAULT_SETTINGS = {
     "check_interval": 10,
     "daily_report_enabled": False,
     "daily_report_time": "08:00",
+    "daily_report_days": [0, 1, 2, 3, 4, 5, 6],
     "daily_report_include_all": False,
     "daily_report_send_if_ok": False,
     "report_include_battery_type": False,
@@ -66,8 +67,8 @@ def save_settings(updates: dict) -> dict:
         "notify_email_to", "notify_email_cc",
         "notify_mobile_default_service", "notify_script",
         "notify_new_device", "check_interval",
-        "daily_report_enabled", "daily_report_time", "daily_report_include_all",
-        "daily_report_send_if_ok", "report_include_battery_type",
+        "daily_report_enabled", "daily_report_time", "daily_report_days",
+        "daily_report_include_all", "daily_report_send_if_ok", "report_include_battery_type",
         "notify_unavailable", "notify_unavailable_delay",
     )
     for key in allowed:
