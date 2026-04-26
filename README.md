@@ -122,7 +122,7 @@ sequence:
 ```
 
 ### Battery Type Lookup
-Battery Sentinel can automatically identify battery types for your devices by querying the [Battery Notes](https://github.com/andrew-codechimp/HA-Battery-Notes) community database — a crowd-sourced library of thousands of smart home devices and their battery types.
+Battery Sentinel can automatically identify battery types for your devices using the [Battery Notes](https://github.com/andrew-codechimp/HA-Battery-Notes) community database — a crowd-sourced library of thousands of smart home devices and their battery types, maintained by [andrew-codechimp](https://github.com/andrew-codechimp). If the lookup saves you time, consider [buying him a coffee](https://www.buymeacoffee.com/codechimp) -- the database is a significant community effort.
 
 - Click **Look Up Battery Types** in Settings > General to run the lookup
 - Devices with no battery type set are updated automatically in the background; a status message shows how many were filled in
@@ -289,7 +289,9 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ## Acknowledgments
 
-- [andrew-codechimp](https://github.com/andrew-codechimp) — maintains the [Battery Notes](https://github.com/andrew-codechimp/HA-Battery-Notes) community database that powers the battery type auto-lookup feature
+**[andrew-codechimp](https://github.com/andrew-codechimp)** maintains the [Battery Notes](https://github.com/andrew-codechimp/HA-Battery-Notes) community database that powers the battery type auto-lookup feature. It's a massive crowd-sourced effort covering thousands of smart home devices. If Battery Sentinel's auto-lookup saved you from hunting down battery specs, please consider showing some Andrew some appreciation:
+
+[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/codechimp)
 
 ---
 
