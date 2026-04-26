@@ -120,10 +120,18 @@ sequence:
         Entity: {{ entity_id }}
 ```
 
+### Battery Type Lookup
+Battery Sentinel can automatically identify battery types for your devices by querying the [Battery Notes](https://github.com/andrew-codechimp/HA-Battery-Notes) community database — a crowd-sourced library of thousands of smart home devices and their battery types.
+
+- Click **Look Up Battery Types** in Settings > General to run the lookup
+- Devices with no battery type set are updated automatically in the background; a status message shows how many were filled in
+- Devices where your existing type differs from the database are shown in a **conflict modal** — each entry shows your current type vs the database suggestion with per-row **Keep Mine** / **Use DB** buttons
+- Bulk **Keep All Mine** / **Use All Database** buttons in the modal footer resolve everything at once
+- Any new battery types discovered are added to your managed battery type list automatically
+
 ### Settings
 - All configuration through the built-in Settings tab; no YAML to edit
 - Battery type list is fully manageable: add or remove types
-- **Look Up Battery Types** button queries the [Battery Notes](https://github.com/andrew-codechimp/HA-Battery-Notes) community database and auto-fills missing battery types based on each device's manufacturer and model; devices where your existing type differs from the database are shown in a conflict modal with per-row and bulk resolve options
 - Column visibility card — checkboxes to show or hide each column in the device list; saved across browser sessions
 - Scan Now button for an immediate manual refresh
 - Card-based layout fills the screen on desktop, wraps on mobile
