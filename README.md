@@ -5,9 +5,9 @@ Dead batteries break automations. Battery Sentinel finds every battery-powered d
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/smcneece/battery-sentinel)](https://github.com/smcneece/battery-sentinel/releases)
 [![GitHub](https://img.shields.io/github/license/smcneece/battery-sentinel)](LICENSE)
 
-> ⚠️ **Supervisor Required** — Battery Sentinel is a Home Assistant **add-on** and requires a Supervisor-managed installation. It will **not** work on Home Assistant Core (Python package) or Home Assistant Container (Docker-only). If you are running **Home Assistant OS** or **Home Assistant Supervised**, you're good to go.
+> ⚠️ **Supervisor Required**: Battery Sentinel is a Home Assistant **add-on** and requires a Supervisor-managed installation. It will **not** work on Home Assistant Core (Python package) or Home Assistant Container (Docker-only). If you are running **Home Assistant OS** or **Home Assistant Supervised**, you're good to go.
 
-> [![Sponsor](https://img.shields.io/badge/Sponsor-💖-pink)](https://github.com/sponsors/smcneece) — If Battery Sentinel saves you from dead Z-Wave sensors, drained Zigbee devices, or a phone or tablet that's quietly hitting 10% in the background, consider sponsoring! Even a small one-time amount shows appreciation. Check out my [other HA projects](https://github.com/smcneece?tab=repositories) while you're here.
+> [![Sponsor](https://img.shields.io/badge/Sponsor-💖-pink)](https://github.com/sponsors/smcneece) If Battery Sentinel saves you from dead Z-Wave sensors, drained Zigbee devices, or a phone or tablet that's quietly hitting 10% in the background, consider sponsoring! Even a small one-time amount shows appreciation. Check out my [other HA projects](https://github.com/smcneece?tab=repositories) while you're here.
 >
 > ⭐ **Finding this useful?** Star the repo so other HA users can find it!
 > [![GitHub stars](https://img.shields.io/github/stars/smcneece/battery-sentinel?style=social)](https://github.com/smcneece/battery-sentinel/stargazers)
@@ -62,9 +62,9 @@ Click any device in the list to open its detail panel.
 ### Notifications
 Battery Sentinel supports three notification channels, each configurable globally and per device.
 
-- **UI notification** — a single consolidated HA persistent notification listing all currently low batteries, sorted lowest first; updates in place each check cycle and dismisses automatically when all batteries recover
-- **Email** — fires once per device when its threshold is first crossed; resets when the battery recovers
-- **Mobile push** — per-device push notification via any `mobile_app_*` notify service; a global default service can be set in Settings with a per-device override in the device panel
+- **UI notification**: a single consolidated HA persistent notification listing all currently low batteries, sorted lowest first; updates in place each check cycle and dismisses automatically when all batteries recover
+- **Email**: fires once per device when its threshold is first crossed; resets when the battery recovers
+- **Mobile push**: per-device push notification via any `mobile_app_*` notify service; a global default service can be set in Settings with a per-device override in the device panel
 - Each device has individual UI / Email / Mobile toggles in the device list and in the device panel; column header checkboxes let you enable or disable a channel for all devices at once
 - Configurable check interval (default 10 minutes)
 - Optional alert when a new battery device is discovered
@@ -79,13 +79,13 @@ Battery Sentinel supports three notification channels, each configurable globall
 ### Daily Report
 - Scheduled daily email report at a configurable time
 - HTML-formatted email with a header (Battery Sentinel icon + date/time stamp), color-coded battery levels (red/amber/green), and a footer link to the project
-- Full-list mode splits into two sections — **Needs Attention** (below threshold) and **All Batteries** (above threshold) — each sorted lowest battery first
+- Full-list mode splits into two sections: **Needs Attention** (below threshold) and **All Batteries** (above threshold), each sorted lowest battery first
 - Low-only mode sends only the devices below their threshold, sorted lowest first; suppressed automatically when nothing is low (configurable)
 - Optional battery type column in each row
-- **Send Report Now** button in Settings sends the report immediately without waiting for the scheduled time — useful for testing your email setup
+- **Send Report Now** button in Settings sends the report immediately without waiting for the scheduled time; useful for testing your email setup
 
 ### Script Triggers
-Run any Home Assistant script when a device crosses its threshold — useful for Alexa announcements, SMS notifications, flashing lights, or any other automation.
+Run any Home Assistant script when a device crosses its threshold; useful for Alexa announcements, SMS notifications, flashing lights, or any other automation.
 
 - **Global script**: set once in Settings; runs for every device that has no per-device override
 - **Per-device script**: overrides the global for that device; can also be set to *Disabled* to suppress the global for a specific device
@@ -102,7 +102,7 @@ Battery Sentinel passes the following variables to the script automatically:
 | `area` | `Outside` | HA area/room if assigned |
 | `entity_id` | `sensor.back_porch_battery` | HA entity ID |
 
-**Example script** — Alexa announcement with a fallback SMS:
+**Example script**: Alexa announcement with a fallback SMS:
 
 ```yaml
 alias: Battery Sentinel Low Battery Alert
@@ -123,18 +123,18 @@ sequence:
 ```
 
 ### Battery Type Lookup
-Battery Sentinel can automatically identify battery types for your devices using the [Battery Notes](https://github.com/andrew-codechimp/HA-Battery-Notes) community database — a crowd-sourced library of thousands of smart home devices and their battery types, maintained by [andrew-codechimp](https://github.com/andrew-codechimp). The database is bundled locally with the add-on and refreshed weekly -- lookups are instant with no external network calls, but it may not include devices added to the community library in the last few days. If the lookup saves you time, consider [buying him a coffee](https://www.buymeacoffee.com/codechimp) -- the database is a significant community effort.
+Battery Sentinel can automatically identify battery types for your devices using the [Battery Notes](https://github.com/andrew-codechimp/HA-Battery-Notes) community database, a crowd-sourced library of thousands of smart home devices and their battery types maintained by [andrew-codechimp](https://github.com/andrew-codechimp). The database is bundled locally with the add-on and refreshed weekly -- lookups are instant with no external network calls, but it may not include devices added to the community library in the last few days. If the lookup saves you time, consider [buying him a coffee](https://www.buymeacoffee.com/codechimp) -- the database is a significant community effort.
 
 - Click **Look Up Battery Types** in Settings > General to run the lookup
 - Devices with no battery type set are updated automatically in the background; a status message shows how many were filled in
-- Devices where your existing type differs from the database are shown in a **conflict modal** — each entry shows your current type vs the database suggestion with per-row **Keep Mine** / **Use DB** buttons
+- Devices where your existing type differs from the database are shown in a **conflict modal**; each entry shows your current type vs the database suggestion with per-row **Keep Mine** / **Use DB** buttons
 - Bulk **Keep All Mine** / **Use All Database** buttons in the modal footer resolve everything at once
 - Any new battery types discovered are added to your managed battery type list automatically
 
 ### Settings
 - All configuration through the built-in Settings tab; no YAML to edit
 - Battery type list is fully manageable: add or remove types
-- Column visibility card — checkboxes to show or hide each column in the device list; saved across browser sessions
+- Column visibility card: checkboxes to show or hide each column in the device list; saved across browser sessions
 - Scan Now button to immediately refresh battery levels and discover new devices without waiting for the next check interval
 - Card-based layout fills the screen on desktop, wraps on mobile
 
@@ -148,7 +148,7 @@ Battery Sentinel can automatically identify battery types for your devices using
 
 [![Add repository to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fsmcneece%2Fbattery-sentinel)
 
-> ⚠️ **I'm currently unable to confirm this button works on recent HA versions** — it opens the App Store but may not show the pre-filled add repository dialog. I have [filed a bug with Home Assistant](https://github.com/home-assistant/my.home-assistant.io/issues/698). If this button works for you, please let me know in [issues](https://github.com/smcneece/battery-sentinel/issues). In the meantime, use Option B below.
+> ⚠️ **I'm currently unable to confirm this button works on recent HA versions.** It opens the App Store but may not show the pre-filled add repository dialog. I have [filed a bug with Home Assistant](https://github.com/home-assistant/my.home-assistant.io/issues/698). If this button works for you, please let me know in [issues](https://github.com/smcneece/battery-sentinel/issues). In the meantime, use Option B below.
 
 **Option B: Manual repository add** (works on all installations):
 
@@ -168,7 +168,7 @@ Once the repository is added:
 
 ### Manual Installation
 
-> ⚠️ **No automatic updates** — local add-ons are not tracked by the Supervisor. You will not receive update notifications; you must check [GitHub releases](https://github.com/smcneece/battery-sentinel/releases) manually and re-copy files for each new version. The repository install method above is strongly recommended.
+> ⚠️ **No automatic updates**: local add-ons are not tracked by the Supervisor. You will not receive update notifications; you must check [GitHub releases](https://github.com/smcneece/battery-sentinel/releases) manually and re-copy files for each new version. The repository install method above is strongly recommended.
 
 1. Copy the `addon` folder from this repository to `/addons/battery-sentinel/` on your Home Assistant host.
 2. Go to **Settings > Add-ons > Add-on Store**, click the menu and select **Check for updates**.
@@ -178,13 +178,13 @@ Once the repository is added:
 
 ## Data & Backups
 
-Battery Sentinel stores all device metadata (notes, battery types, alert thresholds, last replaced dates) in a single JSON file managed by the Home Assistant Supervisor. This is separate from the add-on code and is included automatically in standard Home Assistant full backups — no special steps required. You do not need to back it up manually.
+Battery Sentinel stores all device metadata (notes, battery types, alert thresholds, last replaced dates) in a single JSON file managed by the Home Assistant Supervisor. This is separate from the add-on code and is included automatically in standard Home Assistant full backups; no special steps required. You do not need to back it up manually.
 
 ---
 
 ## Requirements
 
-- **Home Assistant OS** or **Home Assistant Supervised** — the Supervisor is required to install and run add-ons. Home Assistant Core and Home Assistant Container installations cannot use add-ons.
+- **Home Assistant OS** or **Home Assistant Supervised**: the Supervisor is required to install and run add-ons. Home Assistant Core and Home Assistant Container installations cannot use add-ons.
 - No additional configuration; the add-on connects to HA automatically via the Supervisor API
 
 ---
@@ -249,7 +249,7 @@ All configuration is done within the add-on UI. There is no YAML to edit.
 
 ## Browser Support
 
-Battery Sentinel is fully functional on mobile and tablet browsers. For the best experience, a desktop browser is recommended — the device table with resizable columns, battery level bars, and notification checkboxes is designed for wider screens. On narrow mobile screens, columns will be compressed and some detail (such as the level bar) may be partially clipped.
+Battery Sentinel is fully functional on mobile and tablet browsers. For the best experience, a desktop browser is recommended; the device table with resizable columns, battery level bars, and notification checkboxes is designed for wider screens. On narrow mobile screens, columns will be compressed and some detail (such as the level bar) may be partially clipped.
 
 ---
 
@@ -273,10 +273,10 @@ Battery Sentinel avoids notification spam by design across all three channels.
 
 - On each check cycle, the add-on builds a list of every device currently below its threshold
 - **UI:** a single notification titled **Battery Sentinel: Low Batteries** is created or updated in place with that list; it dismisses automatically when all batteries recover
-- **Email:** each device fires one email when it first crosses its threshold and resets when the battery recovers or is replaced — no repeat emails for a battery that stays low
+- **Email:** each device fires one email when it first crosses its threshold and resets when the battery recovers or is replaced; no repeat emails for a battery that stays low
 - **Mobile:** same single-fire behaviour as email; uses the device-specific `mobile_app_*` service if set, otherwise falls back to the global default
 - The check interval is configurable; changing it in Settings takes effect after the current cycle completes without restarting the add-on
-- **Unavailable device alerts** fire once per device when it transitions to unavailable or unknown state, and reset automatically when it recovers. The alert is suppressed on the first scan after add-on startup — this prevents a flood of notifications when HA itself is rebooting and integrations like Zigbee2MQTT or Z-Wave JS have not finished loading yet. Devices may briefly show N/A in the list during this window; a manual Scan Now will refresh their state immediately once the integration is back up.
+- **Unavailable device alerts** fire once per device when it transitions to unavailable or unknown state, and reset automatically when it recovers. The alert is suppressed on the first scan after add-on startup to prevent a flood of notifications when HA itself is rebooting and integrations like Zigbee2MQTT or Z-Wave JS have not finished loading yet. Devices may briefly show N/A in the list during this window; a manual Scan Now will refresh their state immediately once the integration is back up.
 
 ---
 
@@ -288,7 +288,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ## Contributors
 
-- [Marc Easen](https://github.com/Easen) — responsive mobile/tablet layout and HTML extraction into a standalone file
+- [Marc Easen](https://github.com/Easen): responsive mobile/tablet layout and HTML extraction into a standalone file
 
 ## Acknowledgments
 
