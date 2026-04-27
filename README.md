@@ -56,6 +56,7 @@ Click any device in the list to open its detail panel.
 - Notes field for free-text information about the device or its battery
 - Last replaced date, manually editable or stamped with the Replaced/Recharged Today button
 - Per-device notification controls: UI, Email, and Mobile toggles; email address override; mobile app service selector
+- **Mute notifications**: silence alerts for a device for 1 hour, 3 hours, 8 hours, 1 day, 3 days, or 1 week; a bell icon appears in the device list next to muted devices; mutes expire automatically with no cleanup needed
 - Hide device: removes it from the list and suppresses all alerts; hidden devices are accessible in a collapsible section at the bottom of the Devices tab where they can be restored or permanently deleted. Note: if the entity still exists in Home Assistant, permanently deleted devices will reappear on the next scan.
 
 ### Notifications
@@ -196,10 +197,10 @@ All configuration is done within the add-on UI. There is no YAML to edit.
 
 | Setting | Default | Description |
 |---------|---------|-------------|
+| Scan Now | button | Refreshes battery levels and discovers new devices immediately; does not re-trigger notifications for devices already flagged |
+| Check interval | 10 min | How often Battery Sentinel polls HA for new devices and current battery levels (1 to 120 minutes) |
 | Battery types | AA, AAA, C, 9V, CR2032, CR2025, CR123A, CR2, 18650 | Managed list available in the per-device dropdown |
 | Look Up Battery Types | button | Queries the Battery Notes community database to auto-fill missing types; shows a conflict modal for devices where your type differs from the database |
-| Check interval | 10 min | How often Battery Sentinel polls HA for new devices and current battery levels (1 to 120 minutes) |
-| Scan Now | button | Refreshes battery levels and discovers new devices immediately; does not re-trigger notifications for devices already flagged |
 
 ### Notifications (Settings tab)
 
@@ -216,30 +217,32 @@ All configuration is done within the add-on UI. There is no YAML to edit.
 | Default mobile service | none | Fallback `mobile_app_*` service used when a device has Mobile enabled but no specific service set |
 | Global script trigger | none | Script to run when any device crosses its threshold; per-device setting overrides this |
 
-### Daily Report (Settings tab)
+### Daily Email Report (Settings tab)
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Send daily report | Off | Enables the scheduled daily email |
-| Send time | 08:00 | Time of day to send the report |
-| Include | Low batteries only | Choose low batteries only or a full status list |
-| Include battery type | Off | Adds a battery type column to each row when set |
+| Send daily battery report email | Off | Enables the scheduled daily email |
 | Send report even when all batteries are OK | Off | When off, the low-only report is suppressed if nothing is below threshold |
-| Send Report Now | button | Sends the daily report immediately, bypassing the schedule |
+| Send time | 8:00 AM | Time of day to send the report |
+| Send on | All days | Day-of-week checkboxes (Mon through Sun); uncheck any day to skip the report on that day |
+| Include in report | Low batteries only | Choose low batteries only or a full status list |
+| Include battery type in reports and notifications | Off | Adds a battery type column to each row when set |
+| Send Email Report Now | button | Sends the daily report immediately, bypassing the schedule |
 
 ### Per-device settings (device detail panel)
 
 | Field | Description |
 |-------|-------------|
-| Battery type | Dropdown populated from your configured battery type list |
-| Alert threshold | Per-device override: 5% to 60% in 5% increments, or Ignore |
-| Notifications | UI, Email, and Mobile toggles for this device specifically |
-| Email address override | Sends this device's alerts to a specific address instead of the global default |
-| Mobile app | Select a `mobile_app_*` notify service to receive push notifications for this device |
-| Script trigger | Use global default, select a specific script to override, or set to Disabled to suppress the global for this device |
+| Battery Type | Dropdown populated from your configured battery type list |
+| Alert Threshold | Per-device override: 5% to 60% in 5% increments, or Ignore |
+| Mute notifications | Silence all alerts for this device for a set period (1 hour to 1 week); mutes expire automatically; a bell icon appears in the device list while active |
 | Notes | Free-text field for any relevant notes |
-| Last replaced | Date of last battery replacement; set automatically via the button or edited manually |
-| Replaced/Recharged Today | Stamps today's date as the last replacement date |
+| Notifications | UI (HA), Email, and Mobile toggles for this device specifically |
+| Email address override | Sends this device's alerts to a specific address instead of the global default |
+| Mobile app notification | Select a `mobile_app_*` notify service to receive push notifications for this device |
+| Script trigger | Use global default, select a specific script to override, or set to Disabled to suppress the global for this device |
+| Last Replaced | Date of last battery replacement; set automatically via the button or edited manually |
+| Replaced / Recharged Today | Stamps today's date as the last replacement date |
 | Hide | Removes the device from the list and suppresses all alerts for it. Hidden devices do not reappear on the next scan. A collapsible "Hidden devices" section at the bottom of the Devices tab lets you restore any hidden device at any time, or permanently delete it. Note: permanently deleted devices will be re-added automatically on the next scan if their entity still exists in Home Assistant. |
 
 ---

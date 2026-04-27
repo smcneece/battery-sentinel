@@ -309,13 +309,27 @@ def _format_line(device: dict, include_type: bool) -> str:
 
 # ── Consolidated low-battery UI notification ───────────────────────────
 
+def _is_muted_now(device: dict, now: datetime.datetime) -> bool:
+    mu = device.get("muted_until")
+    if not mu:
+        return False
+    try:
+        return now < datetime.datetime.fromisoformat(mu)
+    except Exception:
+        return False
+
+
 async def update_low_battery_notification(devices: list, settings: dict):
     """Create/update or dismiss the single persistent low-battery notification."""
     if not settings.get("notify_persistent", True):
         return
 
     include_type = settings.get("report_include_battery_type", False)
-    low = sorted([d for d in devices if device_is_low(d)], key=_report_sort_key)
+    now = datetime.datetime.now()
+    low = sorted(
+        [d for d in devices if device_is_low(d) and d.get("notify_bell", True) and not _is_muted_now(d, now)],
+        key=_report_sort_key,
+    )
 
     if not low:
         await _dismiss_persistent(_LOW_NOTIFICATION_ID)
@@ -323,6 +337,7 @@ async def update_low_battery_notification(devices: list, settings: dict):
 
     _LOGGER.info("Low battery notification: %d device(s) below threshold", len(low))
     lines = [_format_line(d, include_type) for d in low]
+    lines.append("\n*To mute a device, open it in Battery Sentinel.*")
     await _fire_persistent(
         "Battery Sentinel: Low Batteries",
         "\n".join(lines),
@@ -343,7 +358,8 @@ async def fire_low_battery_email(title: str, message: str, settings: dict, devic
         if cc:
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
         if targets:
-            await _fire_notify_service(service, title, message, targets)
+            email_message = message + "\n\nTo mute this device, open it in Battery Sentinel."
+            await _fire_notify_service(service, title, email_message, targets)
 
     if device.get("notify_mobile", False):
         mobile = (device.get("notify_mobile_service", "").strip()

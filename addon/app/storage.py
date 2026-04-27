@@ -108,6 +108,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
                 "notify_mobile_service": "",
                 "notify_script": "",
                 "script_last_run": None,
+                "muted_until": None,
             }
         else:
             devices[eid]["name"] = entity["name"]
@@ -123,6 +124,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
             devices[eid].setdefault("notify_mobile_service", "")
             devices[eid].setdefault("notify_script", "")
             devices[eid].setdefault("script_last_run", None)
+            devices[eid].setdefault("muted_until", None)
 
     _save(data)
     _LOGGER.info("Devices: %d total, %d new", len(live_entities), len(new_eids))
@@ -153,6 +155,7 @@ def save_device(entity_id: str, fields: dict) -> dict:
         "notes", "battery_type", "alert_threshold", "last_replaced",
         "notify_bell", "notify_email", "notify_mobile",
         "notify_email_address", "notify_mobile_service", "notify_script",
+        "muted_until",
     }
     for key, val in fields.items():
         if key in allowed:

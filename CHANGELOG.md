@@ -1,5 +1,9 @@
 # Battery Sentinel Changelog
 
+## 2026.04.16
+- Mute notifications per device: a new "Mute notifications" dropdown in the device panel lets you silence alerts for 1 hour, 3 hours, 8 hours, 1 day, 3 days, or 1 week; a small bell icon appears in the device list next to muted devices; mutes expire automatically
+- Fixed: devices with UI notifications turned off were still appearing in the HA persistent low-battery notification; muted devices are also now excluded from it
+
 ## 2026.04.15
 - Daily Email Report now has day-of-week scheduling: seven checkboxes (Mon through Sun) let you pick which days the report sends; defaults to all days so existing behavior is unchanged
 - Fixed: email notify service dropdown now excludes only persistent_notification, mobile_app_*, and alexa_media_*; ISP-branded and custom-named email services such as zoom_internet were incorrectly filtered out in 2026.04.13

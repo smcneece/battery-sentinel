@@ -400,6 +400,18 @@
         </div>
       </div>
       <div class="field">
+        <label>Mute notifications</label>
+        <select id="modal-mute-select">
+          <option value="">Not muted</option>
+          <option value="1h">1 hour</option>
+          <option value="3h">3 hours</option>
+          <option value="8h">8 hours</option>
+          <option value="1d">1 day</option>
+          <option value="3d">3 days</option>
+          <option value="7d">1 week</option>
+        </select>
+      </div>
+      <div class="field">
         <label>Notes</label>
         <textarea id="modal-notes" placeholder="Optional notes about this device or its battery..."></textarea>
       </div>
@@ -632,8 +644,9 @@ function renderTable() {
       if (gs) { const s = _scripts.find(x => x.entity_id === gs); return `<span class="muted" style="font-size:.8rem">${s ? s.name : gs}</span>`; }
       return '';
     })();
+    const isMuted = d.muted_until && new Date(d.muted_until) > new Date();
     return `<tr class="device-row" data-eid="${d.entity_id}"${dim}>
-      <td data-col="name">${d.name}</td>
+      <td data-col="name">${d.name}${isMuted ? ' <span title="Notifications muted" style="color:#666;font-size:.8rem">&#x1F515;</span>' : ''}</td>
       ${v.level  ? `<td data-col="level">${levelCell(d)}</td>` : ''}
       ${v.btype  ? `<td data-col="btype" onclick="event.stopPropagation()"><select class="inline-select" data-eid="${d.entity_id}" data-field="battery_type">${typeOptions(d.battery_type||'')}</select></td>` : ''}
       ${v.alert  ? `<td data-col="alert" onclick="event.stopPropagation()"><select class="inline-select" data-eid="${d.entity_id}">${thrCell}</select></td>` : ''}
@@ -835,6 +848,29 @@ function openModal(eid) {
   document.getElementById("modal-notes").value         = d.notes || '';
   document.getElementById("modal-replaced").value      = d.last_replaced || '';
 
+  const muteEl = document.getElementById("modal-mute-select");
+  const mu = d.muted_until ? new Date(d.muted_until) : null;
+  if (mu && mu > new Date()) {
+    muteEl.innerHTML =
+      `<option value="current" selected>Muted until ${mu.toLocaleString()}</option>` +
+      `<option value="">Unmute</option>` +
+      `<option value="1h">Extend: 1 hour from now</option>` +
+      `<option value="3h">Extend: 3 hours from now</option>` +
+      `<option value="8h">Extend: 8 hours from now</option>` +
+      `<option value="1d">Extend: 1 day from now</option>` +
+      `<option value="3d">Extend: 3 days from now</option>` +
+      `<option value="7d">Extend: 1 week from now</option>`;
+  } else {
+    muteEl.innerHTML =
+      `<option value="">Not muted</option>` +
+      `<option value="1h">1 hour</option>` +
+      `<option value="3h">3 hours</option>` +
+      `<option value="8h">8 hours</option>` +
+      `<option value="1d">1 day</option>` +
+      `<option value="3d">3 days</option>` +
+      `<option value="7d">1 week</option>`;
+  }
+
   const thr = d.alert_threshold !== undefined ? d.alert_threshold : (_settings.default_threshold || 15);
   const thrEl = document.getElementById("modal-threshold");
   if (eid.startsWith("binary_sensor.")) {
@@ -989,6 +1025,13 @@ async function saveDevice() {
     notify_email_address:  document.getElementById("modal-notify-addr").value.trim(),
     notify_mobile_service: document.getElementById("modal-mobile-service").value,
     notify_script:         document.getElementById("modal-notify-script").value,
+    muted_until:           (() => {
+      const sel = document.getElementById("modal-mute-select").value;
+      if (!sel) return null;
+      if (sel === "current") return undefined;
+      const map = { "1h": 1*60*60*1000, "3h": 3*60*60*1000, "8h": 8*60*60*1000, "1d": 24*60*60*1000, "3d": 3*24*60*60*1000, "7d": 7*24*60*60*1000 };
+      return new Date(Date.now() + map[sel]).toISOString();
+    })(),
   };
   try {
     const r = await fetch(BASE + "/api/device/" + encodeURIComponent(_activeEntity), {

@@ -13,7 +13,7 @@ import storage
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.04.15"
+VERSION = "2026.04.16"
 
 _cache: list = []
 _startup_logged = False
@@ -109,7 +109,19 @@ async def do_refresh():
                 storage.set_alert_sent(device["entity_id"], False)
             continue
 
-        if is_low and not device.get("alert_sent"):
+        is_muted = False
+        muted_until = device.get("muted_until")
+        if muted_until:
+            try:
+                if datetime.datetime.now() < datetime.datetime.fromisoformat(muted_until):
+                    is_muted = True
+                else:
+                    storage.save_device(device["entity_id"], {"muted_until": None})
+                    device["muted_until"] = None
+            except Exception:
+                pass
+
+        if is_low and not device.get("alert_sent") and not is_muted:
             _LOGGER.info("Alert: %s is low (%s), sending notifications", device["name"], ha_api.level_str(device))
             await ha_api.fire_low_battery_email(
                 "Battery Sentinel: Low battery",
@@ -121,8 +133,10 @@ async def do_refresh():
         elif not is_low and device.get("alert_sent"):
             _LOGGER.info("Alert reset: %s recovered (%s)", device["name"], ha_api.level_str(device))
             storage.set_alert_sent(device["entity_id"], False)
+        elif is_low and is_muted:
+            _LOGGER.debug("Notifications muted for %s until %s", device["name"], muted_until)
 
-        if is_low:
+        if is_low and not is_muted:
             dev_script = device.get("notify_script", "")
             if dev_script == "__disabled__":
                 script = ""
@@ -154,7 +168,9 @@ async def do_refresh():
             if not device.get("unavailable_sent"):
                 try:
                     since = datetime.datetime.fromisoformat(device["unavailable_since"])
-                    if (now - since).total_seconds() >= delay_seconds:
+                    mu = device.get("muted_until")
+                    is_muted_unavail = mu and now < datetime.datetime.fromisoformat(mu)
+                    if (now - since).total_seconds() >= delay_seconds and not is_muted_unavail:
                         storage.set_unavailable_sent(eid, True)
                         device["unavailable_sent"] = True
                         newly_unavailable.append(device)
