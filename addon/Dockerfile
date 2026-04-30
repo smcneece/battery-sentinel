@@ -1,3 +1,4 @@
+# build 2026.04.30
 FROM ghcr.io/home-assistant/base-python:latest
 
 RUN pip3 install --no-cache-dir aiohttp

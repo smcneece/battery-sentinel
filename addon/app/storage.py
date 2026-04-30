@@ -1,3 +1,13 @@
+"""JSON persistence layer for Battery Sentinel.
+
+All state lives in a single file at DATA_FILE with three top-level keys:
+  devices  -- per-device metadata keyed by entity_id
+  settings -- user-configured global settings
+  _state   -- internal app state (e.g. last daily report date)
+
+Every public function does a full load-modify-save cycle. This is safe because
+the add-on is single-process and HA add-ons don't have concurrent writers."""
+
 import json
 import logging
 import os
@@ -9,7 +19,7 @@ DATA_FILE = "/data/battery_sentinel.json"
 DEFAULT_BATTERY_TYPES = ["AA", "AAA", "C", "9V", "CR2032", "CR2025", "CR123A", "CR2", "18650", "Rechargeable"]
 
 DEFAULT_SETTINGS = {
-    "default_threshold": 15,
+    "default_threshold": 20,
     "battery_types": DEFAULT_BATTERY_TYPES[:],
     "notify_persistent": True,
     "notify_email_service": "",
@@ -20,6 +30,12 @@ DEFAULT_SETTINGS = {
     "notify_new_device": True,
     "notify_unavailable": False,
     "notify_unavailable_delay": 5,
+    "zwave_monitor_enabled": False,
+    "zwave_alert_delay": 5,
+    "zwave_notify_bell": True,
+    "zwave_notify_email": True,
+    "zwave_notify_mobile": False,
+    "zwave_notify_script": "",
     "check_interval": 10,
     "daily_report_enabled": False,
     "daily_report_time": "08:00",
@@ -70,6 +86,8 @@ def save_settings(updates: dict) -> dict:
         "daily_report_enabled", "daily_report_time", "daily_report_days",
         "daily_report_include_all", "daily_report_send_if_ok", "report_include_battery_type",
         "notify_unavailable", "notify_unavailable_delay",
+        "zwave_monitor_enabled", "zwave_alert_delay",
+        "zwave_notify_bell", "zwave_notify_email", "zwave_notify_mobile", "zwave_notify_script",
     )
     for key in allowed:
         if key in updates:
@@ -80,7 +98,11 @@ def save_settings(updates: dict) -> dict:
 
 
 def merge_entities(live_entities: list) -> tuple[list, list]:
-    """Returns (new_entity_ids, sorted_device_list)."""
+    """Merge live HA entities into stored device records.
+
+    New entities get default metadata. Existing records keep all user-set fields
+    and only gain any new keys added since they were first seen (via setdefault).
+    Returns (new_entity_ids, sorted_device_list) -- hidden devices are excluded from the list."""
     data = _load()
     devices = data.setdefault("devices", {})
     default_threshold = {**DEFAULT_SETTINGS, **data.get("settings", {})}.get("default_threshold", 15)
@@ -165,6 +187,8 @@ def save_device(entity_id: str, fields: dict) -> dict:
 
 
 def delete_device(entity_id: str):
+    """Soft-delete: marks hidden so it's excluded from the UI but metadata is preserved.
+    If the entity reappears in HA it will be restored with all prior settings intact."""
     data = _load()
     if entity_id in data.get("devices", {}):
         data["devices"][entity_id]["hidden"] = True
@@ -179,6 +203,7 @@ def restore_device(entity_id: str):
 
 
 def purge_device(entity_id: str):
+    """Hard-delete: removes the record entirely. Use when you want a clean slate for an entity."""
     data = _load()
     data.get("devices", {}).pop(entity_id, None)
     _save(data)
@@ -215,6 +240,85 @@ def set_script_last_run(entity_id: str, date_str: str):
     if entity_id in data.get("devices", {}):
         data["devices"][entity_id]["script_last_run"] = date_str
         _save(data)
+
+
+def get_zwave_nodes() -> dict:
+    """Return the full _zwave_nodes tracking dict, keyed by entity_id."""
+    return _load().get("_zwave_nodes", {})
+
+
+def update_zwave_node(entity_id: str, fields: dict):
+    """Create or update a Z-Wave node tracking entry."""
+    data = _load()
+    nodes = data.setdefault("_zwave_nodes", {})
+    if entity_id not in nodes:
+        nodes[entity_id] = {}
+    nodes[entity_id].update(fields)
+    _save(data)
+
+
+def merge_zwave_nodes(live_nodes: list) -> list:
+    """Ensure all discovered Z-Wave nodes have storage entries with defaults.
+
+    New nodes get default notification settings. Existing nodes keep user
+    settings but have their live state (state, area, name) updated.
+    Returns list of merged node dicts (stored settings + live state)."""
+    data = _load()
+    nodes = data.setdefault("_zwave_nodes", {})
+
+    for node in live_nodes:
+        eid = node["entity_id"]
+        if eid not in nodes:
+            nodes[eid] = {
+                "entity_id":            eid,
+                "name":                 node["name"],
+                "notes":                "",
+                "notify_bell":          True,
+                "notify_email":         True,
+                "notify_mobile":        False,
+                "notify_email_address": "",
+                "notify_script":        "",
+                "muted_until":          None,
+                "dead_since":           None,
+                "alert_sent":           False,
+            }
+        else:
+            nodes[eid].setdefault("notes", "")
+            nodes[eid].setdefault("notify_bell", True)
+            nodes[eid].setdefault("notify_email", True)
+            nodes[eid].setdefault("notify_mobile", False)
+            nodes[eid].setdefault("notify_email_address", "")
+            nodes[eid].setdefault("notify_script", "")
+            nodes[eid].setdefault("muted_until", None)
+        nodes[eid]["entity_id"] = eid
+        nodes[eid]["name"]      = node["name"]
+        nodes[eid]["state"]     = node["state"]
+        nodes[eid]["area"]      = node.get("area", nodes[eid].get("area", ""))
+
+    live_eids = {n["entity_id"] for n in live_nodes}
+    stale = [k for k in nodes if k not in live_eids]
+    for k in stale:
+        del nodes[k]
+
+    _save(data)
+    return [nodes[n["entity_id"]] for n in live_nodes]
+
+
+def save_zwave_node(entity_id: str, fields: dict) -> dict:
+    """Update user-editable settings for a Z-Wave node."""
+    data = _load()
+    nodes = data.setdefault("_zwave_nodes", {})
+    if entity_id not in nodes:
+        raise KeyError(f"Z-Wave node {entity_id} not found")
+    allowed = {
+        "notes", "notify_bell", "notify_email", "notify_mobile",
+        "notify_email_address", "notify_script", "muted_until",
+    }
+    for key, val in fields.items():
+        if key in allowed:
+            nodes[entity_id][key] = val
+    _save(data)
+    return nodes[entity_id]
 
 
 def get_last_report_date() -> str:

@@ -2,6 +2,8 @@
 
 Dead batteries break automations. Battery Sentinel finds every battery-powered device in Home Assistant, alerts you before they die, and gives you a proper management page to track them all.
 
+**Z-Wave users:** Battery Sentinel now monitors your entire Z-Wave network for dead nodes, not just battery levels. Any Z-Wave device -- switches, dimmers, sensors, sirens, locks -- is covered, including mains-powered devices that have no battery entity at all. Battery Sentinel watches the node status sensor reported by Z-Wave JS and alerts you when a node goes offline, so you know about a problem before an automation fails.
+
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/smcneece/battery-sentinel)](https://github.com/smcneece/battery-sentinel/releases)
 [![GitHub](https://img.shields.io/github/license/smcneece/battery-sentinel)](LICENSE)
 
@@ -122,6 +124,22 @@ sequence:
         Entity: {{ entity_id }}
 ```
 
+### Z-Wave Node Monitoring
+
+Battery Sentinel monitors Z-Wave network health by watching the node status sensors created by Z-Wave JS. When Z-Wave JS marks a node dead, Battery Sentinel picks it up on the next scan and fires an alert. How quickly Z-Wave JS declares a node dead depends on the device type and network activity -- mains-powered devices are typically flagged within several minutes once Z-Wave JS attempts to contact them, while battery-powered sleeping devices may take longer since Z-Wave JS waits for their scheduled wakeup window.
+
+This covers your entire Z-Wave network, not just battery-powered devices. Mains-powered switches, dimmers, outlets, locks, sirens -- anything with a `sensor.*_node_status` entity in Z-Wave JS is monitored. Without this feature, the only way to know a node is dead is to notice an automation failed or manually check the Z-Wave device list.
+
+- Monitors all `sensor.*_node_status` entities created by Z-Wave JS automatically; covers every Z-Wave device on your network regardless of whether it has a battery sensor
+- Fires a dead node alert (bell and/or email) after a configurable delay; brief communication blips that resolve before the delay expires are silently ignored
+- Fires a recovery notification when a dead node comes back online
+- Alert fires once per dead event and resets automatically on recovery; no repeat notifications while a node stays dead
+- Suppressed on the first scan after add-on startup so a rebooting HA instance does not flood you with alerts while Z-Wave JS is still initialising
+- Separate bell, email, and mobile push toggles in the Z-Wave Node Monitoring settings card
+- Optional script trigger when a node goes dead; passes `device_name`, `entity_id`, and `node_status` as variables
+
+> Future: dead Z-Wave nodes may appear directly in the device list so they can be muted or acknowledged the same way battery devices are.
+
 ### Battery Type Lookup
 Battery Sentinel can automatically identify battery types for your devices using the [Battery Notes](https://github.com/andrew-codechimp/HA-Battery-Notes) community database, a crowd-sourced library of thousands of smart home devices and their battery types maintained by [andrew-codechimp](https://github.com/andrew-codechimp). The database is bundled locally with the add-on and refreshed weekly -- lookups are instant with no external network calls, but it may not include devices added to the community library in the last few days. If the lookup saves you time, consider [buying him a coffee](https://www.buymeacoffee.com/codechimp) -- the database is a significant community effort.
 
@@ -206,7 +224,7 @@ All configuration is done within the add-on UI. There is no YAML to edit.
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Default alert threshold | 15% | Alert level applied to newly discovered devices |
+| Default alert threshold | 20% | Alert level applied to newly discovered devices |
 | UI notification | On | Creates/updates a single HA persistent notification listing all low batteries |
 | New device alert | On | Fires a notification when a new battery device is first discovered |
 | Unavailable device alert | Off | Fires a notification when a battery device transitions to unavailable or unknown state; paired with a recovery notification when it comes back online |
@@ -228,6 +246,17 @@ All configuration is done within the add-on UI. There is no YAML to edit.
 | Include in report | Low batteries only | Choose low batteries only or a full status list |
 | Include battery type in reports and notifications | Off | Adds a battery type column to each row when set |
 | Send Email Report Now | button | Sends the daily report immediately, bypassing the schedule |
+
+### Z-Wave Node Monitoring (Settings tab)
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Alert when a Z-Wave node goes dead | Off | Enables node status monitoring for all Z-Wave JS devices |
+| HA bell notification | On | Sends a persistent HA notification when a node goes dead or recovers |
+| Email notification | On | Sends an email alert using the configured email notify service |
+| Mobile push notification | Off | Sends a push notification via the global default mobile service configured in Notifications |
+| Alert delay | 5 min | Minutes to wait before sending the dead node alert; nodes that recover before the delay expires are silently ignored; set to 0 for immediate alerts |
+| Script trigger | none | Run a HA script when a node goes dead; passes `device_name`, `entity_id`, and `node_status` as script variables |
 
 ### Per-device settings (device detail panel)
 
@@ -277,6 +306,7 @@ Battery Sentinel avoids notification spam by design across all three channels.
 - **Mobile:** same single-fire behaviour as email; uses the device-specific `mobile_app_*` service if set, otherwise falls back to the global default
 - The check interval is configurable; changing it in Settings takes effect after the current cycle completes without restarting the add-on
 - **Unavailable device alerts** fire once per device when it transitions to unavailable or unknown state, and reset automatically when it recovers. The alert is suppressed on the first scan after add-on startup to prevent a flood of notifications when HA itself is rebooting and integrations like Zigbee2MQTT or Z-Wave JS have not finished loading yet. Devices may briefly show N/A in the list during this window; a manual Scan Now will refresh their state immediately once the integration is back up.
+- **Z-Wave node alerts** fire once per dead event when a `sensor.*_node_status` entity reports dead, after the configured delay. A recovery notification fires when the node comes back online. Both are suppressed on the first scan after startup for the same reason as unavailable alerts. Node status is monitored separately from battery level because Z-Wave JS updates node status nearly immediately when a node loses communication, while the battery entity in HA may not reflect the problem for hours.
 
 ---
 

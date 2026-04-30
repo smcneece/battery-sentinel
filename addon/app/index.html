@@ -6,110 +6,137 @@
 <title>Battery Sentinel</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--primary-font-family, sans-serif); background: #111; color: #e0e0e0; }
+
+  :root {
+    --bs-bg:         #111;
+    --bs-surface:    #1c1c1c;
+    --bs-surface2:   #282828;
+    --bs-border:     rgba(225,225,225,0.12);
+    --bs-text:       #e1e1e1;
+    --bs-text-muted: #9b9b9b;
+    --bs-text-dim:   #6f6f6f;
+    --bs-accent:     #009ac7;
+    --bs-ok:         #43a047;
+    --bs-warn:       #ffa600;
+    --bs-crit:       #db4437;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bs-bg:         #fafafa;
+      --bs-surface:    #ffffff;
+      --bs-surface2:   #f0f0f0;
+      --bs-border:     rgba(0,0,0,0.12);
+      --bs-text:       #212121;
+      --bs-text-muted: #616161;
+      --bs-text-dim:   #9e9e9e;
+    }
+  }
+
+  body { font-family: var(--primary-font-family, sans-serif); background: var(--bs-bg); color: var(--bs-text); }
 
   .header { padding: 1rem 1rem .5rem; display: flex; align-items: center; gap: .6rem; }
   .header img { width: 32px; height: 32px; border-radius: 4px; }
-  .header h1 { font-size: 1.3rem; color: #fff; }
-  .badge { font-size: .7rem; padding: .15rem .45rem; border-radius: 3px; background: #2a2a2a; color: #888; border: 1px solid #333; }
+  .header h1 { font-size: 1.3rem; color: var(--bs-text); }
+  .badge { font-size: .7rem; padding: .15rem .45rem; border-radius: 3px; background: var(--bs-surface2); color: var(--bs-text-muted); border: 1px solid var(--bs-border); }
 
-  .tabs { display: flex; border-bottom: 1px solid #2a2a2a; padding: 0 1rem; }
-  .tab-btn { background: none; border: none; color: #888; padding: .55rem 1rem; cursor: pointer; font-size: .9rem; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s; }
-  .tab-btn.active { color: #58a6ff; border-bottom-color: #58a6ff; }
-  .tab-btn:hover { color: #ccc; }
+  .tabs { display: flex; border-bottom: 1px solid var(--bs-border); padding: 0 1rem; }
+  .tab-btn { background: none; border: none; color: var(--bs-text-muted); padding: .55rem 1rem; cursor: pointer; font-size: .9rem; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s; }
+  .tab-btn.active { color: var(--bs-accent); border-bottom-color: var(--bs-accent); }
+  .tab-btn:hover { color: var(--bs-text); }
 
   .tab-content { display: none; padding: 1rem; }
   .tab-content.active { display: block; }
 
   table { width: 100%; border-collapse: collapse; font-size: .9rem; table-layout: fixed; }
-  th { position: relative; text-align: left; padding: .5rem .75rem; color: #888; border-bottom: 1px solid #2a2a2a; font-weight: 500; cursor: pointer; user-select: none; white-space: nowrap; overflow: visible; }
-  th:hover { color: #fff; }
-  th .sort-arrow { font-size: .65rem; color: #58a6ff; margin-left: .25rem; }
-  td { padding: .5rem .75rem; border-bottom: 1px solid #1a1a1a; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  th { position: relative; text-align: left; padding: .5rem .75rem; color: var(--bs-text-muted); border-bottom: 1px solid var(--bs-border); font-weight: 500; cursor: pointer; user-select: none; white-space: nowrap; overflow: visible; }
+  th:hover { color: var(--bs-text); }
+  th .sort-arrow { font-size: .65rem; color: var(--bs-accent); margin-left: .25rem; }
+  td { padding: .5rem .75rem; border-bottom: 1px solid var(--bs-border); vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   tr.device-row { cursor: pointer; }
-  tr.device-row:hover td { background: #181818; }
+  tr.device-row:hover td { background: color-mix(in srgb, var(--bs-text) 5%, var(--bs-bg)); }
   .resize-handle { position: absolute; right: -5px; top: 10%; width: 14px; height: 80%; cursor: col-resize; z-index: 2; display: flex; align-items: center; justify-content: center; }
-  .resize-handle::after { content: ''; display: block; width: 3px; height: 100%; background: #404040; border-radius: 2px; transition: background .15s; }
-  .resize-handle:hover::after, .resize-handle.dragging::after { background: #58a6ff; }
-  .inline-select { background: transparent; border: 1px solid #2a2a2a; border-radius: 3px; color: #888; font-size: .8rem; padding: .15rem .25rem; cursor: pointer; width: auto; }
-  .inline-select:hover { border-color: #444; color: #ccc; }
-  .inline-select:focus { outline: none; border-color: #58a6ff; }
-  .inline-select option { background: #1a1a1a; }
+  .resize-handle::after { content: ''; display: block; width: 3px; height: 100%; background: var(--bs-border); border-radius: 2px; transition: background .15s; }
+  .resize-handle:hover::after, .resize-handle.dragging::after { background: var(--bs-accent); }
+  .inline-select { background: transparent; border: 1px solid var(--bs-border); border-radius: 3px; color: var(--bs-text-muted); font-size: .8rem; padding: .15rem .25rem; cursor: pointer; width: auto; }
+  .inline-select:hover { border-color: var(--bs-surface2); color: var(--bs-text); }
+  .inline-select:focus { outline: none; border-color: var(--bs-accent); }
+  .inline-select option { background: var(--bs-surface); }
 
-  .bar-wrap { width: 100px; height: 8px; background: #2a2a2a; border-radius: 4px; display: inline-block; vertical-align: middle; overflow: hidden; }
+  .bar-wrap { width: 100px; height: 8px; background: var(--bs-surface2); border-radius: 4px; display: inline-block; vertical-align: middle; overflow: hidden; }
   .bar { display: block; height: 100%; border-radius: 4px; }
   .pct { display: inline-block; width: 3rem; text-align: right; margin-right: .5rem; font-variant-numeric: tabular-nums; }
-  .critical { color: #f55; }
-  .warning  { color: #fa0; }
-  .ok       { color: #4c4; }
-  .muted    { color: #555; font-size: .8rem; }
+  .critical { color: var(--bs-crit); }
+  .warning  { color: var(--bs-warn); }
+  .ok       { color: var(--bs-ok); }
+  .muted    { color: var(--bs-text-dim); font-size: .8rem; }
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 100; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal-box { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; width: 500px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
-  .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid #2a2a2a; }
-  .modal-header h2 { font-size: 1.05rem; color: #fff; }
-  .modal-close { background: none; border: none; color: #666; font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0 .1rem; }
-  .modal-close:hover { color: #ccc; }
+  .modal-box { background: var(--bs-surface); border: 1px solid var(--bs-border); border-radius: 8px; width: 500px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--bs-border); }
+  .modal-header h2 { font-size: 1.05rem; color: var(--bs-text); }
+  .modal-close { background: none; border: none; color: var(--bs-text-dim); font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0 .1rem; }
+  .modal-close:hover { color: var(--bs-text); }
   .modal-body { padding: 1.25rem; display: flex; flex-direction: column; gap: .9rem; }
-  .modal-footer { padding: .85rem 1.25rem; border-top: 1px solid #2a2a2a; display: flex; gap: .5rem; justify-content: flex-end; }
+  .modal-footer { padding: .85rem 1.25rem; border-top: 1px solid var(--bs-border); display: flex; gap: .5rem; justify-content: flex-end; }
 
-  .entity-id { font-size: .75rem; color: #555; font-family: monospace; word-break: break-all; }
-  .modal-name-input { background: transparent; border: none; border-bottom: 1px dashed transparent; color: #fff; font-size: 1.05rem; font-weight: 500; font-family: inherit; padding: 0 0 2px; width: 100%; cursor: text; }
-  .modal-name-input:hover { border-bottom-color: #555; }
-  .modal-name-input:focus { outline: none; border-bottom: 1px solid #58a6ff; background: transparent; }
+  .entity-id { font-size: .75rem; color: var(--bs-text-dim); font-family: monospace; word-break: break-all; }
+  .modal-name-input { background: transparent; border: none; border-bottom: 1px dashed transparent; color: var(--bs-text); font-size: 1.05rem; font-weight: 500; font-family: inherit; padding: 0 0 2px; width: 100%; cursor: text; }
+  .modal-name-input:hover { border-bottom-color: var(--bs-text-dim); }
+  .modal-name-input:focus { outline: none; border-bottom: 1px solid var(--bs-accent); background: transparent; }
   .level-display { font-size: .9rem; }
 
   .field { display: flex; flex-direction: column; gap: .3rem; }
-  label { font-size: .8rem; color: #888; }
+  label { font-size: .8rem; color: var(--bs-text-muted); }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
   input, select, textarea {
-    background: #222; border: 1px solid #3a3a3a; border-radius: 4px;
-    color: #e0e0e0; padding: .4rem .6rem; font-size: .88rem; width: 100%;
+    background: var(--bs-surface2); border: 1px solid var(--bs-border); border-radius: 4px;
+    color: var(--bs-text); padding: .4rem .6rem; font-size: .88rem; width: 100%;
   }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: #58a6ff; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--bs-accent); }
   textarea { resize: vertical; min-height: 72px; font-family: inherit; }
-  select option { background: #222; }
+  select option { background: var(--bs-surface2); }
 
   .btn { padding: .4rem .9rem; border-radius: 4px; border: none; cursor: pointer; font-size: .85rem; transition: background .15s; }
-  .btn-primary   { background: #1a4a8a; color: #e0e0e0; }
-  .btn-primary:hover   { background: #1e5aa0; }
-  .btn-secondary { background: #2a2a2a; color: #ccc; border: 1px solid #3a3a3a; }
-  .btn-secondary:hover { background: #333; }
-  .btn-replaced  { background: #1a3a1a; color: #5c5; border: 1px solid #2a4a2a; width: 100%; padding: .5rem; font-size: .88rem; }
-  .btn-replaced:hover  { background: #223a22; }
-  .btn-danger    { background: #3a1a1a; color: #f55; border: 1px solid #5a2a2a; }
-  .btn-danger:hover    { background: #4a2020; }
+  .btn-primary   { background: var(--bs-accent); color: #fff; }
+  .btn-primary:hover   { background: color-mix(in srgb, var(--bs-accent) 85%, #000); }
+  .btn-secondary { background: var(--bs-surface2); color: var(--bs-text); border: 1px solid var(--bs-border); }
+  .btn-secondary:hover { background: color-mix(in srgb, var(--bs-text) 10%, var(--bs-surface2)); }
+  .btn-replaced  { background: color-mix(in srgb, var(--bs-ok) 20%, var(--bs-surface)); color: var(--bs-ok); border: 1px solid color-mix(in srgb, var(--bs-ok) 35%, transparent); width: 100%; padding: .5rem; font-size: .88rem; }
+  .btn-replaced:hover  { background: color-mix(in srgb, var(--bs-ok) 30%, var(--bs-surface)); }
+  .btn-danger    { background: color-mix(in srgb, var(--bs-crit) 20%, var(--bs-surface)); color: var(--bs-crit); border: 1px solid color-mix(in srgb, var(--bs-crit) 35%, transparent); }
+  .btn-danger:hover    { background: color-mix(in srgb, var(--bs-crit) 30%, var(--bs-surface)); }
 
   .settings-grid { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
-  .settings-card { flex: 1 1 300px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 1.25rem; }
-  .settings-card h3 { font-size: .9rem; color: #aaa; text-transform: uppercase; letter-spacing: .04em; margin-bottom: .85rem; padding-bottom: .5rem; border-bottom: 1px solid #2a2a2a; }
+  .settings-card { flex: 1 1 300px; background: var(--bs-surface); border: 1px solid var(--bs-border); border-radius: 8px; padding: 1.25rem; }
+  .settings-card h3 { font-size: .9rem; color: var(--bs-text-muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .85rem; padding-bottom: .5rem; border-bottom: 1px solid var(--bs-border); }
   .setting-row { display: flex; flex-direction: column; gap: .3rem; margin-bottom: .75rem; }
-  .setting-row p { font-size: .82rem; color: #666; }
+  .setting-row p { font-size: .82rem; color: var(--bs-text-dim); }
   .type-list { list-style: none; display: flex; flex-direction: column; gap: .25rem; margin-bottom: .5rem; }
-  .type-item { display: flex; align-items: center; justify-content: space-between; background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 4px; padding: .3rem .6rem; font-size: .88rem; }
-  .type-delete { background: none; border: none; color: #555; cursor: pointer; font-size: 1rem; line-height: 1; padding: 0 .15rem; }
-  .type-delete:hover { color: #f55; }
+  .type-item { display: flex; align-items: center; justify-content: space-between; background: color-mix(in srgb, var(--bs-text) 5%, var(--bs-surface)); border: 1px solid var(--bs-border); border-radius: 4px; padding: .3rem .6rem; font-size: .88rem; }
+  .type-delete { background: none; border: none; color: var(--bs-text-dim); cursor: pointer; font-size: 1rem; line-height: 1; padding: 0 .15rem; }
+  .type-delete:hover { color: var(--bs-crit); }
   .type-add { display: flex; gap: .5rem; margin-top: .25rem; }
   .type-add input { flex: 1; }
-  .settings-footer { margin-top: 1.25rem; display: flex; align-items: center; justify-content: center; gap: .75rem; padding-top: 1rem; border-top: 1px solid #2a2a2a; }
-  .save-status { font-size: .82rem; color: #4c4; }
+  .settings-footer { margin-top: 1.25rem; display: flex; align-items: center; justify-content: center; gap: .75rem; padding-top: 1rem; border-top: 1px solid var(--bs-border); }
+  .save-status { font-size: .82rem; color: var(--bs-ok); }
   .notify-row { display: flex; align-items: center; gap: .6rem; margin-bottom: .5rem; font-size: .9rem; }
-  .notify-row input[type=checkbox] { width: auto; accent-color: #58a6ff; }
-  .notify-check { display: inline-flex; align-items: center; gap: .25rem; font-size: .78rem; color: #aaa; cursor: pointer; margin-right: .5rem; white-space: nowrap; }
-  .notify-check input[type=checkbox] { width: auto; accent-color: #58a6ff; margin: 0; }
+  .notify-row input[type=checkbox] { width: auto; accent-color: var(--bs-accent); }
+  .notify-check { display: inline-flex; align-items: center; gap: .25rem; font-size: .78rem; color: var(--bs-text-muted); cursor: pointer; margin-right: .5rem; white-space: nowrap; }
+  .notify-check input[type=checkbox] { width: auto; accent-color: var(--bs-accent); margin: 0; }
   .scan-bar { display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem; }
-  .scan-status { font-size: .82rem; color: #888; }
+  .scan-status { font-size: .82rem; color: var(--bs-text-muted); }
 
   .device-toolbar { padding: .5rem 1rem .25rem; display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
   #device-search { max-width: 220px; padding: .35rem .6rem; font-size: .88rem; }
-  .toolbar-label { font-size: .82rem; color: #888; white-space: nowrap; }
-  .toolbar-sel { max-width: 150px; padding: .35rem .6rem; font-size: .88rem; background: #222; border: 1px solid #3a3a3a; border-radius: 4px; color: #e0e0e0; cursor: pointer; }
-  .toolbar-sel:focus { outline: none; border-color: #58a6ff; }
+  .toolbar-label { font-size: .82rem; color: var(--bs-text-muted); white-space: nowrap; }
+  .toolbar-sel { max-width: 150px; padding: .35rem .6rem; font-size: .88rem; background: var(--bs-surface2); border: 1px solid var(--bs-border); border-radius: 4px; color: var(--bs-text); cursor: pointer; }
+  .toolbar-sel:focus { outline: none; border-color: var(--bs-accent); }
   .toolbar-apply { white-space: nowrap; font-size: .82rem; padding: .35rem .75rem; }
-  .loading { color: #666; padding: 2rem; text-align: center; }
-  .error   { color: #f55; padding: 2rem; text-align: center; }
+  .loading { color: var(--bs-text-dim); padding: 2rem; text-align: center; }
+  .error   { color: var(--bs-crit); padding: 2rem; text-align: center; }
 
   @media (max-width: 768px) {
     col[data-col="btype"], col[data-col="notify"], col[data-col="script"], col[data-col="area"],
@@ -154,6 +181,7 @@
 
 <nav class="tabs">
   <button class="tab-btn active" data-tab="devices">Devices</button>
+  <button class="tab-btn" id="tab-zwave-btn" data-tab="zwave" style="display:none">Z-Wave</button>
   <button class="tab-btn" data-tab="settings">Settings</button>
 </nav>
 
@@ -161,7 +189,7 @@
   <div class="device-toolbar">
     <div style="position:relative;display:inline-flex;align-items:center">
       <input type="text" id="device-search" placeholder="Filter devices..." autocomplete="off" style="padding-right:1.6rem">
-      <button id="search-clear" onclick="clearSearch()" title="Clear" style="display:none;position:absolute;right:5px;background:none;border:none;color:#666;cursor:pointer;font-size:1.1rem;line-height:1;padding:0">&#x2715;</button>
+      <button id="search-clear" onclick="clearSearch()" title="Clear" style="display:none;position:absolute;right:5px;background:none;border:none;color:var(--bs-text-dim);cursor:pointer;font-size:1.1rem;line-height:1;padding:0">&#x2715;</button>
     </div>
     <span class="toolbar-label">Battery Type:</span>
     <select id="type-filter" class="toolbar-sel">
@@ -190,8 +218,8 @@
 
   <div id="content"><p class="loading">Loading devices...</p></div>
 
-  <div id="hidden-section" style="display:none;margin-top:.5rem;border-top:1px solid #1e1e1e">
-    <div onclick="toggleHiddenSection()" style="padding:.5rem 1rem;color:#555;font-size:.82rem;cursor:pointer;user-select:none">
+  <div id="hidden-section" style="display:none;margin-top:.5rem;border-top:1px solid var(--bs-border)">
+    <div onclick="toggleHiddenSection()" style="padding:.5rem 1rem;color:var(--bs-text-dim);font-size:.82rem;cursor:pointer;user-select:none">
       <span id="hidden-toggle-icon">&#9654;</span> Hidden devices (<span id="hidden-count">0</span>)
     </div>
     <div id="hidden-list" style="display:none"></div>
@@ -277,12 +305,12 @@
         <label for="setting-notify-unavailable">Alert when a battery device goes unavailable or unknown</label>
       </div>
       <div class="setting-row" style="margin-bottom:.85rem;padding-left:1.6rem">
-        <label style="font-size:.85rem;color:#888">Alert delay</label>
+        <label style="font-size:.85rem;color:var(--bs-text-muted)">Alert delay</label>
         <p style="font-size:.8rem">Wait this many minutes before sending the offline alert. Devices that recover before the delay expires are silently ignored. A recovery alert is sent when the device comes back online.</p>
         <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
           <input type="number" id="setting-unavailable-delay" min="0" max="60" step="1"
-            style="width:5rem;background:#111;border:1px solid #333;border-radius:4px;color:#e0e0e0;padding:.35rem .5rem;font-size:.9rem">
-          <span style="color:#888;font-size:.9rem">minutes (0 = immediate)</span>
+            style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
+          <span style="color:var(--bs-text-muted);font-size:.9rem">minutes (0 = immediate)</span>
         </div>
       </div>
       <div class="setting-row">
@@ -347,6 +375,43 @@
     </div>
 
     <div class="settings-card">
+      <h3>Z-Wave Node Monitoring</h3>
+      <div class="notify-row" style="margin-bottom:.5rem">
+        <input type="checkbox" id="setting-zwave-enabled">
+        <label for="setting-zwave-enabled">Alert when a Z-Wave node goes dead</label>
+      </div>
+      <p style="font-size:.8rem;color:var(--bs-text-muted);margin-bottom:.5rem">Monitors all <code>sensor.*_node_status</code> entities. Fires an alert when a node is reported dead by Z-Wave JS, and a recovery alert when it comes back online.</p>
+      <div class="notify-row" style="margin-bottom:.25rem;padding-left:1.6rem">
+        <input type="checkbox" id="setting-zwave-bell">
+        <label for="setting-zwave-bell">HA bell notification</label>
+      </div>
+      <div class="notify-row" style="margin-bottom:.25rem;padding-left:1.6rem">
+        <input type="checkbox" id="setting-zwave-email">
+        <label for="setting-zwave-email">Email notification</label>
+      </div>
+      <div class="notify-row" style="margin-bottom:.85rem;padding-left:1.6rem">
+        <input type="checkbox" id="setting-zwave-mobile">
+        <label for="setting-zwave-mobile">Mobile push notification (uses global default mobile service)</label>
+      </div>
+      <div class="setting-row" style="padding-left:1.6rem">
+        <label style="font-size:.85rem;color:var(--bs-text-muted)">Alert delay</label>
+        <p style="font-size:.8rem">Wait this many minutes before sending the dead node alert. Nodes that recover before the delay expires are silently ignored.</p>
+        <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
+          <input type="number" id="setting-zwave-delay" min="0" max="120" step="1"
+            style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
+          <span style="color:var(--bs-text-muted);font-size:.9rem">minutes (0 = immediate)</span>
+        </div>
+      </div>
+      <div class="setting-row" style="padding-left:1.6rem">
+        <label style="font-size:.85rem;color:var(--bs-text-muted)">Script trigger</label>
+        <p style="font-size:.8rem">Run a HA script when a node goes dead. Passes <code>device_name</code>, <code>entity_id</code>, and <code>node_status</code> as script variables.</p>
+        <select id="setting-zwave-script" style="margin-top:.35rem">
+          <option value="">-- None --</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="settings-card">
       <h3>Columns</h3>
       <p class="muted" style="font-size:.82rem;margin-bottom:.85rem">Choose which columns appear in the device list. Device name is always shown.</p>
       <div class="notify-row"><input type="checkbox" id="col-level"  onchange="toggleCol('level',  this.checked)"><label for="col-level">Level</label></div>
@@ -362,6 +427,10 @@
     <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
     <span class="save-status" id="settings-status"></span>
   </div>
+</div>
+
+<div id="tab-zwave" class="tab-content">
+  <div id="zwave-content"><p class="loading">Loading Z-Wave nodes...</p></div>
 </div>
 
 <div class="modal-overlay" id="modal">
@@ -455,7 +524,7 @@
         </div>
       </div>
       <div id="modal-footer-confirm" style="display:none;justify-content:space-between;align-items:center">
-        <span style="color:#f88;font-size:.85rem">Hide this device?</span>
+        <span style="color:var(--bs-crit);font-size:.85rem">Hide this device?</span>
         <div style="display:flex;gap:.5rem">
           <button class="btn btn-secondary" onclick="cancelDelete()">Keep</button>
           <button class="btn btn-danger" onclick="deleteDevice()">Yes, Hide</button>
@@ -472,7 +541,7 @@
       <button class="modal-close" onclick="closeConflictModal()">&times;</button>
     </div>
     <div class="modal-body" style="padding:0;gap:0">
-      <p style="padding:1rem 1.25rem .5rem;color:#888;font-size:.85rem">These devices already have a battery type set that differs from the database. Choose which to keep for each one.</p>
+      <p style="padding:1rem 1.25rem .5rem;color:var(--bs-text-muted);font-size:.85rem">These devices already have a battery type set that differs from the database. Choose which to keep for each one.</p>
       <div id="conflict-list"></div>
     </div>
     <div class="modal-footer">
@@ -483,8 +552,72 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="zwave-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div style="flex:1;min-width:0">
+        <div id="zwave-modal-name" style="font-size:1.05rem;font-weight:500;color:var(--bs-text)"></div>
+        <div class="entity-id" id="zwave-modal-entity" style="margin-top:.2rem"></div>
+      </div>
+      <button class="modal-close" onclick="closeZwaveModal()" title="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field">
+          <label>Status</label>
+          <div id="zwave-modal-status" style="font-size:.9rem;padding:.25rem 0"></div>
+        </div>
+        <div class="field">
+          <label>Room</label>
+          <div id="zwave-modal-area" style="color:var(--bs-text-muted);font-size:.9rem;padding:.25rem 0"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Mute notifications</label>
+        <select id="zwave-modal-mute"></select>
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="zwave-modal-notes" placeholder="Optional notes about this node..."></textarea>
+      </div>
+      <div class="field">
+        <label>Notifications</label>
+        <div style="display:flex;gap:1.25rem;margin-top:.25rem">
+          <label class="notify-check"><input type="checkbox" id="zwave-modal-notify-bell"> UI (HA)</label>
+          <label class="notify-check"><input type="checkbox" id="zwave-modal-notify-email"> Email</label>
+          <label class="notify-check"><input type="checkbox" id="zwave-modal-notify-mobile"> Mobile</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Email address override</label>
+        <input type="email" id="zwave-modal-notify-addr" placeholder="Leave blank to use global default">
+      </div>
+      <div class="field">
+        <label>Script trigger</label>
+        <select id="zwave-modal-script">
+          <option value="">-- Use global default --</option>
+          <option value="__disabled__">-- Disabled for this node --</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeZwaveModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveZwaveNode()">Save</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const BASE = "{{BASE}}";
+function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+
+function muteRemaining(isoStr) {
+  const mins = Math.round((new Date(isoStr) - new Date()) / 60000);
+  if (mins <= 0)   return '';
+  if (mins < 60)   return `${mins}m`;
+  if (mins < 1440) { const h = Math.floor(mins / 60), m = mins % 60; return m ? `${h}h ${m}m` : `${h}h`; }
+  const d = Math.floor(mins / 1440), h = Math.floor((mins % 1440) / 60); return h ? `${d}d ${h}h` : `${d}d`;
+}
 let _devices        = [];
 let _settings       = {};
 let _notifyServices = [];
@@ -501,6 +634,11 @@ let _thresholdApply  = '';
 let _btypeFilter     = '';
 let _resizing    = null;
 let _wasDragging = false;
+
+const _zwColDefaults = { name: 28, status: 10, notify: 24, script: 16, area: 12 };
+let _zwColWidths = Object.assign({}, _zwColDefaults, JSON.parse(localStorage.getItem('bs_zw_colWidths_v1') || '{}'));
+let _zwResizing    = null;
+let _zwWasDragging = false;
 
 // ── Column resize ─────────────────────────────────────────────────────
 function startResize(e, col) {
@@ -537,14 +675,55 @@ function stopResize() {
   document.removeEventListener("mouseup",   stopResize);
 }
 
+// ── Z-Wave column resize ──────────────────────────────────────────────
+function startZwResize(e, col) {
+  e.preventDefault();
+  e.stopPropagation();
+  const table = document.querySelector("#zwave-content table");
+  if (!table) return;
+  const th = document.querySelector(`th[data-zcol="${col}"]`);
+  _zwResizing    = { col, startX: e.clientX, startW: th.offsetWidth, tableW: table.offsetWidth };
+  _zwWasDragging = false;
+  document.querySelector(`.zw-resize-handle[data-zcol="${col}"]`)?.classList.add("dragging");
+  document.addEventListener("mousemove", onZwResize);
+  document.addEventListener("mouseup",   stopZwResize);
+}
+
+function onZwResize(e) {
+  if (!_zwResizing) return;
+  const delta = e.clientX - _zwResizing.startX;
+  if (Math.abs(delta) < 3) return;
+  _zwWasDragging = true;
+  const newPct = Math.max(8, (_zwResizing.startW + delta) / _zwResizing.tableW * 100);
+  _zwColWidths[_zwResizing.col] = parseFloat(newPct.toFixed(1));
+  const col = document.querySelector(`#zwave-content col[data-zcol="${_zwResizing.col}"]`);
+  if (col) col.style.width = _zwColWidths[_zwResizing.col] + "%";
+}
+
+function stopZwResize() {
+  if (_zwResizing) {
+    document.querySelector(`.zw-resize-handle[data-zcol="${_zwResizing.col}"]`)?.classList.remove("dragging");
+    _zwResizing = null;
+    localStorage.setItem('bs_zw_colWidths_v1', JSON.stringify(_zwColWidths));
+  }
+  document.removeEventListener("mousemove", onZwResize);
+  document.removeEventListener("mouseup",   stopZwResize);
+}
+
 // ── Tabs ──────────────────────────────────────────────────────────────
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab-btn, .tab-content").forEach(el => el.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+    if (btn.dataset.tab === "zwave") loadZwaveNodes();
   });
 });
+
+function updateZwaveTabVisibility() {
+  const btn = document.getElementById("tab-zwave-btn");
+  if (btn) btn.style.display = _settings.zwave_monitor_enabled ? '' : 'none';
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────
 function sortKey(d, col) {
@@ -559,16 +738,16 @@ function sortKey(d, col) {
 function levelCell(d) {
   if (d.state === "unavailable" || d.state === "unknown") {
     return `<span class="pct muted">N/A</span>
-            <span class="bar-wrap"><span class="bar" style="width:0%;background:#555"></span></span>`;
+            <span class="bar-wrap"><span class="bar" style="width:0%;background:var(--bs-text-dim)"></span></span>`;
   }
   if (d.entity_id.startsWith("binary_sensor.")) {
     const low = d.state === "on";
     return `<span class="pct ${low ? 'critical' : 'ok'}">${low ? 'Low' : 'OK  '}</span>
-            <span class="bar-wrap"><span class="bar" style="width:100%;background:${low?'#f55':'#4c4'}"></span></span>`;
+            <span class="bar-wrap"><span class="bar" style="width:100%;background:${low?'var(--bs-crit)':'var(--bs-ok)'}"></span></span>`;
   }
   const pct = parseFloat(d.state);
   const cls = pct < 10 ? "critical" : pct < 25 ? "warning" : "ok";
-  const col = pct < 10 ? "#f55"     : pct < 25 ? "#fa0"    : "#4c4";
+  const col = pct < 10 ? "var(--bs-crit)" : pct < 25 ? "var(--bs-warn)" : "var(--bs-ok)";
   return `<span class="pct ${cls}">${Math.round(pct)}%</span>
           <span class="bar-wrap"><span class="bar" style="width:${Math.min(pct,100)}%;background:${col}"></span></span>`;
 }
@@ -639,14 +818,14 @@ function renderTable() {
     const scriptLabel = (() => {
       const ds = d.notify_script || '';
       if (ds === '__disabled__') return '<span class="muted">Off</span>';
-      if (ds) { const s = _scripts.find(x => x.entity_id === ds); return `<span style="color:#aaa;font-size:.8rem">${s ? s.name : ds}</span>`; }
+      if (ds) { const s = _scripts.find(x => x.entity_id === ds); return `<span style="color:var(--bs-text-muted);font-size:.8rem">${esc(s ? s.name : ds)}</span>`; }
       const gs = _settings.notify_script || '';
-      if (gs) { const s = _scripts.find(x => x.entity_id === gs); return `<span class="muted" style="font-size:.8rem">${s ? s.name : gs}</span>`; }
+      if (gs) { const s = _scripts.find(x => x.entity_id === gs); return `<span class="muted" style="font-size:.8rem">${esc(s ? s.name : gs)}</span>`; }
       return '';
     })();
     const isMuted = d.muted_until && new Date(d.muted_until) > new Date();
     return `<tr class="device-row" data-eid="${d.entity_id}"${dim}>
-      <td data-col="name">${d.name}${isMuted ? ' <span title="Notifications muted" style="color:#666;font-size:.8rem">&#x1F515;</span>' : ''}</td>
+      <td data-col="name">${esc(d.name)}${isMuted ? ` <span title="Notifications muted" style="color:var(--bs-text-dim);font-size:.8rem">&#x1F515; <span style="color:var(--bs-text-dim)">(${muteRemaining(d.muted_until)})</span></span>` : ''}</td>
       ${v.level  ? `<td data-col="level">${levelCell(d)}</td>` : ''}
       ${v.btype  ? `<td data-col="btype" onclick="event.stopPropagation()"><select class="inline-select" data-eid="${d.entity_id}" data-field="battery_type">${typeOptions(d.battery_type||'')}</select></td>` : ''}
       ${v.alert  ? `<td data-col="alert" onclick="event.stopPropagation()"><select class="inline-select" data-eid="${d.entity_id}">${thrCell}</select></td>` : ''}
@@ -656,7 +835,7 @@ function renderTable() {
         <label class="notify-check"><input type="checkbox" data-eid="${d.entity_id}" data-field="notify_mobile" ${d.notify_mobile ? 'checked' : ''}> Mobile</label>
       </td>` : ''}
       ${v.script ? `<td data-col="script">${scriptLabel}</td>` : ''}
-      ${v.area   ? `<td data-col="area" class="muted">${d.area || ''}</td>` : ''}
+      ${v.area   ? `<td data-col="area" class="muted">${esc(d.area || '')}</td>` : ''}
     </tr>`;
   }).join('');
 
@@ -680,7 +859,7 @@ function renderTable() {
   document.getElementById("content").innerHTML = `<table>
     <colgroup>${cg}</colgroup>
     <thead><tr>
-      <th data-col="name" class="${thCls('name')}">Device${arrow('name')}<span class="resize-handle" data-col="name"></span></th>
+      <th data-col="name" class="${thCls('name')}">Device <span style="color:var(--bs-text-dim);font-weight:normal;font-size:.8rem">(${_devices.length})</span>${arrow('name')}<span class="resize-handle" data-col="name"></span></th>
       ${v.level  ? `<th data-col="level" class="${thCls('level')}">Level${arrow('level')}<span class="resize-handle" data-col="level"></span></th>` : ''}
       ${v.btype  ? `<th data-col="btype" onclick="event.stopPropagation()">Battery Type
         <select class="inline-select" style="margin-left:.4rem;font-size:.75rem" onchange="setBtypeFilter(this.value)" onclick="event.stopPropagation()">
@@ -871,7 +1050,7 @@ function openModal(eid) {
       `<option value="7d">1 week</option>`;
   }
 
-  const thr = d.alert_threshold !== undefined ? d.alert_threshold : (_settings.default_threshold || 15);
+  const thr = d.alert_threshold !== undefined ? d.alert_threshold : (_settings.default_threshold || 20);
   const thrEl = document.getElementById("modal-threshold");
   if (eid.startsWith("binary_sensor.")) {
     thrEl.innerHTML =
@@ -955,10 +1134,10 @@ async function loadHiddenDevices() {
     document.getElementById("hidden-count").textContent = hidden.length;
     document.getElementById("hidden-section").style.display = hidden.length ? "" : "none";
     document.getElementById("hidden-list").innerHTML = hidden.map(d =>
-      `<div style="display:flex;justify-content:space-between;align-items:center;padding:.4rem 1rem;border-top:1px solid #1a1a1a">
+      `<div style="display:flex;justify-content:space-between;align-items:center;padding:.4rem 1rem;border-top:1px solid var(--bs-border)">
         <div>
-          <span style="color:#888">${d.name}</span>
-          <span style="color:#444;font-size:.75rem;margin-left:.5rem;font-family:monospace">${d.entity_id}</span>
+          <span style="color:var(--bs-text-muted)">${esc(d.name)}</span>
+          <span style="color:var(--bs-text-dim);font-size:.75rem;margin-left:.5rem;font-family:monospace">${esc(d.entity_id)}</span>
         </div>
         <div style="display:flex;gap:.4rem">
           <button class="btn btn-secondary" style="font-size:.8rem;padding:.25rem .6rem" onclick="restoreDevice('${d.entity_id}')">Restore</button>
@@ -1155,10 +1334,16 @@ async function saveSettings() {
   _settings.notify_new_device      = document.getElementById("setting-notify-new-device").checked;
   _settings.notify_unavailable       = document.getElementById("setting-notify-unavailable").checked;
   _settings.notify_unavailable_delay = Math.max(0, parseInt(document.getElementById("setting-unavailable-delay").value, 10) || 0);
+  _settings.zwave_monitor_enabled    = document.getElementById("setting-zwave-enabled").checked;
+  _settings.zwave_notify_bell        = document.getElementById("setting-zwave-bell").checked;
+  _settings.zwave_notify_email       = document.getElementById("setting-zwave-email").checked;
+  _settings.zwave_notify_mobile      = document.getElementById("setting-zwave-mobile").checked;
+  _settings.zwave_alert_delay        = Math.max(0, parseInt(document.getElementById("setting-zwave-delay").value, 10) || 0);
   _settings.check_interval           = Math.max(1, parseInt(document.getElementById("setting-check-interval").value, 10) || 10);
   _settings.notify_email_service          = document.getElementById("setting-notify-service").value;
   _settings.notify_mobile_default_service = document.getElementById("setting-mobile-default").value;
   _settings.notify_script                 = document.getElementById("setting-notify-script").value;
+  _settings.zwave_notify_script           = document.getElementById("setting-zwave-script").value;
   _settings.notify_email_to        = document.getElementById("setting-notify-to").value.trim();
   _settings.notify_email_cc        = document.getElementById("setting-notify-cc").value.trim();
   _settings.daily_report_enabled    = document.getElementById("setting-daily-enabled").checked;
@@ -1179,6 +1364,7 @@ async function saveSettings() {
     setTimeout(() => status.textContent = '', 2500);
     renderTable();
     renderTypeFilter();
+    updateZwaveTabVisibility();
   } catch {
     alert("Failed to save settings.");
   }
@@ -1204,11 +1390,16 @@ async function init() {
       renderTable();
     }
 
-    document.getElementById("setting-threshold").value         = _settings.default_threshold || 15;
+    document.getElementById("setting-threshold").value         = _settings.default_threshold || 20;
     document.getElementById("setting-notify-persistent").checked = _settings.notify_persistent !== false;
     document.getElementById("setting-notify-new-device").checked = _settings.notify_new_device !== false;
     document.getElementById("setting-notify-unavailable").checked = !!_settings.notify_unavailable;
     document.getElementById("setting-unavailable-delay").value  = _settings.notify_unavailable_delay ?? 5;
+    document.getElementById("setting-zwave-enabled").checked    = !!_settings.zwave_monitor_enabled;
+    document.getElementById("setting-zwave-bell").checked       = _settings.zwave_notify_bell !== false;
+    document.getElementById("setting-zwave-email").checked      = _settings.zwave_notify_email !== false;
+    document.getElementById("setting-zwave-mobile").checked     = !!_settings.zwave_notify_mobile;
+    document.getElementById("setting-zwave-delay").value        = _settings.zwave_alert_delay ?? 5;
     document.getElementById("setting-check-interval").value     = _settings.check_interval || 10;
     document.getElementById("setting-notify-to").value         = _settings.notify_email_to || '';
     document.getElementById("setting-notify-cc").value         = _settings.notify_email_cc || '';
@@ -1238,6 +1429,10 @@ async function init() {
     scriptSettingEl.innerHTML = '<option value="">-- None --</option>' +
       _scripts.map(s => `<option value="${s.entity_id}"${_settings.notify_script === s.entity_id ? ' selected' : ''}>${s.name}</option>`).join('');
 
+    const zwaveScriptEl = document.getElementById("setting-zwave-script");
+    zwaveScriptEl.innerHTML = '<option value="">-- None --</option>' +
+      _scripts.map(s => `<option value="${s.entity_id}"${_settings.zwave_notify_script === s.entity_id ? ' selected' : ''}>${s.name}</option>`).join('');
+
     renderTypeList();
     renderTypeFilter();
     document.getElementById("device-search").addEventListener("input", e => {
@@ -1257,10 +1452,250 @@ async function init() {
       if (cb) cb.checked = _colVisible[col] !== false;
     });
     await loadHiddenDevices();
+    updateZwaveTabVisibility();
   } catch(e) {
     document.getElementById("content").innerHTML = '<p class="error">Failed to load battery data.</p>';
   }
 }
+
+// ── Z-Wave tab ────────────────────────────────────────────────────────
+let _zwaveNodes     = [];
+let _zwaveSortCol   = "name";
+let _zwaveSortDir   = 1;
+let _activeZwaveEid = null;
+
+function zwaveStatusBadge(state) {
+  const colors = { alive: 'var(--bs-ok)', awake: 'var(--bs-ok)', asleep: 'var(--bs-text-muted)', sleeping: 'var(--bs-text-muted)', dead: 'var(--bs-crit)' };
+  const color  = colors[state] || 'var(--bs-text-muted)';
+  const label  = state ? state.charAt(0).toUpperCase() + state.slice(1) : '?';
+  return `<span style="color:${color};font-weight:500">${label}</span>`;
+}
+
+async function loadZwaveNodes() {
+  try {
+    const r = await fetch(BASE + "/api/zwave-nodes");
+    _zwaveNodes = await r.json();
+    renderZwaveTable();
+  } catch {
+    document.getElementById("zwave-content").innerHTML = '<p class="error">Failed to load Z-Wave nodes.</p>';
+  }
+}
+
+function renderZwaveTable() {
+  const sorted = [..._zwaveNodes].sort((a, b) => {
+    let ka, kb;
+    if      (_zwaveSortCol === "name")   { ka = (a.name||'').toLowerCase();        kb = (b.name||'').toLowerCase(); }
+    else if (_zwaveSortCol === "area")   { ka = (a.area||'zzz').toLowerCase();     kb = (b.area||'zzz').toLowerCase(); }
+    else if (_zwaveSortCol === "status") { ka = a.state||'';                       kb = b.state||''; }
+    else { ka = ''; kb = ''; }
+    return ka < kb ? -_zwaveSortDir : ka > kb ? _zwaveSortDir : 0;
+  });
+
+  const arrow = col => _zwaveSortCol === col ? `<span class="sort-arrow">${_zwaveSortDir===1?'▲':'▼'}</span>` : '';
+  const w = _zwColWidths;
+
+  const rows = sorted.map(n => {
+    const isMuted = n.muted_until && new Date(n.muted_until) > new Date();
+    const scriptLabel = (() => {
+      const ns = n.notify_script || '';
+      if (ns === '__disabled__') return '<span class="muted">Off</span>';
+      if (ns) { const s = _scripts.find(x => x.entity_id === ns); return `<span style="color:var(--bs-text-muted);font-size:.8rem">${esc(s ? s.name : ns)}</span>`; }
+      const gs = _settings.zwave_notify_script || '';
+      if (gs) { const s = _scripts.find(x => x.entity_id === gs); return `<span class="muted" style="font-size:.8rem">${esc(s ? s.name : gs)}</span>`; }
+      return '';
+    })();
+    return `<tr class="device-row" data-eid="${n.entity_id}">
+      <td data-zcol="name">${esc(n.name)}${isMuted ? ` <span title="Notifications muted" style="color:var(--bs-text-dim);font-size:.8rem">&#x1F515; <span style="color:var(--bs-text-dim)">(${muteRemaining(n.muted_until)})</span></span>` : ''}</td>
+      <td data-zcol="status">${zwaveStatusBadge(n.state)}</td>
+      <td data-zcol="notify" onclick="event.stopPropagation()">
+        <label class="notify-check"><input type="checkbox" data-zeid="${n.entity_id}" data-field="notify_bell"   ${n.notify_bell  !== false ? 'checked' : ''}> UI</label>
+        <label class="notify-check"><input type="checkbox" data-zeid="${n.entity_id}" data-field="notify_email"  ${n.notify_email !== false ? 'checked' : ''}> Email</label>
+        <label class="notify-check"><input type="checkbox" data-zeid="${n.entity_id}" data-field="notify_mobile" ${n.notify_mobile ? 'checked' : ''}> Mobile</label>
+      </td>
+      <td data-zcol="script">${scriptLabel}</td>
+      <td data-zcol="area" class="muted">${esc(n.area || '')}</td>
+    </tr>`;
+  }).join('');
+
+  const cg = [
+    `<col data-zcol="name"   style="width:${w.name}%">`,
+    `<col data-zcol="status" style="width:${w.status}%">`,
+    `<col data-zcol="notify" style="width:${w.notify}%">`,
+    `<col data-zcol="script" style="width:${w.script}%">`,
+    `<col data-zcol="area"   style="width:${w.area}%">`,
+  ].join('');
+
+  document.getElementById("zwave-content").innerHTML = sorted.length
+    ? `<table style="width:100%;border-collapse:collapse;font-size:.9rem;table-layout:fixed">
+        <colgroup>${cg}</colgroup>
+        <thead><tr>
+          <th data-zcol="name"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Node <span style="color:var(--bs-text-dim);font-weight:normal;font-size:.8rem">(${_zwaveNodes.length})</span>${arrow('name')}<span class="resize-handle zw-resize-handle" data-zcol="name"></span></th>
+          <th data-zcol="status" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Status${arrow('status')}<span class="resize-handle zw-resize-handle" data-zcol="status"></span></th>
+          <th data-zcol="notify" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap" onclick="event.stopPropagation()">
+            <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_bell"> UI</label>
+            <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_email"> Email</label>
+            <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_mobile"> Mobile</label>
+            <span class="resize-handle zw-resize-handle" data-zcol="notify"></span></th>
+          <th data-zcol="script" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap">Script<span class="resize-handle zw-resize-handle" data-zcol="script"></span></th>
+          <th data-zcol="area"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Room${arrow('area')}<span class="resize-handle zw-resize-handle" data-zcol="area"></span></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`
+    : '<p class="loading">No Z-Wave nodes found. Enable Z-Wave monitoring in Settings and run a scan.</p>';
+
+  document.querySelectorAll("th[data-zcol]").forEach(th => {
+    th.addEventListener("click", e => {
+      if (e.target.classList.contains("resize-handle")) return;
+      if (e.target.closest("input, label")) return;
+      if (_zwWasDragging) { _zwWasDragging = false; return; }
+      _zwaveSortCol === th.dataset.zcol ? (_zwaveSortDir *= -1) : (_zwaveSortCol = th.dataset.zcol, _zwaveSortDir = 1);
+      renderZwaveTable();
+    });
+  });
+  document.querySelectorAll(".zw-resize-handle").forEach(h => {
+    h.addEventListener("click",     e => e.stopPropagation());
+    h.addEventListener("mousedown", e => startZwResize(e, h.dataset.zcol));
+  });
+  document.querySelectorAll("#zwave-content .device-row").forEach(row =>
+    row.addEventListener("click", () => openZwaveModal(row.dataset.eid))
+  );
+  document.querySelectorAll('input[data-zeid]').forEach(cb => {
+    cb.addEventListener("change", async () => {
+      const eid   = cb.dataset.zeid;
+      const field = cb.dataset.field;
+      const idx   = _zwaveNodes.findIndex(x => x.entity_id === eid);
+      if (idx !== -1) _zwaveNodes[idx][field] = cb.checked;
+      updateZwHeaderCheckboxes();
+      try {
+        await fetch(BASE + "/api/zwave-node/" + encodeURIComponent(eid), {
+          method: "POST", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({[field]: cb.checked}),
+        });
+      } catch {}
+    });
+  });
+  ["notify_bell", "notify_email", "notify_mobile"].forEach(field => {
+    const hdr = document.getElementById("zw-hdr-" + field);
+    if (hdr) hdr.addEventListener("change", () => toggleAllZw(field, hdr.checked));
+  });
+  updateZwHeaderCheckboxes();
+}
+
+function openZwaveModal(eid) {
+  const n = _zwaveNodes.find(x => x.entity_id === eid);
+  if (!n) return;
+  _activeZwaveEid = eid;
+
+  document.getElementById("zwave-modal-name").textContent    = n.name;
+  document.getElementById("zwave-modal-entity").textContent  = eid;
+  document.getElementById("zwave-modal-status").innerHTML    = zwaveStatusBadge(n.state);
+  document.getElementById("zwave-modal-area").textContent    = n.area || '';
+  document.getElementById("zwave-modal-notes").value         = n.notes || '';
+  document.getElementById("zwave-modal-notify-bell").checked  = n.notify_bell  !== false;
+  document.getElementById("zwave-modal-notify-email").checked = n.notify_email !== false;
+  document.getElementById("zwave-modal-notify-mobile").checked = !!n.notify_mobile;
+  document.getElementById("zwave-modal-notify-addr").value   = n.notify_email_address || '';
+
+  const muteEl = document.getElementById("zwave-modal-mute");
+  const mu = n.muted_until ? new Date(n.muted_until) : null;
+  if (mu && mu > new Date()) {
+    muteEl.innerHTML =
+      `<option value="current" selected>Muted until ${mu.toLocaleString()}</option>` +
+      `<option value="">Unmute</option>` +
+      `<option value="1h">Extend: 1 hour from now</option>` +
+      `<option value="3h">Extend: 3 hours from now</option>` +
+      `<option value="8h">Extend: 8 hours from now</option>` +
+      `<option value="1d">Extend: 1 day from now</option>` +
+      `<option value="3d">Extend: 3 days from now</option>` +
+      `<option value="7d">Extend: 1 week from now</option>`;
+  } else {
+    muteEl.innerHTML =
+      `<option value="">Not muted</option>` +
+      `<option value="1h">1 hour</option>` +
+      `<option value="3h">3 hours</option>` +
+      `<option value="8h">8 hours</option>` +
+      `<option value="1d">1 day</option>` +
+      `<option value="3d">3 days</option>` +
+      `<option value="7d">1 week</option>`;
+  }
+
+  const scriptEl = document.getElementById("zwave-modal-script");
+  scriptEl.innerHTML =
+    '<option value="">-- Use global default --</option>' +
+    '<option value="__disabled__">-- Disabled for this node --</option>' +
+    _scripts.map(s => `<option value="${s.entity_id}"${n.notify_script === s.entity_id ? ' selected' : ''}>${s.name}</option>`).join('');
+  if (n.notify_script === '__disabled__') scriptEl.value = '__disabled__';
+  else if (!n.notify_script) scriptEl.value = '';
+
+  document.getElementById("zwave-modal").classList.add("open");
+}
+
+function closeZwaveModal() {
+  document.getElementById("zwave-modal").classList.remove("open");
+  _activeZwaveEid = null;
+}
+
+async function saveZwaveNode() {
+  if (!_activeZwaveEid) return;
+  const muteVal = document.getElementById("zwave-modal-mute").value;
+  const muteMap = { "1h": 1*60*60*1000, "3h": 3*60*60*1000, "8h": 8*60*60*1000, "1d": 24*60*60*1000, "3d": 3*24*60*60*1000, "7d": 7*24*60*60*1000 };
+  const payload = {
+    notes:                document.getElementById("zwave-modal-notes").value,
+    notify_bell:          document.getElementById("zwave-modal-notify-bell").checked,
+    notify_email:         document.getElementById("zwave-modal-notify-email").checked,
+    notify_mobile:        document.getElementById("zwave-modal-notify-mobile").checked,
+    notify_email_address: document.getElementById("zwave-modal-notify-addr").value.trim(),
+    notify_script:        document.getElementById("zwave-modal-script").value,
+  };
+  if (muteVal && muteVal !== "current") payload.muted_until = new Date(Date.now() + muteMap[muteVal]).toISOString();
+  else if (!muteVal) payload.muted_until = null;
+  try {
+    const r = await fetch(BASE + "/api/zwave-node/" + encodeURIComponent(_activeZwaveEid), {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) throw new Error();
+    const updated = await r.json();
+    const idx = _zwaveNodes.findIndex(x => x.entity_id === _activeZwaveEid);
+    if (idx !== -1) _zwaveNodes[idx] = { ..._zwaveNodes[idx], ...updated };
+    closeZwaveModal();
+    renderZwaveTable();
+  } catch {
+    alert("Failed to save Z-Wave node settings.");
+  }
+}
+
+document.getElementById("zwave-modal").addEventListener("click", e => {
+  if (e.target.id === "zwave-modal") closeZwaveModal();
+});
+
+function updateZwHeaderCheckboxes() {
+  const checks = {
+    notify_bell:   n => n.notify_bell  !== false,
+    notify_email:  n => n.notify_email !== false,
+    notify_mobile: n => !!n.notify_mobile,
+  };
+  Object.entries(checks).forEach(([field, fn]) => {
+    const hdr = document.getElementById("zw-hdr-" + field);
+    if (!hdr || !_zwaveNodes.length) return;
+    const count = _zwaveNodes.filter(fn).length;
+    hdr.checked       = count === _zwaveNodes.length;
+    hdr.indeterminate = count > 0 && count < _zwaveNodes.length;
+  });
+}
+
+async function toggleAllZw(field, checked) {
+  _zwaveNodes.forEach(n => n[field] = checked);
+  await Promise.allSettled(_zwaveNodes.map(n =>
+    fetch(BASE + "/api/zwave-node/" + encodeURIComponent(n.entity_id), {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({[field]: checked}),
+    })
+  ));
+  renderZwaveTable();
+}
+
 // ── Battery type lookup ───────────────────────────────────────────────
 let _conflictData = [];
 
@@ -1308,13 +1743,13 @@ async function lookupBatteryTypes() {
 
 function renderConflictList() {
   document.getElementById("conflict-list").innerHTML = _conflictData.map((item, i) =>
-    `<div style="padding:.6rem 1.25rem;border-top:1px solid #2a2a2a;display:flex;align-items:center;gap:.75rem">
+    `<div style="padding:.6rem 1.25rem;border-top:1px solid var(--bs-border);display:flex;align-items:center;gap:.75rem">
       <div style="flex:1;min-width:0">
-        <div style="color:#ccc;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.name}</div>
-        <div style="font-size:.82rem;margin-top:.2rem;color:#888">
-          Mine: <strong style="color:#e0e0e0">${item.current_type}</strong>
+        <div style="color:var(--bs-text);font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(item.name)}</div>
+        <div style="font-size:.82rem;margin-top:.2rem;color:var(--bs-text-muted)">
+          Mine: <strong style="color:var(--bs-text)">${esc(item.current_type)}</strong>
           &nbsp;vs&nbsp;
-          DB: <strong style="color:#58a6ff">${item.suggested_type}</strong>
+          DB: <strong style="color:var(--bs-accent)">${esc(item.suggested_type)}</strong>
         </div>
       </div>
       <div style="display:flex;gap:.35rem;flex-shrink:0">

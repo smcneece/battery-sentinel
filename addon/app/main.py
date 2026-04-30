@@ -5,15 +5,24 @@ import logging
 import os
 import zoneinfo
 
+"""Battery Sentinel -- aiohttp web server and main refresh loop.
+
+This module is the orchestrator: it ties together HA data fetching (ha_api),
+persistence (storage), and outbound notifications (notifications). Route handlers
+are thin -- they delegate to those modules and return JSON or HTML."""
+
 from aiohttp import web
 
 import ha_api
+import notifications
 import storage
+import zwave_monitor
+from device_utils import device_is_low, level_str, format_line
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.04.16"
+VERSION = "2026.04.17"
 
 _cache: list = []
 _startup_logged = False
@@ -39,6 +48,13 @@ async def do_refresh():
             except Exception:
                 _LOGGER.warning("Unknown timezone '%s', falling back to system time", tz_name)
     live = await ha_api.get_battery_entities()
+    hidden_eids = await ha_api.get_hidden_entity_ids()
+    if hidden_eids:
+        before = len(live)
+        live = [e for e in live if e["entity_id"] not in hidden_eids]
+        skipped = before - len(live)
+        if skipped:
+            _LOGGER.info("Skipped %d entity/entities hidden in HA entity registry", skipped)
     metadata = await ha_api.get_entity_metadata()
     registry = await ha_api.get_device_registry()
     for entity in live:
@@ -49,7 +65,11 @@ async def do_refresh():
         entity["manufacturer"] = dev.get("manufacturer", "")
         entity["model"]        = dev.get("model", "")
 
-    # Deduplicate battery sensors that share a physical device
+    # Deduplicate battery sensors that share a physical device.
+    # Some devices expose both a numeric percentage sensor and a binary low/ok sensor.
+    # We prefer the numeric one -- it has more information. We also collapse redundant
+    # binary "soon" variants when a "now" variant exists on the same device, but leave
+    # multi-battery hubs (e.g. Ambient Weather) alone since each binary may be a different battery.
     by_device = {}
     for entity in live:
         did = entity.get("device_id", "")
@@ -62,12 +82,8 @@ async def do_refresh():
         numeric = [e for e in entities if not e["entity_id"].startswith("binary_sensor.")]
         binary  = [e for e in entities if e["entity_id"].startswith("binary_sensor.")]
         if numeric:
-            # Numeric sensor wins — drop all binary sensors for this device
             skip_eids.update(e["entity_id"] for e in binary)
         elif len(binary) > 1:
-            # Only collapse "soon" variants when a "now" variant exists on the same device.
-            # Leave all other multi-binary cases alone — they may be different physical batteries
-            # sharing one HA device (e.g. a multi-channel hub like Ambient Weather).
             if any("now" in e["name"].lower() for e in binary):
                 skip_eids.update(e["entity_id"] for e in binary if "soon" in e["name"].lower())
     if skip_eids:
@@ -77,6 +93,7 @@ async def do_refresh():
     new_eids, _cache = storage.merge_entities(live)
     settings = storage.get_settings()
 
+    # Log configuration summary once at startup so it's easy to verify settings from the log
     if not _startup_logged:
         _startup_logged = True
         _LOGGER.info(
@@ -94,8 +111,8 @@ async def do_refresh():
         _LOGGER.info("New device(s) discovered: %s", ", ".join(new_eids))
     if new_eids and settings.get("notify_new_device"):
         new_devices = [d for d in _cache if d["entity_id"] in new_eids]
-        lines = [ha_api._format_line(d, settings.get("report_include_battery_type", False)) for d in new_devices]
-        await ha_api.fire_notification(
+        lines = [format_line(d, settings.get("report_include_battery_type", False)) for d in new_devices]
+        await notifications.fire_notification(
             f"Battery Sentinel: {len(new_devices)} new battery device(s) discovered",
             "\n".join(lines),
             settings,
@@ -103,7 +120,7 @@ async def do_refresh():
 
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     for device in _cache:
-        is_low = ha_api.device_is_low(device)
+        is_low = device_is_low(device)
         if device.get("alert_threshold", 15) == -1:
             if device.get("alert_sent"):
                 storage.set_alert_sent(device["entity_id"], False)
@@ -113,7 +130,9 @@ async def do_refresh():
         muted_until = device.get("muted_until")
         if muted_until:
             try:
-                if datetime.datetime.now() < datetime.datetime.fromisoformat(muted_until):
+                mu_dt = datetime.datetime.fromisoformat(muted_until)
+                now_cmp = datetime.datetime.now(datetime.timezone.utc) if mu_dt.tzinfo else datetime.datetime.now()
+                if now_cmp < mu_dt:
                     is_muted = True
                 else:
                     storage.save_device(device["entity_id"], {"muted_until": None})
@@ -122,16 +141,16 @@ async def do_refresh():
                 pass
 
         if is_low and not device.get("alert_sent") and not is_muted:
-            _LOGGER.info("Alert: %s is low (%s), sending notifications", device["name"], ha_api.level_str(device))
-            await ha_api.fire_low_battery_email(
+            _LOGGER.info("Alert: %s is low (%s), sending notifications", device["name"], level_str(device))
+            await notifications.fire_low_battery_email(
                 "Battery Sentinel: Low battery",
-                f"{device['name']} battery is low ({ha_api.level_str(device)}). Threshold: {device.get('alert_threshold', 15)}%",
+                f"{device['name']} battery is low ({level_str(device)}). Threshold: {device.get('alert_threshold', 15)}%",
                 settings,
                 device,
             )
             storage.set_alert_sent(device["entity_id"], True)
         elif not is_low and device.get("alert_sent"):
-            _LOGGER.info("Alert reset: %s recovered (%s)", device["name"], ha_api.level_str(device))
+            _LOGGER.info("Alert reset: %s recovered (%s)", device["name"], level_str(device))
             storage.set_alert_sent(device["entity_id"], False)
         elif is_low and is_muted:
             _LOGGER.debug("Notifications muted for %s until %s", device["name"], muted_until)
@@ -143,8 +162,8 @@ async def do_refresh():
             else:
                 script = dev_script or settings.get("notify_script", "")
             if script and device.get("script_last_run") != today:
-                _LOGGER.info("Script trigger: %s → %s for %s", script, ha_api.level_str(device), device["name"])
-                await ha_api.fire_script(script, device)
+                _LOGGER.info("Script trigger: %s → %s for %s", script, level_str(device), device["name"])
+                await notifications.fire_script(script, device)
                 storage.set_script_last_run(device["entity_id"], today)
                 for i, d in enumerate(_cache):
                     if d["entity_id"] == device["entity_id"]:
@@ -169,7 +188,12 @@ async def do_refresh():
                 try:
                     since = datetime.datetime.fromisoformat(device["unavailable_since"])
                     mu = device.get("muted_until")
-                    is_muted_unavail = mu and now < datetime.datetime.fromisoformat(mu)
+                    if mu:
+                        mu_dt = datetime.datetime.fromisoformat(mu)
+                        now_cmp = datetime.datetime.now(datetime.timezone.utc) if mu_dt.tzinfo else now
+                        is_muted_unavail = now_cmp < mu_dt
+                    else:
+                        is_muted_unavail = False
                     if (now - since).total_seconds() >= delay_seconds and not is_muted_unavail:
                         storage.set_unavailable_sent(eid, True)
                         device["unavailable_sent"] = True
@@ -185,19 +209,25 @@ async def do_refresh():
                 device["unavailable_sent"] = False
                 newly_recovered.append(device)
 
+    # Suppress unavailable alerts on the very first scan -- devices that were already
+    # unavailable before the add-on started would otherwise fire immediately on boot.
     if newly_unavailable and settings.get("notify_unavailable") and not _first_run:
         _LOGGER.info("Unavailable alert: %d device(s)", len(newly_unavailable))
-        await ha_api.fire_unavailable_notification(newly_unavailable, settings)
+        await notifications.fire_unavailable_notification(newly_unavailable, settings)
     elif newly_unavailable and _first_run:
         _LOGGER.info("Suppressed unavailable alert for %d device(s) on first scan (integration startup)", len(newly_unavailable))
 
     if newly_recovered and settings.get("notify_unavailable"):
         _LOGGER.info("Recovery alert: %d device(s) back online", len(newly_recovered))
-        await ha_api.fire_recovery_notification(newly_recovered, settings)
+        await notifications.fire_recovery_notification(newly_recovered, settings)
 
+    this_run_is_first = _first_run
     _first_run = False
 
-    await ha_api.update_low_battery_notification(_cache, settings)
+    await notifications.update_low_battery_notification(_cache, settings)
+
+    if settings.get("zwave_monitor_enabled"):
+        await zwave_monitor.check_nodes(settings, this_run_is_first, metadata)
 
     if settings.get("daily_report_enabled"):
         if not settings.get("notify_email_service"):
@@ -215,7 +245,7 @@ async def do_refresh():
                     if storage.get_last_report_date() == today:
                         _LOGGER.debug("Daily report already sent today, skipping")
                     elif now >= report_dt:
-                        await ha_api.send_daily_report(_cache, settings)
+                        await notifications.send_daily_report(_cache, settings)
                         storage.set_last_report_date(today)
             except Exception:
                 _LOGGER.exception("Daily report check failed")
@@ -269,7 +299,7 @@ async def handle_api_report_now(request):
     if not settings.get("notify_email_service"):
         return web.Response(status=400, text="No email service configured")
     _LOGGER.info("Manual daily report requested")
-    asyncio.ensure_future(ha_api.send_daily_report(_cache, settings))
+    asyncio.ensure_future(notifications.send_daily_report(_cache, settings))
     return web.Response(text='{"status":"ok"}', content_type="application/json")
 
 
@@ -338,6 +368,30 @@ async def handle_api_device_restore(request):
         return web.Response(text='{"status":"ok"}', content_type="application/json")
     except Exception:
         _LOGGER.exception("Failed to restore device %s", entity_id)
+        return web.Response(status=400, text="Bad request")
+
+
+async def handle_api_zwave_nodes(request):
+    nodes = storage.get_zwave_nodes()
+    areas = await ha_api.get_zwave_node_areas()
+    result = []
+    for eid, node in nodes.items():
+        node["entity_id"] = eid
+        node["area"] = areas.get(eid, node.get("area", ""))
+        result.append(node)
+    return web.Response(text=json.dumps(result), content_type="application/json")
+
+
+async def handle_api_zwave_node_post(request):
+    entity_id = request.match_info["entity_id"]
+    try:
+        data = await request.json()
+        node = storage.save_zwave_node(entity_id, data)
+        return web.Response(text=json.dumps(node), content_type="application/json")
+    except KeyError:
+        return web.Response(status=404, text="Z-Wave node not found")
+    except Exception:
+        _LOGGER.exception("Failed to save Z-Wave node %s", entity_id)
         return web.Response(status=400, text="Bad request")
 
 
@@ -440,6 +494,8 @@ def main():
     app.router.add_get("/api/hidden-devices",               handle_api_hidden_devices)
     app.router.add_post("/api/battery-lookup",              handle_api_battery_lookup)
     app.router.add_post("/api/rename/{entity_id}",          handle_api_rename)
+    app.router.add_get("/api/zwave-nodes",                  handle_api_zwave_nodes)
+    app.router.add_post("/api/zwave-node/{entity_id}",      handle_api_zwave_node_post)
 
     port = int(os.environ.get("INGRESS_PORT", 8099))
     _LOGGER.info("Starting Battery Sentinel on port %d", port)

@@ -1,5 +1,19 @@
 # Battery Sentinel Changelog
 
+## 2026.04.17
+- Z-Wave node monitoring: new Settings card to monitor Z-Wave network health via node status sensors reported by Z-Wave JS; covers every Z-Wave device on your network -- switches, dimmers, locks, sirens, and sensors -- not just battery-powered ones; dead node detection timing depends on Z-Wave JS and device type
+- Monitors all `sensor.*_node_status` entities automatically; covers every Z-Wave device on your network, not just battery-powered ones; no per-device configuration required
+- Configurable alert delay (default 5 minutes) to filter out brief communication blips; alerts fire once per dead event and reset automatically on recovery; a recovery notification is sent when a node comes back online
+- Bell, email, mobile push, and script trigger options for Z-Wave node alerts; script receives device_name, entity_id, and node_status as variables
+- Tab order is now Devices | Z-Wave | Settings; Z-Wave tab appears between Devices and Settings when Z-Wave monitoring is enabled
+- Light and dark theme: the UI now follows the operating system or browser preference automatically via `prefers-color-scheme`; no setting required
+- Default alert threshold for newly discovered devices changed from 15% to 20%; existing per-device thresholds are not affected
+- Fixed: Z-Wave entity IDs that were renamed in HA persisted in storage indefinitely; stale entries are now pruned on each scan
+- Entities marked as not visible in the HA entity registry are now excluded from Battery Sentinel automatically; useful for browser battery sensors and other entities you intentionally hide in HA
+- Security: HTML-escaped device names, areas, and battery types in all outgoing emails and in the device list, hidden devices section, and conflict modal in the UI
+- Mute remaining time now shown next to the muted bell icon in the device list (e.g. 1h 53m)
+- Code modularisation: notification logic, HTML email builders, device utilities, and HA connection constants each moved to their own modules; main.py is now a thin orchestration layer only
+
 ## 2026.04.16
 - Mute notifications per device: a new "Mute notifications" dropdown in the device panel lets you silence alerts for 1 hour, 3 hours, 8 hours, 1 day, 3 days, or 1 week; a small bell icon appears in the device list next to muted devices; mutes expire automatically
 - Fixed: devices with UI notifications turned off were still appearing in the HA persistent low-battery notification; muted devices are also now excluded from it
