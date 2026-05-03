@@ -88,7 +88,7 @@ async def check_nodes(settings: dict, first_run: bool, metadata: dict = None):
         for node in nodes:
             node["area"] = metadata.get(node["entity_id"], {}).get("area", "")
 
-    delay_seconds = int(settings.get("zwave_alert_delay", 5)) * 60
+    delay_seconds = int(settings.get("notify_unavailable_delay", 5)) * 60
     now = datetime.datetime.now()
 
     merged = storage.merge_zwave_nodes(nodes)
@@ -169,9 +169,14 @@ async def check_nodes(settings: dict, first_run: bool, metadata: dict = None):
                         node_with_settings = {**entry, "state": node["state"]}
                         _LOGGER.info("Z-Wave dead node alert: %s", eid)
                         await notifications.fire_zwave_node_dead(node_with_settings, settings)
-                        script = (entry.get("notify_script") or "").strip() or settings.get("zwave_notify_script", "").strip()
+                        script = (entry.get("notify_script") or "").strip() or settings.get("notify_script", "").strip()
                         if script and script != "__disabled__":
-                            await notifications.fire_zwave_script(script, node)
+                            await notifications.fire_script(script, {
+                                "device_name": node.get("name", ""),
+                                "entity_id":   node["entity_id"],
+                                "node_status": node.get("state", "dead"),
+                                "device_type": "z-wave",
+                            })
                 except Exception:
                     _LOGGER.exception("Z-Wave dead alert failed for %s", eid)
 

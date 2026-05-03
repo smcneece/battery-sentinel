@@ -30,12 +30,11 @@ DEFAULT_SETTINGS = {
     "notify_new_device": True,
     "notify_unavailable": False,
     "notify_unavailable_delay": 5,
+    "suppress_unavailable_if_monitored": True,
     "zwave_monitor_enabled": False,
-    "zwave_alert_delay": 5,
-    "zwave_notify_bell": True,
-    "zwave_notify_email": True,
-    "zwave_notify_mobile": False,
-    "zwave_notify_script": "",
+    "zigbee_monitor_enabled": False,
+    "zigbee_offline_threshold": 24,
+    "zigbee_scan_interval": 30,
     "check_interval": 10,
     "daily_report_enabled": False,
     "daily_report_time": "08:00",
@@ -85,9 +84,9 @@ def save_settings(updates: dict) -> dict:
         "notify_new_device", "check_interval",
         "daily_report_enabled", "daily_report_time", "daily_report_days",
         "daily_report_include_all", "daily_report_send_if_ok", "report_include_battery_type",
-        "notify_unavailable", "notify_unavailable_delay",
-        "zwave_monitor_enabled", "zwave_alert_delay",
-        "zwave_notify_bell", "zwave_notify_email", "zwave_notify_mobile", "zwave_notify_script",
+        "notify_unavailable", "notify_unavailable_delay", "suppress_unavailable_if_monitored",
+        "zwave_monitor_enabled",
+        "zigbee_monitor_enabled", "zigbee_offline_threshold", "zigbee_scan_interval",
     )
     for key in allowed:
         if key in updates:
@@ -310,6 +309,85 @@ def save_zwave_node(entity_id: str, fields: dict) -> dict:
     nodes = data.setdefault("_zwave_nodes", {})
     if entity_id not in nodes:
         raise KeyError(f"Z-Wave node {entity_id} not found")
+    allowed = {
+        "notes", "notify_bell", "notify_email", "notify_mobile",
+        "notify_email_address", "notify_script", "muted_until",
+    }
+    for key, val in fields.items():
+        if key in allowed:
+            nodes[entity_id][key] = val
+    _save(data)
+    return nodes[entity_id]
+
+
+def get_zigbee_nodes() -> dict:
+    """Return the full _zigbee_nodes tracking dict, keyed by entity_id."""
+    return _load().get("_zigbee_nodes", {})
+
+
+def update_zigbee_node(entity_id: str, fields: dict):
+    """Create or update a Zigbee node tracking entry."""
+    data = _load()
+    nodes = data.setdefault("_zigbee_nodes", {})
+    if entity_id not in nodes:
+        nodes[entity_id] = {}
+    nodes[entity_id].update(fields)
+    _save(data)
+
+
+def merge_zigbee_nodes(live_nodes: list) -> list:
+    """Ensure all discovered Zigbee last_seen nodes have storage entries with defaults.
+
+    New nodes get default notification settings. Existing nodes keep user settings.
+    Stale entries (entity no longer in HA) are pruned.
+    Returns list of merged node dicts."""
+    data = _load()
+    nodes = data.setdefault("_zigbee_nodes", {})
+
+    for node in live_nodes:
+        eid = node["entity_id"]
+        if eid not in nodes:
+            nodes[eid] = {
+                "entity_id":            eid,
+                "name":                 node["name"],
+                "notes":                "",
+                "notify_bell":          True,
+                "notify_email":         True,
+                "notify_mobile":        False,
+                "notify_email_address": "",
+                "notify_script":        "",
+                "muted_until":          None,
+                "offline_since":        None,
+                "alert_sent":           False,
+            }
+        else:
+            nodes[eid].setdefault("notes", "")
+            nodes[eid].setdefault("notify_bell", True)
+            nodes[eid].setdefault("notify_email", True)
+            nodes[eid].setdefault("notify_mobile", False)
+            nodes[eid].setdefault("notify_email_address", "")
+            nodes[eid].setdefault("notify_script", "")
+            nodes[eid].setdefault("muted_until", None)
+            nodes[eid].setdefault("offline_since", None)
+            nodes[eid].setdefault("alert_sent", False)
+        nodes[eid]["entity_id"] = eid
+        nodes[eid]["name"]      = node["name"]
+        nodes[eid]["state"]     = node["state"]
+
+    live_eids = {n["entity_id"] for n in live_nodes}
+    for k in [k for k in nodes if k not in live_eids]:
+        del nodes[k]
+
+    _save(data)
+    return [nodes[n["entity_id"]] for n in live_nodes]
+
+
+def save_zigbee_node(entity_id: str, fields: dict) -> dict:
+    """Update user-editable settings for a Zigbee node."""
+    data = _load()
+    nodes = data.setdefault("_zigbee_nodes", {})
+    if entity_id not in nodes:
+        raise KeyError(f"Zigbee node {entity_id} not found")
     allowed = {
         "notes", "notify_bell", "notify_email", "notify_mobile",
         "notify_email_address", "notify_script", "muted_until",

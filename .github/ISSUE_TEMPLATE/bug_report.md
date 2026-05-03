@@ -16,7 +16,7 @@ A clear description of the bug.
 2. 
 3. 
 
-**Version** *(optional — shown in the Battery Sentinel UI footer)*
+**Version** *(optional — shown in the Battery Sentinel Plus UI header)*
 
 **HA version** *(optional)*
 

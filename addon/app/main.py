@@ -17,16 +17,18 @@ import ha_api
 import notifications
 import storage
 import zwave_monitor
+import zigbee_monitor
 from device_utils import device_is_low, level_str, format_line
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.04.17"
+VERSION = "2026.05.1"
 
 _cache: list = []
 _startup_logged = False
 _first_run = True
+_zigbee_first_run = True
 _ha_tz: datetime.timezone = None
 
 
@@ -163,7 +165,14 @@ async def do_refresh():
                 script = dev_script or settings.get("notify_script", "")
             if script and device.get("script_last_run") != today:
                 _LOGGER.info("Script trigger: %s → %s for %s", script, level_str(device), device["name"])
-                await notifications.fire_script(script, device)
+                await notifications.fire_script(script, {
+                    "device_name":   device.get("name", ""),
+                    "battery_level": level_str(device),
+                    "battery_type":  device.get("battery_type", ""),
+                    "area":          device.get("area", ""),
+                    "entity_id":     device["entity_id"],
+                    "device_type":   "battery",
+                })
                 storage.set_script_last_run(device["entity_id"], today)
                 for i, d in enumerate(_cache):
                     if d["entity_id"] == device["entity_id"]:
@@ -208,6 +217,20 @@ async def do_refresh():
                 storage.set_unavailable_sent(eid, False)
                 device["unavailable_sent"] = False
                 newly_recovered.append(device)
+
+    if settings.get("suppress_unavailable_if_monitored", True):
+        if settings.get("zwave_monitor_enabled") or settings.get("zigbee_monitor_enabled"):
+            try:
+                monitored_ids = await ha_api.get_monitored_entity_device_ids()
+                if monitored_ids:
+                    before = len(newly_unavailable)
+                    newly_unavailable = [d for d in newly_unavailable if d.get("device_id") not in monitored_ids]
+                    newly_recovered   = [d for d in newly_recovered   if d.get("device_id") not in monitored_ids]
+                    suppressed = before - len(newly_unavailable)
+                    if suppressed:
+                        _LOGGER.info("Suppressed %d unavailable alert(s) for Z-Wave/Zigbee monitored device(s)", suppressed)
+            except Exception:
+                _LOGGER.exception("Failed to suppress monitored device unavailable alerts")
 
     # Suppress unavailable alerts on the very first scan -- devices that were already
     # unavailable before the add-on started would otherwise fire immediately on boot.
@@ -260,6 +283,17 @@ async def refresh_loop():
         await asyncio.sleep(interval_min * 60)
 
 
+async def zigbee_loop():
+    global _zigbee_first_run
+    while True:
+        settings = storage.get_settings()
+        if settings.get("zigbee_monitor_enabled"):
+            await zigbee_monitor.check_nodes(settings, _zigbee_first_run)
+            _zigbee_first_run = False
+        interval_min = max(1, int(settings.get("zigbee_scan_interval", 30)))
+        await asyncio.sleep(interval_min * 60)
+
+
 async def handle_index(request):
     ingress_path = request.headers.get("X-Ingress-Path", "").rstrip("/")
     return web.Response(text=_build_html(ingress_path), content_type="text/html")
@@ -278,10 +312,16 @@ async def handle_api_settings_get(request):
 
 
 async def handle_api_settings_post(request):
+    global _zigbee_first_run
     try:
         data = await request.json()
+        old_settings = storage.get_settings()
         result = storage.save_settings(data)
         _LOGGER.info("Settings saved")
+        # Trigger immediate Zigbee scan when monitoring is first enabled
+        if result.get("zigbee_monitor_enabled") and not old_settings.get("zigbee_monitor_enabled"):
+            _zigbee_first_run = False
+            asyncio.ensure_future(zigbee_monitor.check_nodes(result, False))
         return web.Response(text=json.dumps(result), content_type="application/json")
     except Exception:
         _LOGGER.exception("Failed to save settings")
@@ -395,6 +435,38 @@ async def handle_api_zwave_node_post(request):
         return web.Response(status=400, text="Bad request")
 
 
+async def handle_api_zigbee_nodes(request):
+    live = await ha_api.get_zigbee_last_seen_entities()
+    areas = await ha_api.get_zigbee_node_areas()
+    merged = storage.merge_zigbee_nodes(live)
+    for node in merged:
+        eid = node.get("entity_id", "")
+        node["area"] = areas.get(eid, node.get("area", ""))
+    return web.Response(text=json.dumps(merged), content_type="application/json")
+
+
+async def handle_api_zigbee_node_post(request):
+    entity_id = request.match_info["entity_id"]
+    try:
+        data = await request.json()
+        node = storage.save_zigbee_node(entity_id, data)
+        return web.Response(text=json.dumps(node), content_type="application/json")
+    except KeyError:
+        return web.Response(status=404, text="Zigbee node not found")
+    except Exception:
+        _LOGGER.exception("Failed to save Zigbee node %s", entity_id)
+        return web.Response(status=400, text="Bad request")
+
+
+async def handle_api_zigbee_scan(request):
+    settings = storage.get_settings()
+    if not settings.get("zigbee_monitor_enabled"):
+        return web.Response(status=400, text="Zigbee monitoring is not enabled")
+    _LOGGER.info("Manual Zigbee scan requested")
+    asyncio.ensure_future(zigbee_monitor.check_nodes(settings, False))
+    return web.Response(text='{"status":"ok"}', content_type="application/json")
+
+
 async def handle_api_battery_lookup(request):
     try:
         registry = await ha_api.get_device_registry()
@@ -473,6 +545,7 @@ def _build_html(base: str) -> str:
 
 async def on_startup(app):
     asyncio.ensure_future(refresh_loop())
+    asyncio.ensure_future(zigbee_loop())
 
 
 def main():
@@ -496,6 +569,9 @@ def main():
     app.router.add_post("/api/rename/{entity_id}",          handle_api_rename)
     app.router.add_get("/api/zwave-nodes",                  handle_api_zwave_nodes)
     app.router.add_post("/api/zwave-node/{entity_id}",      handle_api_zwave_node_post)
+    app.router.add_get("/api/zigbee-nodes",                 handle_api_zigbee_nodes)
+    app.router.add_post("/api/zigbee-node/{entity_id}",     handle_api_zigbee_node_post)
+    app.router.add_post("/api/zigbee-scan",                 handle_api_zigbee_scan)
 
     port = int(os.environ.get("INGRESS_PORT", 8099))
     _LOGGER.info("Starting Battery Sentinel on port %d", port)
