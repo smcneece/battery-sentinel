@@ -194,14 +194,7 @@ async def send_daily_report(devices: list, settings: dict):
 
 # ── Script trigger ────────────────────────────────────────────────────
 
-async def fire_script(script_entity_id: str, device: dict):
-    variables = {
-        "device_name":   device.get("name", ""),
-        "battery_level": level_str(device),
-        "battery_type":  device.get("battery_type", ""),
-        "area":          device.get("area", ""),
-        "entity_id":     device["entity_id"],
-    }
+async def fire_script(script_entity_id: str, variables: dict):
     try:
         async with aiohttp.ClientSession() as session:
             await session.post(
@@ -210,32 +203,9 @@ async def fire_script(script_entity_id: str, device: dict):
                 json={"entity_id": script_entity_id, "variables": variables},
                 timeout=aiohttp.ClientTimeout(total=10),
             )
-        _LOGGER.info("Script '%s' fired for %s", script_entity_id, device["entity_id"])
+        _LOGGER.info("Script '%s' fired (entity: %s)", script_entity_id, variables.get("entity_id", "?"))
     except Exception:
-        _LOGGER.exception("Failed to fire script '%s' for %s", script_entity_id, device["entity_id"])
-
-
-# ── Z-Wave script trigger ─────────────────────────────────────────────
-
-async def fire_zwave_script(script_entity_id: str, node: dict):
-    """Fire a HA script when a Z-Wave node goes dead.
-    Passes node-specific variables rather than battery variables."""
-    variables = {
-        "device_name": node.get("name", ""),
-        "entity_id":   node["entity_id"],
-        "node_status": node.get("state", "dead"),
-    }
-    try:
-        async with aiohttp.ClientSession() as session:
-            await session.post(
-                f"{HA_API_URL}/services/script/turn_on",
-                headers={**_headers(), "Content-Type": "application/json"},
-                json={"entity_id": script_entity_id, "variables": variables},
-                timeout=aiohttp.ClientTimeout(total=10),
-            )
-        _LOGGER.info("Z-Wave script '%s' fired for %s", script_entity_id, node["entity_id"])
-    except Exception:
-        _LOGGER.exception("Failed to fire Z-Wave script '%s' for %s", script_entity_id, node["entity_id"])
+        _LOGGER.exception("Failed to fire script '%s'", script_entity_id)
 
 
 # ── Z-Wave node alerts (per-node, respects per-node channel settings) ──
@@ -294,37 +264,59 @@ async def fire_zwave_controller_alert(dead_count: int, total: int, settings: dic
     title = "Battery Sentinel: Z-Wave network disruption"
     message = f"{dead_count} of {total} Z-Wave nodes are offline. This may indicate a Z-Wave controller or service issue."
 
-    if settings.get("zwave_notify_bell", True):
+    if settings.get("notify_persistent", True):
         await _fire_persistent(title, message)
 
-    if settings.get("zwave_notify_email", True):
-        service = settings.get("notify_email_service", "").strip()
-        if service:
-            addr = settings.get("notify_email_to", "")
-            targets = [a.strip() for a in addr.split(",") if a.strip()] if addr else []
-            cc = settings.get("notify_email_cc", "")
-            if cc:
-                targets.extend(a.strip() for a in cc.split(",") if a.strip())
-            if targets:
-                await _fire_notify_service(service, title, message, targets)
+    service = settings.get("notify_email_service", "").strip()
+    if service:
+        addr = settings.get("notify_email_to", "")
+        targets = [a.strip() for a in addr.split(",") if a.strip()] if addr else []
+        cc = settings.get("notify_email_cc", "")
+        if cc:
+            targets.extend(a.strip() for a in cc.split(",") if a.strip())
+        if targets:
+            await _fire_notify_service(service, title, message, targets)
 
-    if settings.get("zwave_notify_mobile", False):
-        mobile = settings.get("notify_mobile_default_service", "").strip()
-        if mobile:
-            await _fire_notify_service(mobile.removeprefix("notify."), title, message, [])
+    mobile = settings.get("notify_mobile_default_service", "").strip()
+    if mobile:
+        await _fire_notify_service(mobile.removeprefix("notify."), title, message, [])
 
 
 async def fire_zwave_controller_recovered(alive_count: int, total: int, settings: dict):
     title = "Battery Sentinel: Z-Wave network recovered"
     message = f"{alive_count} of {total} Z-Wave nodes are back online."
 
-    if settings.get("zwave_notify_bell", True):
+    if settings.get("notify_persistent", True):
         await _fire_persistent(title, message)
 
-    if settings.get("zwave_notify_email", True):
+    service = settings.get("notify_email_service", "").strip()
+    if service:
+        addr = settings.get("notify_email_to", "")
+        targets = [a.strip() for a in addr.split(",") if a.strip()] if addr else []
+        cc = settings.get("notify_email_cc", "")
+        if cc:
+            targets.extend(a.strip() for a in cc.split(",") if a.strip())
+        if targets:
+            await _fire_notify_service(service, title, message, targets)
+
+    mobile = settings.get("notify_mobile_default_service", "").strip()
+    if mobile:
+        await _fire_notify_service(mobile.removeprefix("notify."), title, message, [])
+
+
+# ── Zigbee node alerts ────────────────────────────────────────────────
+
+async def fire_zigbee_node_offline(node: dict, settings: dict):
+    title = f"Battery Sentinel: Zigbee device offline — {node['name']}"
+    message = f"{node['name']} has not been seen for longer than the configured threshold."
+
+    if node.get("notify_bell", True):
+        await _fire_persistent(title, message)
+
+    if node.get("notify_email", True):
         service = settings.get("notify_email_service", "").strip()
         if service:
-            addr = settings.get("notify_email_to", "")
+            addr = node.get("notify_email_address", "") or settings.get("notify_email_to", "")
             targets = [a.strip() for a in addr.split(",") if a.strip()] if addr else []
             cc = settings.get("notify_email_cc", "")
             if cc:
@@ -332,7 +324,31 @@ async def fire_zwave_controller_recovered(alive_count: int, total: int, settings
             if targets:
                 await _fire_notify_service(service, title, message, targets)
 
-    if settings.get("zwave_notify_mobile", False):
+    if node.get("notify_mobile", False):
+        mobile = settings.get("notify_mobile_default_service", "").strip()
+        if mobile:
+            await _fire_notify_service(mobile.removeprefix("notify."), title, message, [])
+
+
+async def fire_zigbee_node_recovered(node: dict, settings: dict):
+    title = f"Battery Sentinel: Zigbee device back online — {node['name']}"
+    message = f"{node['name']} has come back online."
+
+    if node.get("notify_bell", True):
+        await _fire_persistent(title, message)
+
+    if node.get("notify_email", True):
+        service = settings.get("notify_email_service", "").strip()
+        if service:
+            addr = node.get("notify_email_address", "") or settings.get("notify_email_to", "")
+            targets = [a.strip() for a in addr.split(",") if a.strip()] if addr else []
+            cc = settings.get("notify_email_cc", "")
+            if cc:
+                targets.extend(a.strip() for a in cc.split(",") if a.strip())
+            if targets:
+                await _fire_notify_service(service, title, message, targets)
+
+    if node.get("notify_mobile", False):
         mobile = settings.get("notify_mobile_default_service", "").strip()
         if mobile:
             await _fire_notify_service(mobile.removeprefix("notify."), title, message, [])

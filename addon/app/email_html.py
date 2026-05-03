@@ -7,15 +7,14 @@ import html as html_mod
 
 from device_utils import device_is_low, level_str, level_color
 
-_ICON_URL = "https://raw.githubusercontent.com/smcneece/battery-sentinel/main/addon/icon.png"
 _REPO_URL = "https://github.com/smcneece/battery-sentinel"
 
 _FOOTER = (
     f"<tr><td style='background:#f5f5f5;padding:12px 20px;text-align:center;"
     f"border-top:1px solid #e0e0e0'>"
     f"<span style='color:#aaa;font-size:.78em'>"
-    f"<a href='{_REPO_URL}' style='color:#58a6ff;text-decoration:none'>Battery Sentinel</a>"
-    f" &mdash; Home Assistant Battery Monitor</span>"
+    f"<a href='{_REPO_URL}' style='color:#58a6ff;text-decoration:none'>Battery Sentinel Plus</a>"
+    f" &mdash; Home Assistant Device Monitor</span>"
     f"</td></tr></table></body></html>"
 )
 
@@ -25,8 +24,7 @@ _HEADER_STYLE = (
     "<table width='100%' cellpadding='0' cellspacing='0' style='max-width:640px;margin:0 auto;"
     "border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.15)'>"
     "<tr><td style='background:#1a1a2e;padding:18px 20px'>"
-    f"<img src='{_ICON_URL}' width='30' height='30' style='vertical-align:middle;border-radius:4px' alt=''>"
-    "<span style='color:#fff;font-size:1.1em;font-weight:bold;vertical-align:middle;margin-left:8px'>Battery Sentinel</span>"
+    "<span style='color:#fff;font-size:1.1em;font-weight:bold'>Battery Sentinel Plus</span>"
 )
 
 
