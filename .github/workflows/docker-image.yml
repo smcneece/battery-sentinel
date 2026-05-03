@@ -2,31 +2,124 @@ name: Docker Image
 
 on:
   push:
-    branches: [ main, master, develop, dev ]
+    branches:
+      - dev
     tags:
-      - 'v*'
-      - '[0-9]+.[0-9]+.[0-9]+'
-      - '[0-9]{4}.[0-9]{2}.[0-9]{2}'
+      - 'v*.*.*'
   release:
-    types: [published]
+    types:
+      - published
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   docker:
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       packages: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - name: Read version from add-on config
+        id: version
+        shell: bash
+        run: |
+          VERSION="$(python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          text = Path("addon/config.yaml").read_text(encoding="utf-8")
+          match = re.search(
+              r'(?m)^version:\s*["'\'']?([^"'\'']+)["'\'']?\s*$',
+              text
+          )
+
+          if not match:
+              raise SystemExit("Could not find version in addon/config.yaml")
+
+          print(match.group(1).strip())
+          PY
+          )"
+
+          MINOR=""
+
+          if [[ "${VERSION}" =~ ^[0-9]{4}\.[0-9]{2}\.[0-9]+$ ]]; then
+            MINOR="$(echo "${VERSION}" | sed -E 's/^([0-9]{4}\.[0-9]{2})\.[0-9]+$/\1/')"
+          fi
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "minor=${MINOR}" >> "$GITHUB_OUTPUT"
+
+          echo "Detected version: ${VERSION}"
+          echo "Detected minor release line: ${MINOR}"
+
+          # Prepared for future upstream semantics, currently intentionally disabled:
+          #
+          # if [[ "${VERSION}" == *".dev"* ]]; then
+          #   CHANNEL="dev"
+          # elif [[ "${VERSION}" =~ b[0-9]+$ ]]; then
+          #   CHANNEL="beta"
+          # else
+          #   CHANNEL="stable"
+          # fi
+          #
+          # echo "channel=${CHANNEL}" >> "$GITHUB_OUTPUT"
+
+      - name: Validate release version
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
+        shell: bash
+        run: |
+          ADDON_VERSION="${{ steps.version.outputs.version }}"
+
+          if [[ ! "${ADDON_VERSION}" =~ ^[0-9]{4}\.[0-9]{2}\.[0-9]+$ ]]; then
+            echo "ERROR: addon/config.yaml version '${ADDON_VERSION}' does not match expected release format YYYY.MM.PATCH, e.g. 2026.04.17"
+            exit 1
+          fi
+
+          if [[ "${GITHUB_REF_NAME}" =~ ^v[0-9]{4}\.[0-9]{2}\.[0-9]+$ ]]; then
+            TAG_VERSION="${GITHUB_REF_NAME#v}"
+
+            echo "Git tag: ${GITHUB_REF_NAME}"
+            echo "Normalized git tag: ${TAG_VERSION}"
+            echo "Add-on version: ${ADDON_VERSION}"
+
+            if [ "${TAG_VERSION}" != "${ADDON_VERSION}" ]; then
+              echo "ERROR: Git tag '${GITHUB_REF_NAME}' does not match addon/config.yaml version '${ADDON_VERSION}'."
+              exit 1
+            fi
+          else
+            echo "ERROR: Release/tag ref '${GITHUB_REF_NAME}' does not match expected format vYYYY.MM.PATCH, e.g. v2026.04.17"
+            exit 1
+          fi
+
+          # Prepared for future beta/dev tag formats, currently intentionally disabled:
+          #
+          # Beta example:
+          # if [[ "${GITHUB_REF_NAME}" =~ ^v[0-9]{4}\.[0-9]{2}\.[0-9]+b[0-9]+$ ]]; then
+          #   echo "Detected beta tag"
+          # fi
+          #
+          # Dev example:
+          # if [[ "${GITHUB_REF_NAME}" =~ ^v[0-9]{4}\.[0-9]{2}\.[0-9]+\.dev[0-9]+$ ]]; then
+          #   echo "Detected dev tag"
+          # fi
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -40,12 +133,23 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=false
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=dev,enable=${{ github.ref_name == 'develop' || github.ref_name == 'dev' }}
-            type=ref,event=tag
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            # Development channel:
+            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
+
+            # Stable release tags matching current upstream semantics:
+            type=raw,value=${{ steps.version.outputs.version }},priority=9999,enable=${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'release' }}
+            type=raw,value=${{ steps.version.outputs.minor }},enable=${{ (startsWith(github.ref, 'refs/tags/') || github.event_name == 'release') && steps.version.outputs.minor != '' }}
+            type=raw,value=stable,enable=${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'release' }}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'release' }}
+
+            # Prepared for future Home Assistant-style beta / rc channels.
+            # Currently disabled because upstream battery-sentinel does not use beta/rc tags.
+            #
+            # type=raw,value=beta,enable=${{ steps.version.outputs.channel == 'beta' && (startsWith(github.ref, 'refs/tags/') || github.event_name == 'release') }}
+            # type=raw,value=rc,enable=${{ steps.version.outputs.channel == 'beta' && (startsWith(github.ref, 'refs/tags/') || github.event_name == 'release') }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
