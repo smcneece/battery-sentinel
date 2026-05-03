@@ -28,6 +28,14 @@ def _ws_url() -> str:
 HA_API_URL = _api_base()
 _HA_WS_URL = _ws_url()
 
+def _access_token() -> str:
+    """Return HA access token from environment.
+
+    HA_TOKEN is preferred for standalone Docker use.
+    SUPERVISOR_TOKEN is used automatically in HA add-on environments.
+    """
+    return os.environ.get("HA_TOKEN") or os.environ.get("SUPERVISOR_TOKEN", "")
+
 
 def _headers():
     """Return auth header.
@@ -35,5 +43,4 @@ def _headers():
     HA_TOKEN is preferred for standalone Docker use.
     SUPERVISOR_TOKEN is used automatically in HA add-on environments.
     """
-    token = os.environ.get("HA_TOKEN") or os.environ.get("SUPERVISOR_TOKEN", "")
-    return {"Authorization": f"Bearer {token}"}
+    return {"Authorization": f"Bearer {_access_token()}"}

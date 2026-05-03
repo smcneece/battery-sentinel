@@ -10,7 +10,7 @@ import re
 
 import aiohttp
 
-from ha_config import HA_API_URL, _HA_WS_URL, _headers
+from ha_config import HA_API_URL, _HA_WS_URL, _access_token, _headers
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ async def get_battery_entities():
 async def get_hidden_entity_ids() -> set:
     """Returns entity_ids marked not-visible in the HA entity registry.
     Uses WebSocket because the REST entity registry endpoint is not exposed through the Supervisor proxy."""
-    token = os.environ.get("SUPERVISOR_TOKEN", "")
+    token = _access_token()
     try:
         async with aiohttp.ClientSession() as session:
             async with session.ws_connect(
@@ -221,7 +221,7 @@ _BATTERY_NOTES_PATH = os.path.join(os.path.dirname(__file__), "library.json")
 
 async def get_device_registry() -> dict:
     """Returns dict of device_id -> {manufacturer, model} for all HA devices."""
-    token = os.environ.get("SUPERVISOR_TOKEN", "")
+    token = _access_token()
     try:
         async with aiohttp.ClientSession() as session:
             async with session.ws_connect(_HA_WS_URL) as ws:
@@ -320,7 +320,7 @@ def lookup_battery_types(devices: list, registry: dict, db: list) -> tuple:
 
 async def rename_entity(entity_id: str, new_name: str) -> bool:
     """Rename an entity's friendly name via the HA WebSocket API."""
-    token = os.environ.get("SUPERVISOR_TOKEN", "")
+    token = _access_token()
     try:
         async with aiohttp.ClientSession() as session:
             async with session.ws_connect(_HA_WS_URL) as ws:
