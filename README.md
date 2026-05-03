@@ -184,6 +184,38 @@ Once the repository is added:
 5. Click **Start**.
 6. Click **Open Web UI** or use the Battery Sentinel link in the sidebar.
 
+### Standalone Docker (Home Assistant Container/Core)
+
+> Note: The Home Assistant add-on image remains separate (`addon/Dockerfile`) and unchanged for Supervisor installs.
+
+Battery Sentinel can also run as a regular Docker container. Set:
+
+- `HA_BASE_URL` (example: `http://homeassistant:8123`)
+- `HA_TOKEN` (long-lived access token created in your HA profile)
+
+Example:
+
+```bash
+docker run -d --name battery-sentinel -p 8099:8099 \
+  -e HA_BASE_URL=http://homeassistant:8123 \
+  -e HA_TOKEN=YOUR_LONG_LIVED_TOKEN \
+  ghcr.io/<owner>/battery-sentinel:latest
+```
+
+Or with Docker Compose:
+
+```bash
+cp docker/docker-compose.example.yml docker-compose.yml
+# edit HA_BASE_URL, HA_TOKEN and TZ
+docker compose up -d
+```
+
+
+For persistence, the compose example mounts `./data:/data`. Battery Sentinel stores its JSON state at `/data/battery_sentinel.json`.
+
+Timezone: set `TZ` in Compose for container-local time/logging. Battery Sentinel also reads Home Assistant timezone via API for report scheduling.
+
+
 ### Manual Installation
 
 > ⚠️ **No automatic updates**: local add-ons are not tracked by the Supervisor. You will not receive update notifications; you must check [GitHub releases](https://github.com/smcneece/battery-sentinel/releases) manually and re-copy files for each new version. The repository install method above is strongly recommended.
