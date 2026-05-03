@@ -1,6 +1,7 @@
 name: Battery Sentinel
 description: Monitor and manage battery-powered devices in Home Assistant
-version: "2026.04.17"
+url: https://github.com/smcneece/battery-sentinel
+version: "2026.05.1"
 slug: battery_sentinel
 init: false
 arch:
@@ -11,6 +12,7 @@ boot: auto
 ingress: true
 ingress_port: 8099
 panel_icon: mdi:battery-heart
+panel_title: Battery Sentinel+
 homeassistant_api: true
 options: {}
 schema: {}

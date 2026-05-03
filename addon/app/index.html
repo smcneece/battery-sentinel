@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Battery Sentinel</title>
+<title>Battery Sentinel Plus</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -120,7 +120,7 @@
   .type-delete:hover { color: var(--bs-crit); }
   .type-add { display: flex; gap: .5rem; margin-top: .25rem; }
   .type-add input { flex: 1; }
-  .settings-footer { margin-top: 1.25rem; display: flex; align-items: center; justify-content: center; gap: .75rem; padding-top: 1rem; border-top: 1px solid var(--bs-border); }
+  .settings-footer { position: sticky; bottom: 0; z-index: 10; background: var(--bs-bg); margin-top: 1.25rem; display: flex; align-items: center; justify-content: center; gap: .75rem; padding: .75rem 1rem; border-top: 1px solid var(--bs-border); }
   .save-status { font-size: .82rem; color: var(--bs-ok); }
   .notify-row { display: flex; align-items: center; gap: .6rem; margin-bottom: .5rem; font-size: .9rem; }
   .notify-row input[type=checkbox] { width: auto; accent-color: var(--bs-accent); }
@@ -174,14 +174,15 @@
 <body>
 
 <div class="header">
-  <img src="{{BASE}}/icon.png" alt="Battery Sentinel">
-  <h1>Battery Sentinel</h1>
+  <img src="{{BASE}}/icon.png" alt="Battery Sentinel Plus">
+  <h1>Battery Sentinel Plus</h1>
   <span class="badge">{{VERSION}}</span>
 </div>
 
 <nav class="tabs">
   <button class="tab-btn active" data-tab="devices">Devices</button>
   <button class="tab-btn" id="tab-zwave-btn" data-tab="zwave" style="display:none">Z-Wave</button>
+  <button class="tab-btn" id="tab-zigbee-btn" data-tab="zigbee" style="display:none">Zigbee</button>
   <button class="tab-btn" data-tab="settings">Settings</button>
 </nav>
 
@@ -238,7 +239,7 @@
       <p class="muted" style="font-size:.82rem;margin-bottom:1.25rem">Refreshes battery levels and discovers new devices. Notifications only fire if a device newly crosses its threshold.</p>
       <div class="setting-row">
         <label>Check interval (minutes)</label>
-        <p>How often Battery Sentinel polls HA for new devices and current battery levels. Range: 1 to 120 minutes.</p>
+        <p>How often Battery Sentinel Plus polls HA for new devices and current battery levels. Range: 1 to 120 minutes.</p>
         <input type="number" id="setting-check-interval" min="1" max="120" style="max-width:80px" value="10">
       </div>
       <div class="setting-row">
@@ -254,7 +255,7 @@
         <button id="lookup-btn" class="btn btn-secondary" onclick="lookupBatteryTypes()">Look Up Battery Types</button>
         <span class="scan-status" id="lookup-status"></span>
       </div>
-      <p class="muted" style="font-size:.82rem;margin-top:.35rem">Queries the Battery Notes community database to auto-fill missing battery types.</p>
+      <p class="muted" style="font-size:.82rem;margin-top:.35rem">Uses a locally bundled copy of the Battery Notes community database to auto-fill missing battery types. No external network calls are made.</p>
     </div>
 
     <div class="settings-card">
@@ -304,18 +305,22 @@
         <input type="checkbox" id="setting-notify-unavailable">
         <label for="setting-notify-unavailable">Alert when a battery device goes unavailable or unknown</label>
       </div>
-      <div class="setting-row" style="margin-bottom:.85rem;padding-left:1.6rem">
+      <div class="setting-row" style="margin-bottom:.5rem;padding-left:1.6rem">
         <label style="font-size:.85rem;color:var(--bs-text-muted)">Alert delay</label>
-        <p style="font-size:.8rem">Wait this many minutes before sending the offline alert. Devices that recover before the delay expires are silently ignored. A recovery alert is sent when the device comes back online.</p>
+        <p style="font-size:.8rem">Wait this many minutes before sending any unavailable, dead-node, or offline alert. Devices that recover before the delay expires are silently ignored. A recovery alert is sent when the device comes back.</p>
         <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
           <input type="number" id="setting-unavailable-delay" min="0" max="60" step="1"
             style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
           <span style="color:var(--bs-text-muted);font-size:.9rem">minutes (0 = immediate)</span>
         </div>
       </div>
+      <div class="notify-row" style="margin-bottom:.85rem;padding-left:1.6rem">
+        <input type="checkbox" id="setting-suppress-unavailable-monitored">
+        <label for="setting-suppress-unavailable-monitored">Skip unavailable alerts for devices already covered by Z-Wave or Zigbee monitoring</label>
+      </div>
       <div class="setting-row">
         <label>Email notify service</label>
-        <p>Which HA notify service sends email alerts. Select a Gmail, SMTP, or similar email-capable service. Do not select persistent_notification.</p>
+        <p>Which HA notify service sends email alerts. Select a Gmail, SMTP, or similar email-capable service.</p>
         <select id="setting-notify-service">
           <option value="">-- None --</option>
         </select>
@@ -331,96 +336,104 @@
       </div>
     </div>
 
-    <div class="settings-card">
-      <h3>Daily Email Report</h3>
-      <div class="notify-row">
-        <input type="checkbox" id="setting-daily-enabled">
-        <label for="setting-daily-enabled">Send daily battery report email</label>
-      </div>
-      <div class="notify-row" style="margin-top:.25rem">
-        <input type="checkbox" id="setting-daily-send-if-ok">
-        <label for="setting-daily-send-if-ok">Send report even when all batteries are OK</label>
-      </div>
-      <div class="setting-row" style="margin-top:.85rem">
-        <label>Send time</label>
-        <input type="time" id="setting-daily-time" style="max-width:130px" value="08:00">
-      </div>
-      <div class="setting-row">
-        <label>Send on</label>
-        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.25rem">
-          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-0"> Mon</label>
-          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-1"> Tue</label>
-          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-2"> Wed</label>
-          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-3"> Thu</label>
-          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-4"> Fri</label>
-          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-5"> Sat</label>
-          <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-6"> Sun</label>
+    <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 1rem; min-width: 0;">
+      <div class="settings-card" style="flex: none;">
+        <h3>Daily Email Report</h3>
+        <div class="notify-row">
+          <input type="checkbox" id="setting-daily-enabled">
+          <label for="setting-daily-enabled">Send daily battery report email</label>
+        </div>
+        <div class="notify-row" style="margin-top:.25rem">
+          <input type="checkbox" id="setting-daily-send-if-ok">
+          <label for="setting-daily-send-if-ok">Send report even when all batteries are OK</label>
+        </div>
+        <div class="setting-row" style="margin-top:.85rem">
+          <label>Send time</label>
+          <input type="time" id="setting-daily-time" style="max-width:130px" value="08:00">
+        </div>
+        <div class="setting-row">
+          <label>Send on</label>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.25rem">
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-0"> Mon</label>
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-1"> Tue</label>
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-2"> Wed</label>
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-3"> Thu</label>
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-4"> Fri</label>
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-5"> Sat</label>
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-6"> Sun</label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <label>Include in report</label>
+          <select id="setting-daily-include">
+            <option value="low">Low batteries only</option>
+            <option value="all">All batteries (full status)</option>
+          </select>
+        </div>
+        <div class="notify-row" style="margin-top:.5rem">
+          <input type="checkbox" id="setting-include-battery-type">
+          <label for="setting-include-battery-type">Include battery type in reports and notifications</label>
+        </div>
+        <div class="scan-bar" style="margin-top:1rem">
+          <button class="btn btn-secondary" onclick="sendReportNow()">Send Email Report Now</button>
+          <span class="scan-status" id="report-status"></span>
         </div>
       </div>
-      <div class="setting-row">
-        <label>Include in report</label>
-        <select id="setting-daily-include">
-          <option value="low">Low batteries only</option>
-          <option value="all">All batteries (full status)</option>
-        </select>
-      </div>
-      <div class="notify-row" style="margin-top:.5rem">
-        <input type="checkbox" id="setting-include-battery-type">
-        <label for="setting-include-battery-type">Include battery type in reports and notifications</label>
-      </div>
-      <div class="scan-bar" style="margin-top:1rem">
-        <button class="btn btn-secondary" onclick="sendReportNow()">Send Email Report Now</button>
-        <span class="scan-status" id="report-status"></span>
+      <div class="settings-card" style="flex: none;">
+        <h3>Columns</h3>
+        <p class="muted" style="font-size:.82rem;margin-bottom:.85rem">Choose which columns appear in the device list. Device name is always shown.</p>
+        <div class="notify-row"><input type="checkbox" id="col-level"  onchange="toggleCol('level',  this.checked)"><label for="col-level">Level</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-btype"  onchange="toggleCol('btype',  this.checked)"><label for="col-btype">Battery Type</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-alert"  onchange="toggleCol('alert',  this.checked)"><label for="col-alert">Alert Threshold</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-notify" onchange="toggleCol('notify', this.checked)"><label for="col-notify">Notifications (UI / Email / Mobile)</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-script" onchange="toggleCol('script', this.checked)"><label for="col-script">Script</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-area"   onchange="toggleCol('area',   this.checked)"><label for="col-area">Room</label></div>
       </div>
     </div>
 
     <div class="settings-card">
-      <h3>Z-Wave Node Monitoring</h3>
-      <div class="notify-row" style="margin-bottom:.5rem">
-        <input type="checkbox" id="setting-zwave-enabled">
-        <label for="setting-zwave-enabled">Alert when a Z-Wave node goes dead</label>
-      </div>
-      <p style="font-size:.8rem;color:var(--bs-text-muted);margin-bottom:.5rem">Monitors all <code>sensor.*_node_status</code> entities. Fires an alert when a node is reported dead by Z-Wave JS, and a recovery alert when it comes back online.</p>
-      <div class="notify-row" style="margin-bottom:.25rem;padding-left:1.6rem">
-        <input type="checkbox" id="setting-zwave-bell">
-        <label for="setting-zwave-bell">HA bell notification</label>
-      </div>
-      <div class="notify-row" style="margin-bottom:.25rem;padding-left:1.6rem">
-        <input type="checkbox" id="setting-zwave-email">
-        <label for="setting-zwave-email">Email notification</label>
-      </div>
-      <div class="notify-row" style="margin-bottom:.85rem;padding-left:1.6rem">
-        <input type="checkbox" id="setting-zwave-mobile">
-        <label for="setting-zwave-mobile">Mobile push notification (uses global default mobile service)</label>
-      </div>
-      <div class="setting-row" style="padding-left:1.6rem">
-        <label style="font-size:.85rem;color:var(--bs-text-muted)">Alert delay</label>
-        <p style="font-size:.8rem">Wait this many minutes before sending the dead node alert. Nodes that recover before the delay expires are silently ignored.</p>
-        <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
-          <input type="number" id="setting-zwave-delay" min="0" max="120" step="1"
-            style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
-          <span style="color:var(--bs-text-muted);font-size:.9rem">minutes (0 = immediate)</span>
+      <h3>Device Monitoring</h3>
+      <div style="margin-bottom:1rem">
+        <div style="font-size:.78rem;font-weight:600;color:var(--bs-text-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em">Z-Wave</div>
+        <div class="notify-row" style="margin-bottom:.35rem">
+          <input type="checkbox" id="setting-zwave-enabled">
+          <label for="setting-zwave-enabled">Alert when a Z-Wave node goes dead</label>
         </div>
+        <p style="font-size:.8rem;color:var(--bs-text-muted)">Monitors all <code>sensor.*_node_status</code> entities. Fires an alert when a node is reported dead by Z-Wave JS, and a recovery alert when it comes back online. Notification channels and mute periods are configured per-node in the Z-Wave tab.</p>
       </div>
-      <div class="setting-row" style="padding-left:1.6rem">
-        <label style="font-size:.85rem;color:var(--bs-text-muted)">Script trigger</label>
-        <p style="font-size:.8rem">Run a HA script when a node goes dead. Passes <code>device_name</code>, <code>entity_id</code>, and <code>node_status</code> as script variables.</p>
-        <select id="setting-zwave-script" style="margin-top:.35rem">
-          <option value="">-- None --</option>
-        </select>
+      <div style="border-top:1px solid var(--bs-border);padding-top:1rem">
+        <div style="font-size:.78rem;font-weight:600;color:var(--bs-text-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em">Zigbee</div>
+        <div class="notify-row" style="margin-bottom:.35rem">
+          <input type="checkbox" id="setting-zigbee-enabled">
+          <label for="setting-zigbee-enabled">Alert when a Zigbee device goes offline</label>
+        </div>
+        <p style="font-size:.8rem;color:var(--bs-text-muted);margin-bottom:.75rem">Monitors all <code>sensor.*_last_seen</code> entities created by Zigbee2MQTT. Requires last_seen to be enabled in Z2M and the Last Seen entities to be enabled in HA. Notification channels and mute periods are configured per-device in the Zigbee tab.</p>
+        <div class="setting-row">
+          <label style="font-size:.85rem;color:var(--bs-text-muted)">Offline threshold</label>
+          <p style="font-size:.8rem">How many hours without a check-in before a device is considered offline. Set this higher than your Z2M availability timeout.</p>
+          <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
+            <input type="number" id="setting-zigbee-threshold" min="1" max="168" step="1"
+              style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
+            <span style="color:var(--bs-text-muted);font-size:.9rem">hours</span>
+          </div>
+        </div>
+        <div class="setting-row">
+          <label style="font-size:.85rem;color:var(--bs-text-muted)">Scan interval</label>
+          <p style="font-size:.8rem">How often Battery Sentinel Plus checks Zigbee last_seen timestamps. Independent from the battery check interval.</p>
+          <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
+            <input type="number" id="setting-zigbee-interval" min="1" max="1440" step="1"
+              style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
+            <span style="color:var(--bs-text-muted);font-size:.9rem">minutes</span>
+          </div>
+        </div>
+        <div style="margin-top:.85rem">
+          <p style="font-size:.8rem;color:var(--bs-text-muted);margin-bottom:.5rem">Triggers an immediate Zigbee Last Seen check without waiting for the next scan interval. Does not affect the battery or Z-Wave check cycles.</p>
+          <button class="btn btn-secondary" onclick="scanZigbeeFromSettings()" id="zigbee-settings-scan-btn">Scan Now</button>
+          <span id="zigbee-settings-scan-status" style="font-size:.85rem;color:var(--bs-text-muted);margin-left:.75rem"></span>
+        </div>
       </div>
     </div>
 
-    <div class="settings-card">
-      <h3>Columns</h3>
-      <p class="muted" style="font-size:.82rem;margin-bottom:.85rem">Choose which columns appear in the device list. Device name is always shown.</p>
-      <div class="notify-row"><input type="checkbox" id="col-level"  onchange="toggleCol('level',  this.checked)"><label for="col-level">Level</label></div>
-      <div class="notify-row"><input type="checkbox" id="col-btype"  onchange="toggleCol('btype',  this.checked)"><label for="col-btype">Battery Type</label></div>
-      <div class="notify-row"><input type="checkbox" id="col-alert"  onchange="toggleCol('alert',  this.checked)"><label for="col-alert">Alert Threshold</label></div>
-      <div class="notify-row"><input type="checkbox" id="col-notify" onchange="toggleCol('notify', this.checked)"><label for="col-notify">Notifications (UI / Email / Mobile)</label></div>
-      <div class="notify-row"><input type="checkbox" id="col-script" onchange="toggleCol('script', this.checked)"><label for="col-script">Script</label></div>
-      <div class="notify-row"><input type="checkbox" id="col-area"   onchange="toggleCol('area',   this.checked)"><label for="col-area">Room</label></div>
-    </div>
 
   </div>
   <div class="settings-footer">
@@ -431,6 +444,69 @@
 
 <div id="tab-zwave" class="tab-content">
   <div id="zwave-content"><p class="loading">Loading Z-Wave nodes...</p></div>
+</div>
+
+<div id="tab-zigbee" class="tab-content">
+  <div id="zigbee-content"><p class="loading">Loading Zigbee devices...</p></div>
+</div>
+
+<div class="modal-overlay" id="zigbee-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div style="flex:1;min-width:0">
+        <div id="zigbee-modal-name" style="font-size:1.05rem;font-weight:500;color:var(--bs-text)"></div>
+        <div class="entity-id" id="zigbee-modal-entity" style="margin-top:.2rem"></div>
+      </div>
+      <button class="modal-close" onclick="closeZigbeeModal()" title="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field">
+          <label>Status</label>
+          <div id="zigbee-modal-status" style="font-size:.9rem;padding:.25rem 0"></div>
+        </div>
+        <div class="field">
+          <label>Last Seen</label>
+          <div id="zigbee-modal-lastseen" style="color:var(--bs-text-muted);font-size:.9rem;padding:.25rem 0"></div>
+        </div>
+        <div class="field">
+          <label>Room</label>
+          <div id="zigbee-modal-area" style="color:var(--bs-text-muted);font-size:.9rem;padding:.25rem 0"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Mute notifications</label>
+        <select id="zigbee-modal-mute"></select>
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="zigbee-modal-notes" placeholder="Optional notes about this device..."></textarea>
+      </div>
+      <div class="field">
+        <label>Notifications</label>
+        <div style="display:flex;gap:1.25rem;margin-top:.25rem">
+          <label class="notify-check"><input type="checkbox" id="zigbee-modal-notify-bell"> UI (HA)</label>
+          <label class="notify-check"><input type="checkbox" id="zigbee-modal-notify-email"> Email</label>
+          <label class="notify-check"><input type="checkbox" id="zigbee-modal-notify-mobile"> Mobile</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Email address override</label>
+        <input type="email" id="zigbee-modal-notify-addr" placeholder="Leave blank to use global default">
+      </div>
+      <div class="field">
+        <label>Script trigger</label>
+        <select id="zigbee-modal-script">
+          <option value="">-- Use global default --</option>
+          <option value="__disabled__">-- Disabled for this device --</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeZigbeeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveZigbeeNode()">Save</button>
+    </div>
+  </div>
 </div>
 
 <div class="modal-overlay" id="modal">
@@ -640,6 +716,11 @@ let _zwColWidths = Object.assign({}, _zwColDefaults, JSON.parse(localStorage.get
 let _zwResizing    = null;
 let _zwWasDragging = false;
 
+const _zbColDefaults = { name: 24, lastseen: 14, status: 10, area: 12, notify: 24, script: 16 };
+let _zbColWidths = Object.assign({}, _zbColDefaults, JSON.parse(localStorage.getItem('bs_zb_colWidths_v2') || '{}'));
+let _zbResizing    = null;
+let _zbWasDragging = false;
+
 // ── Column resize ─────────────────────────────────────────────────────
 function startResize(e, col) {
   e.preventDefault();
@@ -710,6 +791,41 @@ function stopZwResize() {
   document.removeEventListener("mouseup",   stopZwResize);
 }
 
+// ── Zigbee column resize ──────────────────────────────────────────────
+function startZbResize(e, col) {
+  e.preventDefault();
+  e.stopPropagation();
+  const table = document.querySelector("#zigbee-content table");
+  if (!table) return;
+  const th = document.querySelector(`th[data-zbcol="${col}"]`);
+  _zbResizing    = { col, startX: e.clientX, startW: th.offsetWidth, tableW: table.offsetWidth };
+  _zbWasDragging = false;
+  document.querySelector(`.zb-resize-handle[data-zbcol="${col}"]`)?.classList.add("dragging");
+  document.addEventListener("mousemove", onZbResize);
+  document.addEventListener("mouseup",   stopZbResize);
+}
+
+function onZbResize(e) {
+  if (!_zbResizing) return;
+  const delta = e.clientX - _zbResizing.startX;
+  if (Math.abs(delta) < 3) return;
+  _zbWasDragging = true;
+  const newPct = Math.max(8, (_zbResizing.startW + delta) / _zbResizing.tableW * 100);
+  _zbColWidths[_zbResizing.col] = parseFloat(newPct.toFixed(1));
+  const col = document.querySelector(`#zigbee-content col[data-zbcol="${_zbResizing.col}"]`);
+  if (col) col.style.width = _zbColWidths[_zbResizing.col] + "%";
+}
+
+function stopZbResize() {
+  if (_zbResizing) {
+    document.querySelector(`.zb-resize-handle[data-zbcol="${_zbResizing.col}"]`)?.classList.remove("dragging");
+    _zbResizing = null;
+    localStorage.setItem('bs_zb_colWidths_v2', JSON.stringify(_zbColWidths));
+  }
+  document.removeEventListener("mousemove", onZbResize);
+  document.removeEventListener("mouseup",   stopZbResize);
+}
+
 // ── Tabs ──────────────────────────────────────────────────────────────
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -717,12 +833,18 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
     btn.classList.add("active");
     document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
     if (btn.dataset.tab === "zwave") loadZwaveNodes();
+    if (btn.dataset.tab === "zigbee") loadZigbeeNodes();
   });
 });
 
 function updateZwaveTabVisibility() {
   const btn = document.getElementById("tab-zwave-btn");
   if (btn) btn.style.display = _settings.zwave_monitor_enabled ? '' : 'none';
+}
+
+function updateZigbeeTabVisibility() {
+  const btn = document.getElementById("tab-zigbee-btn");
+  if (btn) btn.style.display = _settings.zigbee_monitor_enabled ? '' : 'none';
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────
@@ -1170,7 +1292,7 @@ async function restoreDevice(entityId) {
 }
 
 async function purgeDevice(entityId) {
-  if (!confirm("Permanently delete this device from Battery Sentinel?\n\nIf the entity still exists in Home Assistant, it will be re-added automatically on the next scan.")) return;
+  if (!confirm("Permanently delete this device from Battery Sentinel Plus?\n\nIf the entity still exists in Home Assistant, it will be re-added automatically on the next scan.")) return;
   try {
     const r = await fetch(BASE + "/api/device/" + encodeURIComponent(entityId) + "/purge", { method: "DELETE" });
     if (!r.ok) throw new Error();
@@ -1332,18 +1454,17 @@ async function saveSettings() {
   _settings.default_threshold      = parseInt(document.getElementById("setting-threshold").value, 10);
   _settings.notify_persistent      = document.getElementById("setting-notify-persistent").checked;
   _settings.notify_new_device      = document.getElementById("setting-notify-new-device").checked;
-  _settings.notify_unavailable       = document.getElementById("setting-notify-unavailable").checked;
-  _settings.notify_unavailable_delay = Math.max(0, parseInt(document.getElementById("setting-unavailable-delay").value, 10) || 0);
+  _settings.notify_unavailable                = document.getElementById("setting-notify-unavailable").checked;
+  _settings.notify_unavailable_delay          = Math.max(0, parseInt(document.getElementById("setting-unavailable-delay").value, 10) || 0);
+  _settings.suppress_unavailable_if_monitored = document.getElementById("setting-suppress-unavailable-monitored").checked;
   _settings.zwave_monitor_enabled    = document.getElementById("setting-zwave-enabled").checked;
-  _settings.zwave_notify_bell        = document.getElementById("setting-zwave-bell").checked;
-  _settings.zwave_notify_email       = document.getElementById("setting-zwave-email").checked;
-  _settings.zwave_notify_mobile      = document.getElementById("setting-zwave-mobile").checked;
-  _settings.zwave_alert_delay        = Math.max(0, parseInt(document.getElementById("setting-zwave-delay").value, 10) || 0);
+  _settings.zigbee_monitor_enabled   = document.getElementById("setting-zigbee-enabled").checked;
+  _settings.zigbee_offline_threshold = Math.max(1, parseInt(document.getElementById("setting-zigbee-threshold").value, 10) || 24);
+  _settings.zigbee_scan_interval     = Math.max(1, parseInt(document.getElementById("setting-zigbee-interval").value, 10) || 30);
   _settings.check_interval           = Math.max(1, parseInt(document.getElementById("setting-check-interval").value, 10) || 10);
   _settings.notify_email_service          = document.getElementById("setting-notify-service").value;
   _settings.notify_mobile_default_service = document.getElementById("setting-mobile-default").value;
   _settings.notify_script                 = document.getElementById("setting-notify-script").value;
-  _settings.zwave_notify_script           = document.getElementById("setting-zwave-script").value;
   _settings.notify_email_to        = document.getElementById("setting-notify-to").value.trim();
   _settings.notify_email_cc        = document.getElementById("setting-notify-cc").value.trim();
   _settings.daily_report_enabled    = document.getElementById("setting-daily-enabled").checked;
@@ -1365,6 +1486,7 @@ async function saveSettings() {
     renderTable();
     renderTypeFilter();
     updateZwaveTabVisibility();
+    updateZigbeeTabVisibility();
   } catch {
     alert("Failed to save settings.");
   }
@@ -1393,13 +1515,13 @@ async function init() {
     document.getElementById("setting-threshold").value         = _settings.default_threshold || 20;
     document.getElementById("setting-notify-persistent").checked = _settings.notify_persistent !== false;
     document.getElementById("setting-notify-new-device").checked = _settings.notify_new_device !== false;
-    document.getElementById("setting-notify-unavailable").checked = !!_settings.notify_unavailable;
-    document.getElementById("setting-unavailable-delay").value  = _settings.notify_unavailable_delay ?? 5;
+    document.getElementById("setting-notify-unavailable").checked              = !!_settings.notify_unavailable;
+    document.getElementById("setting-unavailable-delay").value                = _settings.notify_unavailable_delay ?? 5;
+    document.getElementById("setting-suppress-unavailable-monitored").checked = _settings.suppress_unavailable_if_monitored !== false;
     document.getElementById("setting-zwave-enabled").checked    = !!_settings.zwave_monitor_enabled;
-    document.getElementById("setting-zwave-bell").checked       = _settings.zwave_notify_bell !== false;
-    document.getElementById("setting-zwave-email").checked      = _settings.zwave_notify_email !== false;
-    document.getElementById("setting-zwave-mobile").checked     = !!_settings.zwave_notify_mobile;
-    document.getElementById("setting-zwave-delay").value        = _settings.zwave_alert_delay ?? 5;
+    document.getElementById("setting-zigbee-enabled").checked   = !!_settings.zigbee_monitor_enabled;
+    document.getElementById("setting-zigbee-threshold").value   = _settings.zigbee_offline_threshold ?? 24;
+    document.getElementById("setting-zigbee-interval").value    = _settings.zigbee_scan_interval ?? 30;
     document.getElementById("setting-check-interval").value     = _settings.check_interval || 10;
     document.getElementById("setting-notify-to").value         = _settings.notify_email_to || '';
     document.getElementById("setting-notify-cc").value         = _settings.notify_email_cc || '';
@@ -1411,8 +1533,8 @@ async function init() {
     document.getElementById("setting-daily-include").value          = _settings.daily_report_include_all ? 'all' : 'low';
     document.getElementById("setting-include-battery-type").checked = !!_settings.report_include_battery_type;
 
-    const _emailExclude = ["persistent_notification", "hass", "notify", "send_message"];
-    const _emailExcludePrefix = ["mobile_app_", "alexa_media"];
+    const _emailExclude = ["persistent_notification", "notify"];
+    const _emailExcludePrefix = ["mobile_app_", "alexa_media_"];
     const emailSvcs = _notifyServices.filter(s => !_emailExclude.includes(s) && !_emailExcludePrefix.some(p => s.startsWith(p)));
     const svcEl = document.getElementById("setting-notify-service");
     const savedSvc = _settings.notify_email_service || '';
@@ -1428,10 +1550,6 @@ async function init() {
     const scriptSettingEl = document.getElementById("setting-notify-script");
     scriptSettingEl.innerHTML = '<option value="">-- None --</option>' +
       _scripts.map(s => `<option value="${s.entity_id}"${_settings.notify_script === s.entity_id ? ' selected' : ''}>${s.name}</option>`).join('');
-
-    const zwaveScriptEl = document.getElementById("setting-zwave-script");
-    zwaveScriptEl.innerHTML = '<option value="">-- None --</option>' +
-      _scripts.map(s => `<option value="${s.entity_id}"${_settings.zwave_notify_script === s.entity_id ? ' selected' : ''}>${s.name}</option>`).join('');
 
     renderTypeList();
     renderTypeFilter();
@@ -1453,6 +1571,7 @@ async function init() {
     });
     await loadHiddenDevices();
     updateZwaveTabVisibility();
+    updateZigbeeTabVisibility();
   } catch(e) {
     document.getElementById("content").innerHTML = '<p class="error">Failed to load battery data.</p>';
   }
@@ -1500,7 +1619,7 @@ function renderZwaveTable() {
       const ns = n.notify_script || '';
       if (ns === '__disabled__') return '<span class="muted">Off</span>';
       if (ns) { const s = _scripts.find(x => x.entity_id === ns); return `<span style="color:var(--bs-text-muted);font-size:.8rem">${esc(s ? s.name : ns)}</span>`; }
-      const gs = _settings.zwave_notify_script || '';
+      const gs = _settings.notify_script || '';
       if (gs) { const s = _scripts.find(x => x.entity_id === gs); return `<span class="muted" style="font-size:.8rem">${esc(s ? s.name : gs)}</span>`; }
       return '';
     })();
@@ -1694,6 +1813,284 @@ async function toggleAllZw(field, checked) {
     })
   ));
   renderZwaveTable();
+}
+
+// ── Zigbee tab ────────────────────────────────────────────────────────
+let _zigbeeNodes     = [];
+let _zigbeeSortCol   = "name";
+let _zigbeeSortDir   = 1;
+let _activeZigbeeEid = null;
+
+function zigbeeLastSeenStr(state) {
+  if (!state || state === "unavailable" || state === "unknown") return "Unavailable";
+  try {
+    const diff = Math.floor((Date.now() - new Date(state).getTime()) / 1000);
+    if (diff <    60) return "Just now";
+    if (diff <  3600) return Math.floor(diff / 60) + "m ago";
+    if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+    return Math.floor(diff / 86400) + "d ago";
+  } catch { return state; }
+}
+
+function zigbeeStatusBadge(state) {
+  if (!state || state === "unavailable" || state === "unknown")
+    return `<span style="color:var(--bs-text-dim);font-weight:500">Unavailable</span>`;
+  const thresholdHours = _settings.zigbee_offline_threshold || 24;
+  try {
+    const ageHours = (Date.now() - new Date(state).getTime()) / 3600000;
+    return ageHours > thresholdHours
+      ? `<span style="color:var(--bs-crit);font-weight:500">Offline</span>`
+      : `<span style="color:var(--bs-ok);font-weight:500">Online</span>`;
+  } catch {
+    return `<span style="color:var(--bs-text-dim);font-weight:500">Unknown</span>`;
+  }
+}
+
+async function loadZigbeeNodes() {
+  try {
+    const r = await fetch(BASE + "/api/zigbee-nodes");
+    _zigbeeNodes = await r.json();
+    renderZigbeeTable();
+  } catch {
+    document.getElementById("zigbee-content").innerHTML = '<p class="error">Failed to load Zigbee devices.</p>';
+  }
+}
+
+function renderZigbeeTable() {
+  const sorted = [..._zigbeeNodes].sort((a, b) => {
+    let ka, kb;
+    if      (_zigbeeSortCol === "name")     { ka = (a.name||'').toLowerCase();      kb = (b.name||'').toLowerCase(); }
+    else if (_zigbeeSortCol === "lastseen") { ka = a.state||'';                     kb = b.state||''; }
+    else if (_zigbeeSortCol === "status")   { ka = a.state||'';                     kb = b.state||''; }
+    else if (_zigbeeSortCol === "area")     { ka = (a.area||'zzz').toLowerCase();   kb = (b.area||'zzz').toLowerCase(); }
+    else { ka = ''; kb = ''; }
+    return ka < kb ? -_zigbeeSortDir : ka > kb ? _zigbeeSortDir : 0;
+  });
+
+  const arrow = col => _zigbeeSortCol === col ? `<span class="sort-arrow">${_zigbeeSortDir===1?'▲':'▼'}</span>` : '';
+  const w = _zbColWidths;
+
+  const rows = sorted.map(n => {
+    const isMuted = n.muted_until && new Date(n.muted_until) > new Date();
+    const scriptLabel = (() => {
+      const ns = n.notify_script || '';
+      if (ns === '__disabled__') return '<span class="muted">Off</span>';
+      if (ns) { const s = _scripts.find(x => x.entity_id === ns); return `<span style="color:var(--bs-text-muted);font-size:.8rem">${esc(s ? s.name : ns)}</span>`; }
+      const gs = _settings.notify_script || '';
+      if (gs) { const s = _scripts.find(x => x.entity_id === gs); return `<span class="muted" style="font-size:.8rem">${esc(s ? s.name : gs)}</span>`; }
+      return '';
+    })();
+    return `<tr class="device-row" data-eid="${n.entity_id}">
+      <td data-zbcol="name">${esc(n.name)}${isMuted ? ` <span title="Notifications muted" style="color:var(--bs-text-dim);font-size:.8rem">&#x1F515; <span style="color:var(--bs-text-dim)">(${muteRemaining(n.muted_until)})</span></span>` : ''}</td>
+      <td data-zbcol="lastseen" style="color:var(--bs-text-muted);font-size:.85rem">${zigbeeLastSeenStr(n.state)}</td>
+      <td data-zbcol="status">${zigbeeStatusBadge(n.state)}</td>
+      <td data-zbcol="notify" onclick="event.stopPropagation()">
+        <label class="notify-check"><input type="checkbox" data-zbeid="${n.entity_id}" data-field="notify_bell"   ${n.notify_bell  !== false ? 'checked' : ''}> UI</label>
+        <label class="notify-check"><input type="checkbox" data-zbeid="${n.entity_id}" data-field="notify_email"  ${n.notify_email !== false ? 'checked' : ''}> Email</label>
+        <label class="notify-check"><input type="checkbox" data-zbeid="${n.entity_id}" data-field="notify_mobile" ${n.notify_mobile ? 'checked' : ''}> Mobile</label>
+      </td>
+      <td data-zbcol="script">${scriptLabel}</td>
+      <td data-zbcol="area" class="muted">${esc(n.area || '')}</td>
+    </tr>`;
+  }).join('');
+
+  const cg = [
+    `<col data-zbcol="name"     style="width:${w.name}%">`,
+    `<col data-zbcol="lastseen" style="width:${w.lastseen}%">`,
+    `<col data-zbcol="status"   style="width:${w.status}%">`,
+    `<col data-zbcol="notify"   style="width:${w.notify}%">`,
+    `<col data-zbcol="script"   style="width:${w.script}%">`,
+    `<col data-zbcol="area"     style="width:${w.area}%">`,
+  ].join('');
+
+  document.getElementById("zigbee-content").innerHTML = sorted.length
+    ? `<table style="width:100%;border-collapse:collapse;font-size:.9rem;table-layout:fixed">
+        <colgroup>${cg}</colgroup>
+        <thead><tr>
+          <th data-zbcol="name"     style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Device <span style="color:var(--bs-text-dim);font-weight:normal;font-size:.8rem">(${_zigbeeNodes.length})</span>${arrow('name')}<span class="resize-handle zb-resize-handle" data-zbcol="name"></span></th>
+          <th data-zbcol="lastseen" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Last Seen${arrow('lastseen')}<span class="resize-handle zb-resize-handle" data-zbcol="lastseen"></span></th>
+          <th data-zbcol="status"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Status${arrow('status')}<span class="resize-handle zb-resize-handle" data-zbcol="status"></span></th>
+          <th data-zbcol="notify"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap" onclick="event.stopPropagation()">
+            <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_bell"> UI</label>
+            <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_email"> Email</label>
+            <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_mobile"> Mobile</label>
+            <span class="resize-handle zb-resize-handle" data-zbcol="notify"></span></th>
+          <th data-zbcol="script"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap">Script<span class="resize-handle zb-resize-handle" data-zbcol="script"></span></th>
+          <th data-zbcol="area"     style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Room${arrow('area')}<span class="resize-handle zb-resize-handle" data-zbcol="area"></span></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`
+    : '<p class="loading">No Zigbee last_seen entities found. See the Zigbee monitoring setup guide in Settings.</p>';
+
+  document.querySelectorAll("th[data-zbcol]").forEach(th => {
+    th.addEventListener("click", e => {
+      if (e.target.classList.contains("resize-handle")) return;
+      if (e.target.closest("input, label")) return;
+      if (_zbWasDragging) { _zbWasDragging = false; return; }
+      _zigbeeSortCol === th.dataset.zbcol ? (_zigbeeSortDir *= -1) : (_zigbeeSortCol = th.dataset.zbcol, _zigbeeSortDir = 1);
+      renderZigbeeTable();
+    });
+  });
+  document.querySelectorAll(".zb-resize-handle").forEach(h => {
+    h.addEventListener("click",     e => e.stopPropagation());
+    h.addEventListener("mousedown", e => startZbResize(e, h.dataset.zbcol));
+  });
+  document.querySelectorAll("#zigbee-content .device-row").forEach(row =>
+    row.addEventListener("click", () => openZigbeeModal(row.dataset.eid))
+  );
+  document.querySelectorAll('input[data-zbeid]').forEach(cb => {
+    cb.addEventListener("change", async () => {
+      const eid   = cb.dataset.zbeid;
+      const field = cb.dataset.field;
+      const idx   = _zigbeeNodes.findIndex(x => x.entity_id === eid);
+      if (idx !== -1) _zigbeeNodes[idx][field] = cb.checked;
+      updateZbHeaderCheckboxes();
+      try {
+        await fetch(BASE + "/api/zigbee-node/" + encodeURIComponent(eid), {
+          method: "POST", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({[field]: cb.checked}),
+        });
+      } catch {}
+    });
+  });
+  ["notify_bell", "notify_email", "notify_mobile"].forEach(field => {
+    const hdr = document.getElementById("zb-hdr-" + field);
+    if (hdr) hdr.addEventListener("change", () => toggleAllZb(field, hdr.checked));
+  });
+  updateZbHeaderCheckboxes();
+}
+
+function openZigbeeModal(eid) {
+  const n = _zigbeeNodes.find(x => x.entity_id === eid);
+  if (!n) return;
+  _activeZigbeeEid = eid;
+
+  document.getElementById("zigbee-modal-name").textContent     = n.name;
+  document.getElementById("zigbee-modal-entity").textContent   = eid;
+  document.getElementById("zigbee-modal-status").innerHTML     = zigbeeStatusBadge(n.state);
+  document.getElementById("zigbee-modal-lastseen").textContent = zigbeeLastSeenStr(n.state);
+  document.getElementById("zigbee-modal-area").textContent     = n.area || '';
+  document.getElementById("zigbee-modal-notes").value          = n.notes || '';
+  document.getElementById("zigbee-modal-notify-bell").checked  = n.notify_bell  !== false;
+  document.getElementById("zigbee-modal-notify-email").checked = n.notify_email !== false;
+  document.getElementById("zigbee-modal-notify-mobile").checked = !!n.notify_mobile;
+  document.getElementById("zigbee-modal-notify-addr").value    = n.notify_email_address || '';
+
+  const muteEl = document.getElementById("zigbee-modal-mute");
+  const mu = n.muted_until ? new Date(n.muted_until) : null;
+  if (mu && mu > new Date()) {
+    muteEl.innerHTML =
+      `<option value="current" selected>Muted until ${mu.toLocaleString()}</option>` +
+      `<option value="">Unmute</option>` +
+      `<option value="1h">Extend: 1 hour from now</option>` +
+      `<option value="3h">Extend: 3 hours from now</option>` +
+      `<option value="8h">Extend: 8 hours from now</option>` +
+      `<option value="1d">Extend: 1 day from now</option>` +
+      `<option value="3d">Extend: 3 days from now</option>` +
+      `<option value="7d">Extend: 1 week from now</option>`;
+  } else {
+    muteEl.innerHTML =
+      `<option value="">Not muted</option>` +
+      `<option value="1h">1 hour</option>` +
+      `<option value="3h">3 hours</option>` +
+      `<option value="8h">8 hours</option>` +
+      `<option value="1d">1 day</option>` +
+      `<option value="3d">3 days</option>` +
+      `<option value="7d">1 week</option>`;
+  }
+
+  const scriptEl = document.getElementById("zigbee-modal-script");
+  scriptEl.innerHTML =
+    '<option value="">-- Use global default --</option>' +
+    '<option value="__disabled__">-- Disabled for this device --</option>' +
+    _scripts.map(s => `<option value="${s.entity_id}"${n.notify_script === s.entity_id ? ' selected' : ''}>${s.name}</option>`).join('');
+  if (n.notify_script === '__disabled__') scriptEl.value = '__disabled__';
+  else if (!n.notify_script) scriptEl.value = '';
+
+  document.getElementById("zigbee-modal").classList.add("open");
+}
+
+function closeZigbeeModal() {
+  document.getElementById("zigbee-modal").classList.remove("open");
+  _activeZigbeeEid = null;
+}
+
+async function saveZigbeeNode() {
+  if (!_activeZigbeeEid) return;
+  const muteVal = document.getElementById("zigbee-modal-mute").value;
+  const muteMap = { "1h": 1*60*60*1000, "3h": 3*60*60*1000, "8h": 8*60*60*1000, "1d": 24*60*60*1000, "3d": 3*24*60*60*1000, "7d": 7*24*60*60*1000 };
+  const payload = {
+    notes:                document.getElementById("zigbee-modal-notes").value,
+    notify_bell:          document.getElementById("zigbee-modal-notify-bell").checked,
+    notify_email:         document.getElementById("zigbee-modal-notify-email").checked,
+    notify_mobile:        document.getElementById("zigbee-modal-notify-mobile").checked,
+    notify_email_address: document.getElementById("zigbee-modal-notify-addr").value.trim(),
+    notify_script:        document.getElementById("zigbee-modal-script").value,
+  };
+  if (muteVal && muteVal !== "current") payload.muted_until = new Date(Date.now() + muteMap[muteVal]).toISOString();
+  else if (!muteVal) payload.muted_until = null;
+  try {
+    const r = await fetch(BASE + "/api/zigbee-node/" + encodeURIComponent(_activeZigbeeEid), {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) throw new Error();
+    const updated = await r.json();
+    const idx = _zigbeeNodes.findIndex(x => x.entity_id === _activeZigbeeEid);
+    if (idx !== -1) _zigbeeNodes[idx] = { ..._zigbeeNodes[idx], ...updated };
+    closeZigbeeModal();
+    renderZigbeeTable();
+  } catch {
+    alert("Failed to save Zigbee device settings.");
+  }
+}
+
+document.getElementById("zigbee-modal").addEventListener("click", e => {
+  if (e.target.id === "zigbee-modal") closeZigbeeModal();
+});
+
+function updateZbHeaderCheckboxes() {
+  const checks = {
+    notify_bell:   n => n.notify_bell  !== false,
+    notify_email:  n => n.notify_email !== false,
+    notify_mobile: n => !!n.notify_mobile,
+  };
+  Object.entries(checks).forEach(([field, fn]) => {
+    const hdr = document.getElementById("zb-hdr-" + field);
+    if (!hdr || !_zigbeeNodes.length) return;
+    const count = _zigbeeNodes.filter(fn).length;
+    hdr.checked       = count === _zigbeeNodes.length;
+    hdr.indeterminate = count > 0 && count < _zigbeeNodes.length;
+  });
+}
+
+async function toggleAllZb(field, checked) {
+  _zigbeeNodes.forEach(n => n[field] = checked);
+  await Promise.allSettled(_zigbeeNodes.map(n =>
+    fetch(BASE + "/api/zigbee-node/" + encodeURIComponent(n.entity_id), {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({[field]: checked}),
+    })
+  ));
+  renderZigbeeTable();
+}
+
+
+async function scanZigbeeFromSettings() {
+  const btn = document.getElementById("zigbee-settings-scan-btn");
+  const status = document.getElementById("zigbee-settings-scan-status");
+  btn.disabled = true;
+  status.textContent = "Scanning...";
+  try {
+    await fetch(BASE + "/api/zigbee-scan", { method: "POST" });
+    status.textContent = "Scan triggered.";
+    setTimeout(() => status.textContent = '', 3000);
+  } catch {
+    status.textContent = "Scan failed.";
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // ── Battery type lookup ───────────────────────────────────────────────

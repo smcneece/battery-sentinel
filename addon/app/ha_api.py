@@ -134,6 +134,118 @@ async def get_entity_metadata():
         return {}
 
 
+async def get_zigbee_last_seen_entities() -> list:
+    """Fetch sensor.*_last_seen entities created by Zigbee2MQTT (platform=mqtt only).
+    Returns list of {entity_id, name, state}."""
+    _NAME_CLEANUP = re.compile(r'\s+last\s+seen\s*$', re.IGNORECASE)
+    token = os.environ.get("SUPERVISOR_TOKEN", "")
+    try:
+        # Get MQTT entity IDs from registry to exclude Z-Wave and other platforms
+        mqtt_entity_ids: set = set()
+        async with aiohttp.ClientSession() as session:
+            async with session.ws_connect(
+                _HA_WS_URL, timeout=aiohttp.ClientTimeout(total=15)
+            ) as ws:
+                msg = await ws.receive_json()
+                if msg.get("type") == "auth_required":
+                    await ws.send_json({"type": "auth", "access_token": token})
+                    msg = await ws.receive_json()
+                    if msg.get("type") == "auth_ok":
+                        await ws.send_json({"id": 1, "type": "config/entity_registry/list"})
+                        msg = await ws.receive_json()
+                        mqtt_entity_ids = {
+                            e["entity_id"]
+                            for e in (msg.get("result") or [])
+                            if e.get("platform") == "mqtt"
+                        }
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"{HA_API_URL}/states",
+                headers=_headers(),
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as resp:
+                if resp.status != 200:
+                    return []
+                states = await resp.json()
+
+        return [
+            {
+                "entity_id": s["entity_id"],
+                "name": _NAME_CLEANUP.sub(
+                    "", s["attributes"].get("friendly_name", s["entity_id"])
+                ).strip(),
+                "state": s["state"],
+            }
+            for s in states
+            if (
+                s["entity_id"].startswith("sensor.")
+                and s["entity_id"].endswith("_last_seen")
+                and s.get("attributes", {}).get("device_class") == "timestamp"
+                and (not mqtt_entity_ids or s["entity_id"] in mqtt_entity_ids)
+            )
+        ]
+    except Exception:
+        _LOGGER.exception("Failed to fetch Zigbee last_seen entities")
+        return []
+
+
+async def get_monitored_entity_device_ids() -> set:
+    """Returns device_ids for all sensor.*_node_status and sensor.*_last_seen entities.
+    Used to suppress duplicate unavailable alerts for devices tracked by Z-Wave/Zigbee monitors."""
+    template = (
+        "{% set ns = namespace(r={}) %}"
+        "{% for s in states.sensor %}"
+        "{% if s.entity_id.endswith('_node_status') or s.entity_id.endswith('_last_seen') %}"
+        "{% set did = device_id(s.entity_id) or '' %}"
+        "{% if did %}{% set ns.r = dict(ns.r, **{s.entity_id: did}) %}{% endif %}"
+        "{% endif %}"
+        "{% endfor %}"
+        "{{ ns.r | tojson }}"
+    )
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f"{HA_API_URL}/template",
+                headers={**_headers(), "Content-Type": "application/json"},
+                json={"template": template},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as resp:
+                if resp.status != 200:
+                    return set()
+                return set(json.loads(await resp.text()).values())
+    except Exception:
+        _LOGGER.exception("Failed to fetch monitored entity device IDs")
+        return set()
+
+
+async def get_zigbee_node_areas() -> dict:
+    """Returns dict of entity_id -> area string for all sensor.*_last_seen entities."""
+    template = (
+        "{% set ns = namespace(r={}) %}"
+        "{% for s in states.sensor %}"
+        "{% if s.entity_id.endswith('_last_seen') %}"
+        "{% set ns.r = dict(ns.r, **{s.entity_id: area_name(s.entity_id) or ''}) %}"
+        "{% endif %}"
+        "{% endfor %}"
+        "{{ ns.r | tojson }}"
+    )
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f"{HA_API_URL}/template",
+                headers={**_headers(), "Content-Type": "application/json"},
+                json={"template": template},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as resp:
+                if resp.status != 200:
+                    return {}
+                return json.loads(await resp.text())
+    except Exception:
+        _LOGGER.exception("Failed to fetch Zigbee node areas")
+        return {}
+
+
 async def get_zwave_node_areas() -> dict:
     """Returns dict of entity_id -> area string for all sensor.*_node_status entities.
     Uses the HA template API since node status sensors aren't battery entities and

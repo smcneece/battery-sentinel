@@ -1,7 +1,19 @@
-# Battery Sentinel Changelog
+# Battery Sentinel Plus Changelog
+
+## 2026.05.1
+- Renamed to Battery Sentinel Plus to reflect the expanded feature set; slug, repo URL, and existing installations are unchanged
+- Zigbee device monitoring: new Zigbee tab and Settings card monitors Zigbee devices via the Last Seen timestamps published by Zigbee2MQTT; fires an offline alert when a device has not checked in past the configured threshold, and a recovery alert when it comes back online; requires Last Seen to be enabled in Z2M and the Last Seen sensor entities to be enabled in HA (see Zigbee Monitoring Setup in the README)
+- Zigbee monitoring filters to MQTT-platform entities only, so Z-Wave and other non-Zigbee entities with similar naming patterns are automatically excluded
+- Per-device Zigbee settings in the Zigbee tab: notes, mute, and per-channel notification overrides (bell, email, mobile, script) matching the battery device panel
+- Configurable Zigbee offline threshold (default 24 hours) and scan interval (default 30 minutes) independent from the battery check interval
+- Suppress duplicate unavailable alerts: new option in Notification Settings (on by default) skips battery unavailable and recovery alerts for devices already tracked by Z-Wave or Zigbee monitoring, preventing double notifications when a monitored device goes offline
+- Settings page: Z-Wave and Zigbee settings consolidated into one Device Monitoring card; bell, email, and mobile toggles moved to the per-node/per-device tab; alert delay unified into one global setting shared by battery, Z-Wave, and Zigbee monitors; script trigger unified into the global script in Notifications and now passes a `device_type` variable (`battery`, `z-wave`, or `zigbee`) so one script can handle all three
+- Settings page: Columns card now stacks below the Daily Email Report card, reducing horizontal width on wide screens
+- Settings page: Save Settings button is now sticky at the bottom of the viewport so it is always visible regardless of page height
+- Add-on info page now links to the GitHub repository
 
 ## 2026.04.17
-- Z-Wave node monitoring: new Settings card to monitor Z-Wave network health via node status sensors reported by Z-Wave JS; covers every Z-Wave device on your network -- switches, dimmers, locks, sirens, and sensors -- not just battery-powered ones; dead node detection timing depends on Z-Wave JS and device type
+- Z-Wave node monitoring: new Settings card to monitor Z-Wave network health via node status sensors reported by Z-Wave JS; covers every Z-Wave device on your network; switches, dimmers, locks, sirens, and sensors -- not just battery-powered ones; dead node detection timing depends on Z-Wave JS and device type
 - Monitors all `sensor.*_node_status` entities automatically; covers every Z-Wave device on your network, not just battery-powered ones; no per-device configuration required
 - Configurable alert delay (default 5 minutes) to filter out brief communication blips; alerts fire once per dead event and reset automatically on recovery; a recovery notification is sent when a node comes back online
 - Bell, email, mobile push, and script trigger options for Z-Wave node alerts; script receives device_name, entity_id, and node_status as variables
