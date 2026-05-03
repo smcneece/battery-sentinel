@@ -138,7 +138,7 @@ async def get_zigbee_last_seen_entities() -> list:
     """Fetch sensor.*_last_seen entities created by Zigbee2MQTT (platform=mqtt only).
     Returns list of {entity_id, name, state}."""
     _NAME_CLEANUP = re.compile(r'\s+last\s+seen\s*$', re.IGNORECASE)
-    token = os.environ.get("SUPERVISOR_TOKEN", "")
+    token = _access_token()
     try:
         # Get MQTT entity IDs from registry to exclude Z-Wave and other platforms
         mqtt_entity_ids: set = set()
