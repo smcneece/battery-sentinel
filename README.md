@@ -228,7 +228,6 @@ docker run -d --name battery-sentinel -p 8099:8099 \
 Or with Docker Compose:
 
 ```bash
-cp docker/docker-compose.example.yml docker-compose.yml
 # edit HA_BASE_URL, HA_TOKEN and TZ
 docker compose up -d
 ```
