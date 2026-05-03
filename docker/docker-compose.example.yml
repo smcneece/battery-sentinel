@@ -1,6 +1,6 @@
 services:
   battery-sentinel:
-    image: ghcr.io/<owner>/battery-sentinel:latest
+    image: ghcr.io/smcneece/battery-sentinel:latest
     container_name: battery-sentinel
     restart: unless-stopped
     ports:
