@@ -17,7 +17,7 @@ def _api_base() -> str:
 
 
 def _ws_url() -> str:
-    base = _base_url()()
+    base = _base_url()
     if base.startswith("https://"):
         return "wss://" + base[len("https://"):] + "/websocket"
     if base.startswith("http://"):
