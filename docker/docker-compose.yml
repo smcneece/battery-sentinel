@@ -1,0 +1,13 @@
+services:
+  battery-sentinel:
+    image: ghcr.io/smcneece/battery-sentinel:latest
+    container_name: battery-sentinel
+    restart: unless-stopped
+    ports:
+      - "8099:8099"
+    environment:
+      HA_BASE_URL: "http://homeassistant:8123"
+      HA_TOKEN: "YOUR_LONG_LIVED_ACCESS_TOKEN"
+      TZ: "Europe/Berlin"
+    volumes:
+      - ./data:/data
