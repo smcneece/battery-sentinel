@@ -23,7 +23,7 @@ from device_utils import device_is_low, level_str, format_line
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.05.1"
+VERSION = "2026.05.2"
 
 _cache: list = []
 _startup_logged = False
@@ -115,7 +115,7 @@ async def do_refresh():
         new_devices = [d for d in _cache if d["entity_id"] in new_eids]
         lines = [format_line(d, settings.get("report_include_battery_type", False)) for d in new_devices]
         await notifications.fire_notification(
-            f"Battery Sentinel: {len(new_devices)} new battery device(s) discovered",
+            f"Battery Sentinel Plus: {len(new_devices)} new battery device(s) discovered",
             "\n".join(lines),
             settings,
         )
@@ -145,7 +145,7 @@ async def do_refresh():
         if is_low and not device.get("alert_sent") and not is_muted:
             _LOGGER.info("Alert: %s is low (%s), sending notifications", device["name"], level_str(device))
             await notifications.fire_low_battery_email(
-                "Battery Sentinel: Low battery",
+                "Battery Sentinel Plus: Low battery",
                 f"{device['name']} battery is low ({level_str(device)}). Threshold: {device.get('alert_threshold', 15)}%",
                 settings,
                 device,
@@ -292,6 +292,16 @@ async def zigbee_loop():
             _zigbee_first_run = False
         interval_min = max(1, int(settings.get("zigbee_scan_interval", 30)))
         await asyncio.sleep(interval_min * 60)
+
+
+async def zwave_ping_loop():
+    while True:
+        settings = storage.get_settings()
+        interval_min = max(10, int(settings.get("zwave_ping_interval", 30)))
+        await asyncio.sleep(interval_min * 60)
+        settings = storage.get_settings()
+        if settings.get("zwave_ping_enabled") and settings.get("zwave_monitor_enabled"):
+            await zwave_monitor.ping_nodes()
 
 
 async def handle_index(request):
@@ -458,6 +468,58 @@ async def handle_api_zigbee_node_post(request):
         return web.Response(status=400, text="Bad request")
 
 
+async def handle_api_history(request):
+    entity_id  = request.match_info["entity_id"]
+    start_param = request.rel_url.query.get("start")
+    end_param   = request.rel_url.query.get("end")
+
+    now = datetime.datetime.now(datetime.timezone.utc)
+
+    if start_param and end_param:
+        start_str = start_param + "T00:00:00Z"
+        end_str   = end_param   + "T23:59:59Z"
+        try:
+            d1 = datetime.date.fromisoformat(start_param)
+            d2 = datetime.date.fromisoformat(end_param)
+            span_days = (d2 - d1).days
+        except Exception:
+            span_days = 30
+    else:
+        try:
+            days = int(request.rel_url.query.get("days", 30))
+            days = max(1, min(days, 730))
+        except (ValueError, TypeError):
+            days = 30
+        start_str  = (now - datetime.timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        end_str    = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        span_days  = days
+
+    # Use long-term statistics for ranges beyond ~10 days (recorder default retention).
+    # Binary sensors don't have statistics, so always use raw history for them.
+    use_statistics = span_days > 10 and not entity_id.startswith("binary_sensor.")
+    if use_statistics:
+        period = "hour" if span_days <= 90 else "day"
+        points = await ha_api.get_entity_statistics(entity_id, start_str, end_str, period)
+        if not points:
+            _LOGGER.debug("Statistics empty for %s, falling back to raw history", entity_id)
+            points = await ha_api.get_entity_history(entity_id, start_str, end_str)
+    else:
+        points = await ha_api.get_entity_history(entity_id, start_str, end_str)
+
+    return web.Response(text=json.dumps({"points": points}), content_type="application/json")
+
+
+async def handle_api_about(request):
+    ha_version = await ha_api.get_ha_version()
+    mode = "Docker" if os.environ.get("HA_BASE_URL") else "Supervisor"
+    return web.Response(text=json.dumps({
+        "version":    VERSION,
+        "ha_version": ha_version,
+        "mode":       mode,
+    }), content_type="application/json")
+
+
+
 async def handle_api_zigbee_scan(request):
     settings = storage.get_settings()
     if not settings.get("zigbee_monitor_enabled"):
@@ -546,6 +608,7 @@ def _build_html(base: str) -> str:
 async def on_startup(app):
     asyncio.ensure_future(refresh_loop())
     asyncio.ensure_future(zigbee_loop())
+    asyncio.ensure_future(zwave_ping_loop())
 
 
 def main():
@@ -572,6 +635,8 @@ def main():
     app.router.add_get("/api/zigbee-nodes",                 handle_api_zigbee_nodes)
     app.router.add_post("/api/zigbee-node/{entity_id}",     handle_api_zigbee_node_post)
     app.router.add_post("/api/zigbee-scan",                 handle_api_zigbee_scan)
+    app.router.add_get("/api/about",                        handle_api_about)
+    app.router.add_get("/api/history/{entity_id}",          handle_api_history)
 
     port = int(os.environ.get("INGRESS_PORT", 8099))
     _LOGGER.info("Starting Battery Sentinel on port %d", port)

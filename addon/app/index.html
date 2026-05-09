@@ -39,6 +39,14 @@
   .header img { width: 32px; height: 32px; border-radius: 4px; }
   .header h1 { font-size: 1.3rem; color: var(--bs-text); }
   .badge { font-size: .7rem; padding: .15rem .45rem; border-radius: 3px; background: var(--bs-surface2); color: var(--bs-text-muted); border: 1px solid var(--bs-border); }
+  .about-btn { background: none; border: 1px solid var(--bs-border); border-radius: 4px; color: var(--bs-text-muted); font-size: .8rem; padding: .25rem .65rem; cursor: pointer; display: flex; align-items: center; gap: .35rem; }
+  .about-btn:hover { color: var(--bs-text); border-color: var(--bs-accent); }
+  .about-info { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem 1rem; margin-bottom: 1.25rem; }
+  .about-info dt { font-size: .8rem; color: var(--bs-text-muted); }
+  .about-info dd { font-size: .85rem; color: var(--bs-text); font-weight: 500; }
+  .about-links { display: flex; flex-direction: column; gap: .5rem; }
+  .about-links a { color: var(--bs-accent); font-size: .9rem; text-decoration: none; }
+  .about-links a:hover { text-decoration: underline; }
 
   .tabs { display: flex; border-bottom: 1px solid var(--bs-border); padding: 0 1rem; }
   .tab-btn { background: none; border: none; color: var(--bs-text-muted); padding: .55rem 1rem; cursor: pointer; font-size: .9rem; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s; }
@@ -73,13 +81,22 @@
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 100; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal-box { background: var(--bs-surface); border: 1px solid var(--bs-border); border-radius: 8px; width: 500px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+  .modal-box { background: var(--bs-surface); border: 1px solid var(--bs-border); border-radius: 8px; width: 600px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+  .modal-itabs { display: flex; border-bottom: 1px solid var(--bs-border); padding: 0 1.25rem; }
+  .modal-itab { background: none; border: none; color: var(--bs-text-muted); padding: .4rem .9rem; cursor: pointer; font-size: .85rem; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s; }
+  .modal-itab.active { color: var(--bs-accent); border-bottom-color: var(--bs-accent); }
+  .modal-itab:hover { color: var(--bs-text); }
+  .history-range { padding: .2rem .6rem; font-size: .8rem; opacity: .55; }
+  .history-range.active { opacity: 1; border-color: var(--bs-accent); color: var(--bs-accent); }
+  .history-date { width: auto !important; padding: .2rem .4rem !important; font-size: .8rem !important; }
   .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--bs-border); }
   .modal-header h2 { font-size: 1.05rem; color: var(--bs-text); }
   .modal-close { background: none; border: none; color: var(--bs-text-dim); font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0 .1rem; }
   .modal-close:hover { color: var(--bs-text); }
   .modal-body { padding: 1.25rem; display: flex; flex-direction: column; gap: .9rem; }
   .modal-footer { padding: .85rem 1.25rem; border-top: 1px solid var(--bs-border); display: flex; gap: .5rem; justify-content: flex-end; }
+  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--bs-surface2); border: 1px solid var(--bs-border); color: var(--bs-text); font-size: .9rem; padding: .6rem 1.25rem; border-radius: 6px; z-index: 999; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
 
   .entity-id { font-size: .75rem; color: var(--bs-text-dim); font-family: monospace; word-break: break-all; }
   .modal-name-input { background: transparent; border: none; border-bottom: 1px dashed transparent; color: var(--bs-text); font-size: 1.05rem; font-weight: 500; font-family: inherit; padding: 0 0 2px; width: 100%; cursor: text; }
@@ -170,13 +187,14 @@
     .modal-body { padding: 1rem; gap: .6rem; }
   }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
 <div class="header">
   <img src="{{BASE}}/icon.png" alt="Battery Sentinel Plus">
   <h1>Battery Sentinel Plus</h1>
-  <span class="badge">{{VERSION}}</span>
+  <button class="about-btn" onclick="openAbout()">ⓘ Help / About</button>
 </div>
 
 <nav class="tabs">
@@ -400,6 +418,13 @@
           <label for="setting-zwave-enabled">Alert when a Z-Wave node goes dead</label>
         </div>
         <p style="font-size:.8rem;color:var(--bs-text-muted)">Monitors all <code>sensor.*_node_status</code> entities. Fires an alert when a node is reported dead by Z-Wave JS, and a recovery alert when it comes back online. Notification channels and mute periods are configured per-node in the Z-Wave tab.</p>
+        <div class="notify-row" style="margin-bottom:.35rem;margin-top:.5rem">
+          <input type="checkbox" id="setting-zwave-ping-enabled">
+          <label for="setting-zwave-ping-enabled">Periodically ping Z-Wave nodes</label>
+        </div>
+        <div style="font-size:.8rem;color:var(--bs-text-muted);padding-left:1.5rem">
+          Every <input type="number" id="setting-zwave-ping-interval" min="10" max="120" style="width:3.5rem;background:var(--bs-input-bg);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.15rem .35rem;font-size:.8rem"> minutes. Pings alive nodes so Z-Wave JS detects failures faster. Sleeping (battery-powered) nodes are skipped.
+        </div>
       </div>
       <div style="border-top:1px solid var(--bs-border);padding-top:1rem">
         <div style="font-size:.78rem;font-weight:600;color:var(--bs-text-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em">Zigbee</div>
@@ -448,6 +473,30 @@
 
 <div id="tab-zigbee" class="tab-content">
   <div id="zigbee-content"><p class="loading">Loading Zigbee devices...</p></div>
+</div>
+
+<div class="modal-overlay" id="about-modal">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-header">
+      <h2>Help / About</h2>
+      <button class="modal-close" onclick="closeAbout()">×</button>
+    </div>
+    <div class="modal-body">
+      <dl class="about-info" id="about-info">
+        <dt>Version</dt><dd id="about-version">...</dd>
+        <dt>HA Version</dt><dd id="about-ha-version">...</dd>
+        <dt>Mode</dt><dd id="about-mode">...</dd>
+      </dl>
+      <div class="about-links">
+        <a href="https://github.com/smcneece/battery-sentinel" target="_blank">GitHub Repository</a>
+        <a href="https://github.com/smcneece/battery-sentinel/blob/main/README.md" target="_blank">README / Documentation</a>
+        <a href="https://github.com/smcneece/battery-sentinel/blob/main/CHANGELOG.md" target="_blank">Changelog</a>
+        <a href="https://github.com/smcneece/battery-sentinel/issues/new?template=bug_report.md" target="_blank">Report an Issue</a>
+        <a href="https://github.com/smcneece/battery-sentinel/issues/new?template=feature_request.md" target="_blank">Request a Feature</a>
+        <a href="https://github.com/sponsors/smcneece" target="_blank" style="color:#db61a2">♥ Sponsor this project</a>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal-overlay" id="zigbee-modal">
@@ -519,6 +568,11 @@
       </div>
       <button class="modal-close" onclick="closeModal()" title="Close">&times;</button>
     </div>
+    <div class="modal-itabs">
+      <button class="modal-itab active" data-tab="details" onclick="switchModalTab('details')">Details</button>
+      <button class="modal-itab" data-tab="history" onclick="switchModalTab('history')">History</button>
+    </div>
+    <div id="modal-pane-details">
     <div class="modal-body">
       <div class="field-row">
         <div class="field">
@@ -607,6 +661,28 @@
         </div>
       </div>
     </div>
+    </div><!-- end modal-pane-details -->
+    <div id="modal-pane-history" style="display:none">
+      <div style="padding:1rem 1.25rem 1.25rem">
+        <div style="display:flex;gap:.4rem;justify-content:flex-end;margin-bottom:.5rem;flex-wrap:wrap">
+          <button class="btn btn-secondary history-range" data-days="7"   onclick="loadHistory(7)">7d</button>
+          <button class="btn btn-secondary history-range active" data-days="30"  onclick="loadHistory(30)">30d</button>
+          <button class="btn btn-secondary history-range" data-days="90"  onclick="loadHistory(90)">90d</button>
+          <button class="btn btn-secondary history-range" data-days="180" onclick="loadHistory(180)">6m</button>
+          <button class="btn btn-secondary history-range" data-days="365" onclick="loadHistory(365)">1y</button>
+          <button class="btn btn-secondary history-range" id="history-custom-btn" data-days="" onclick="toggleCustomRange()">Custom</button>
+        </div>
+        <div id="history-custom-row" style="display:none;gap:.5rem;align-items:center;justify-content:flex-end;margin-bottom:.75rem">
+          <input type="date" id="history-start" class="history-date">
+          <span style="color:var(--bs-text-muted);font-size:.85rem">to</span>
+          <input type="date" id="history-end" class="history-date">
+          <button class="btn btn-primary" style="padding:.25rem .65rem;font-size:.8rem;white-space:nowrap" onclick="applyCustomRange()">Apply</button>
+        </div>
+        <div id="history-loading" style="text-align:center;color:var(--bs-text-muted);padding:2.5rem 0;display:none">Loading history...</div>
+        <div id="history-empty"   style="text-align:center;color:var(--bs-text-muted);padding:2.5rem 0;display:none">No history data available.</div>
+        <canvas id="history-chart" style="display:none"></canvas>
+      </div>
+    </div><!-- end modal-pane-history -->
   </div>
 </div>
 
@@ -687,6 +763,23 @@
 const BASE = "{{BASE}}";
 function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
 
+async function openAbout() {
+  document.getElementById('about-modal').classList.add('open');
+  try {
+    const r = await fetch(BASE + '/api/about');
+    const d = await r.json();
+    document.getElementById('about-version').textContent    = d.version    || 'Unknown';
+    document.getElementById('about-ha-version').textContent = d.ha_version || 'Unknown';
+    document.getElementById('about-mode').textContent       = d.mode       || 'Unknown';
+  } catch(e) {
+    document.getElementById('about-version').textContent    = 'Unavailable';
+    document.getElementById('about-ha-version').textContent = 'Unavailable';
+    document.getElementById('about-mode').textContent       = 'Unavailable';
+  }
+}
+function closeAbout() { document.getElementById('about-modal').classList.remove('open'); }
+document.getElementById('about-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeAbout(); });
+
 function muteRemaining(isoStr) {
   const mins = Math.round((new Date(isoStr) - new Date()) / 60000);
   if (mins <= 0)   return '';
@@ -696,6 +789,8 @@ function muteRemaining(isoStr) {
 }
 let _devices        = [];
 let _settings       = {};
+let _historyChart   = null;
+let _historyDays    = 30;
 let _notifyServices = [];
 let _scripts        = [];
 let _sortCol        = "level";
@@ -1213,13 +1308,181 @@ function openModal(eid) {
   if (d.notify_script === '__disabled__') scriptEl.value = '__disabled__';
   else if (!d.notify_script) scriptEl.value = '';
 
+  resetModalTabs();
   document.getElementById("modal").classList.add("open");
+}
+
+function resetModalTabs() {
+  document.getElementById('modal-pane-details').style.display = '';
+  document.getElementById('modal-pane-history').style.display = 'none';
+  document.querySelectorAll('.modal-itab').forEach(b => b.classList.toggle('active', b.dataset.tab === 'details'));
+  _historyDays = 30;
+  document.querySelectorAll('.history-range').forEach(b => b.classList.toggle('active', parseInt(b.dataset.days) === 30));
+  document.getElementById('history-custom-row').style.display = 'none';
+  if (_historyChart) { _historyChart.destroy(); _historyChart = null; }
+}
+
+function switchModalTab(tab) {
+  document.getElementById('modal-pane-details').style.display = tab === 'details' ? '' : 'none';
+  document.getElementById('modal-pane-history').style.display = tab === 'history' ? '' : 'none';
+  document.querySelectorAll('.modal-itab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  if (tab === 'history') loadHistory(_historyDays);
+}
+
+async function loadHistory(days) {
+  _historyDays = days;
+  document.querySelectorAll('.history-range').forEach(b => b.classList.toggle('active', parseInt(b.dataset.days) === days));
+  document.getElementById('history-custom-row').style.display = 'none';
+  if (!_activeEntity) return;
+  await _renderHistory(`${BASE}/api/history/${encodeURIComponent(_activeEntity)}?days=${days}`);
+}
+
+function toggleCustomRange() {
+  const row = document.getElementById('history-custom-row');
+  const isOpen = row.style.display !== 'none';
+  if (isOpen) {
+    row.style.display = 'none';
+    loadHistory(_historyDays);
+  } else {
+    row.style.display = 'flex';
+    document.querySelectorAll('.history-range').forEach(b => b.classList.remove('active'));
+    document.getElementById('history-custom-btn').classList.add('active');
+    const today = new Date();
+    const ago90 = new Date(today - 90 * 86400000);
+    document.getElementById('history-end').value   = today.toISOString().split('T')[0];
+    document.getElementById('history-start').value = ago90.toISOString().split('T')[0];
+  }
+}
+
+async function applyCustomRange() {
+  const start = document.getElementById('history-start').value;
+  const end   = document.getElementById('history-end').value;
+  if (!start || !end || start >= end || !_activeEntity) return;
+  await _renderHistory(`${BASE}/api/history/${encodeURIComponent(_activeEntity)}?start=${start}&end=${end}`);
+}
+
+async function _renderHistory(url) {
+  const loadingEl = document.getElementById('history-loading');
+  const emptyEl   = document.getElementById('history-empty');
+  const canvasEl  = document.getElementById('history-chart');
+  loadingEl.style.display = 'block';
+  emptyEl.style.display   = 'none';
+  canvasEl.style.display  = 'none';
+  if (_historyChart) { _historyChart.destroy(); _historyChart = null; }
+
+  try {
+    const r = await fetch(url);
+    const d = await r.json();
+    loadingEl.style.display = 'none';
+
+    if (!d.points || d.points.length === 0) {
+      emptyEl.textContent = 'No history data available for this device.';
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    canvasEl.style.display = 'block';
+    const device    = _devices.find(x => x.entity_id === _activeEntity);
+    const threshold = device ? (device.alert_threshold !== undefined ? device.alert_threshold : (_settings.default_threshold || 20)) : 20;
+    const isBinary  = _activeEntity.startsWith('binary_sensor.');
+    const light     = window.matchMedia('(prefers-color-scheme: light)').matches;
+    const gridColor = light ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)';
+    const tickColor = light ? '#616161' : '#888888';
+
+    const labels = d.points.map(p => {
+      const dt = new Date(p.t);
+      return dt.toLocaleDateString([], {month:'short', day:'numeric'}) + ' ' +
+             dt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    });
+    const values = d.points.map(p => p.v);
+    const lastVal = values[values.length - 1];
+    const lineColor = lastVal <= 10 ? '#db4437' : lastVal <= 25 ? '#ffa600' : '#43a047';
+
+    const datasets = [{
+      label: 'Battery',
+      data: values,
+      borderColor: lineColor,
+      backgroundColor: lineColor + '22',
+      borderWidth: 2,
+      fill: true,
+      tension: isBinary ? 0 : 0.3,
+      stepped: isBinary ? 'before' : false,
+      pointRadius: d.points.length > 80 ? 0 : 3,
+      pointHoverRadius: 4,
+    }];
+    if (threshold !== -1 && !isBinary) {
+      datasets.push({
+        label: 'Threshold',
+        data: new Array(d.points.length).fill(threshold),
+        borderColor: '#db4437',
+        borderWidth: 1.5,
+        borderDash: [5, 4],
+        fill: false,
+        tension: 0,
+        pointRadius: 0,
+        pointHoverRadius: 0,
+      });
+    }
+
+    _historyChart = new Chart(canvasEl.getContext('2d'), {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2.2,
+        interaction: { intersect: false, mode: 'index' },
+        scales: {
+          x: {
+            ticks: {
+              color: tickColor,
+              maxTicksLimit: 6,
+              maxRotation: 0,
+              callback: (_, i) => labels[i].split(' ').slice(0, 2).join(' '),
+            },
+            grid: { color: gridColor },
+          },
+          y: {
+            min: 0,
+            max: isBinary ? 100 : 100,
+            ticks: {
+              color: tickColor,
+              callback: isBinary ? v => (v === 100 ? 'OK' : v === 0 ? 'Low' : '') : v => v + '%',
+            },
+            grid: { color: gridColor },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: light ? '#fff' : '#1c1c1c',
+            titleColor: tickColor,
+            bodyColor: light ? '#212121' : '#e1e1e1',
+            borderColor: light ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)',
+            borderWidth: 1,
+            callbacks: {
+              label: ctx => {
+                const v = ctx.parsed.y;
+                if (ctx.dataset.label === 'Threshold') return `Threshold: ${v}%`;
+                return isBinary ? (v === 0 ? 'Low' : 'OK') : `${v}%`;
+              },
+            },
+          },
+        },
+      },
+    });
+  } catch(e) {
+    loadingEl.style.display = 'none';
+    emptyEl.textContent = 'Failed to load history.';
+    emptyEl.style.display = 'block';
+  }
 }
 
 function closeModal() {
   document.getElementById("modal").classList.remove("open");
   _activeEntity = null;
   cancelDelete();
+  if (_historyChart) { _historyChart.destroy(); _historyChart = null; }
 }
 
 function confirmDelete() {
@@ -1451,6 +1714,8 @@ document.getElementById("type-input").addEventListener("keydown", e => {
 });
 
 async function saveSettings() {
+  const wasZwave  = _settings.zwave_monitor_enabled;
+  const wasZigbee = _settings.zigbee_monitor_enabled;
   _settings.default_threshold      = parseInt(document.getElementById("setting-threshold").value, 10);
   _settings.notify_persistent      = document.getElementById("setting-notify-persistent").checked;
   _settings.notify_new_device      = document.getElementById("setting-notify-new-device").checked;
@@ -1458,6 +1723,8 @@ async function saveSettings() {
   _settings.notify_unavailable_delay          = Math.max(0, parseInt(document.getElementById("setting-unavailable-delay").value, 10) || 0);
   _settings.suppress_unavailable_if_monitored = document.getElementById("setting-suppress-unavailable-monitored").checked;
   _settings.zwave_monitor_enabled    = document.getElementById("setting-zwave-enabled").checked;
+  _settings.zwave_ping_enabled       = document.getElementById("setting-zwave-ping-enabled").checked;
+  _settings.zwave_ping_interval      = Math.max(10, parseInt(document.getElementById("setting-zwave-ping-interval").value, 10) || 30);
   _settings.zigbee_monitor_enabled   = document.getElementById("setting-zigbee-enabled").checked;
   _settings.zigbee_offline_threshold = Math.max(1, parseInt(document.getElementById("setting-zigbee-threshold").value, 10) || 24);
   _settings.zigbee_scan_interval     = Math.max(1, parseInt(document.getElementById("setting-zigbee-interval").value, 10) || 30);
@@ -1487,6 +1754,14 @@ async function saveSettings() {
     renderTypeFilter();
     updateZwaveTabVisibility();
     updateZigbeeTabVisibility();
+    if (!wasZwave && _settings.zwave_monitor_enabled) {
+      fetch(BASE + "/api/scan", { method: "POST" });
+      showToast("Z-Wave monitoring enabled. Scanning devices...", 4000);
+    }
+    if (!wasZigbee && _settings.zigbee_monitor_enabled) {
+      fetch(BASE + "/api/zigbee-scan", { method: "POST" });
+      showToast("Zigbee monitoring enabled. Scanning devices...", 4000);
+    }
   } catch {
     alert("Failed to save settings.");
   }
@@ -1518,8 +1793,10 @@ async function init() {
     document.getElementById("setting-notify-unavailable").checked              = !!_settings.notify_unavailable;
     document.getElementById("setting-unavailable-delay").value                = _settings.notify_unavailable_delay ?? 5;
     document.getElementById("setting-suppress-unavailable-monitored").checked = _settings.suppress_unavailable_if_monitored !== false;
-    document.getElementById("setting-zwave-enabled").checked    = !!_settings.zwave_monitor_enabled;
-    document.getElementById("setting-zigbee-enabled").checked   = !!_settings.zigbee_monitor_enabled;
+    document.getElementById("setting-zwave-enabled").checked       = !!_settings.zwave_monitor_enabled;
+    document.getElementById("setting-zwave-ping-enabled").checked  = !!_settings.zwave_ping_enabled;
+    document.getElementById("setting-zwave-ping-interval").value   = _settings.zwave_ping_interval ?? 30;
+    document.getElementById("setting-zigbee-enabled").checked      = !!_settings.zigbee_monitor_enabled;
     document.getElementById("setting-zigbee-threshold").value   = _settings.zigbee_offline_threshold ?? 24;
     document.getElementById("setting-zigbee-interval").value    = _settings.zigbee_scan_interval ?? 30;
     document.getElementById("setting-check-interval").value     = _settings.check_interval || 10;
@@ -1612,6 +1889,7 @@ function renderZwaveTable() {
 
   const arrow = col => _zwaveSortCol === col ? `<span class="sort-arrow">${_zwaveSortDir===1?'▲':'▼'}</span>` : '';
   const w = _zwColWidths;
+  const v = _colVisible;
 
   const rows = sorted.map(n => {
     const isMuted = n.muted_until && new Date(n.muted_until) > new Date();
@@ -1626,23 +1904,23 @@ function renderZwaveTable() {
     return `<tr class="device-row" data-eid="${n.entity_id}">
       <td data-zcol="name">${esc(n.name)}${isMuted ? ` <span title="Notifications muted" style="color:var(--bs-text-dim);font-size:.8rem">&#x1F515; <span style="color:var(--bs-text-dim)">(${muteRemaining(n.muted_until)})</span></span>` : ''}</td>
       <td data-zcol="status">${zwaveStatusBadge(n.state)}</td>
-      <td data-zcol="notify" onclick="event.stopPropagation()">
+      ${v.notify !== false ? `<td data-zcol="notify" onclick="event.stopPropagation()">
         <label class="notify-check"><input type="checkbox" data-zeid="${n.entity_id}" data-field="notify_bell"   ${n.notify_bell  !== false ? 'checked' : ''}> UI</label>
         <label class="notify-check"><input type="checkbox" data-zeid="${n.entity_id}" data-field="notify_email"  ${n.notify_email !== false ? 'checked' : ''}> Email</label>
         <label class="notify-check"><input type="checkbox" data-zeid="${n.entity_id}" data-field="notify_mobile" ${n.notify_mobile ? 'checked' : ''}> Mobile</label>
-      </td>
-      <td data-zcol="script">${scriptLabel}</td>
-      <td data-zcol="area" class="muted">${esc(n.area || '')}</td>
+      </td>` : ''}
+      ${v.script !== false ? `<td data-zcol="script">${scriptLabel}</td>` : ''}
+      ${v.area   !== false ? `<td data-zcol="area" class="muted">${esc(n.area || '')}</td>` : ''}
     </tr>`;
   }).join('');
 
   const cg = [
     `<col data-zcol="name"   style="width:${w.name}%">`,
     `<col data-zcol="status" style="width:${w.status}%">`,
-    `<col data-zcol="notify" style="width:${w.notify}%">`,
-    `<col data-zcol="script" style="width:${w.script}%">`,
-    `<col data-zcol="area"   style="width:${w.area}%">`,
-  ].join('');
+    v.notify !== false && `<col data-zcol="notify" style="width:${w.notify}%">`,
+    v.script !== false && `<col data-zcol="script" style="width:${w.script}%">`,
+    v.area   !== false && `<col data-zcol="area"   style="width:${w.area}%">`,
+  ].filter(Boolean).join('');
 
   document.getElementById("zwave-content").innerHTML = sorted.length
     ? `<table style="width:100%;border-collapse:collapse;font-size:.9rem;table-layout:fixed">
@@ -1650,13 +1928,13 @@ function renderZwaveTable() {
         <thead><tr>
           <th data-zcol="name"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Node <span style="color:var(--bs-text-dim);font-weight:normal;font-size:.8rem">(${_zwaveNodes.length})</span>${arrow('name')}<span class="resize-handle zw-resize-handle" data-zcol="name"></span></th>
           <th data-zcol="status" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Status${arrow('status')}<span class="resize-handle zw-resize-handle" data-zcol="status"></span></th>
-          <th data-zcol="notify" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap" onclick="event.stopPropagation()">
+          ${v.notify !== false ? `<th data-zcol="notify" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap" onclick="event.stopPropagation()">
             <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_bell"> UI</label>
             <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_email"> Email</label>
             <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_mobile"> Mobile</label>
-            <span class="resize-handle zw-resize-handle" data-zcol="notify"></span></th>
-          <th data-zcol="script" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap">Script<span class="resize-handle zw-resize-handle" data-zcol="script"></span></th>
-          <th data-zcol="area"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Room${arrow('area')}<span class="resize-handle zw-resize-handle" data-zcol="area"></span></th>
+            <span class="resize-handle zw-resize-handle" data-zcol="notify"></span></th>` : ''}
+          ${v.script !== false ? `<th data-zcol="script" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap">Script<span class="resize-handle zw-resize-handle" data-zcol="script"></span></th>` : ''}
+          ${v.area   !== false ? `<th data-zcol="area"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Room${arrow('area')}<span class="resize-handle zw-resize-handle" data-zcol="area"></span></th>` : ''}
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>`
@@ -1869,6 +2147,7 @@ function renderZigbeeTable() {
 
   const arrow = col => _zigbeeSortCol === col ? `<span class="sort-arrow">${_zigbeeSortDir===1?'▲':'▼'}</span>` : '';
   const w = _zbColWidths;
+  const v = _colVisible;
 
   const rows = sorted.map(n => {
     const isMuted = n.muted_until && new Date(n.muted_until) > new Date();
@@ -1882,41 +2161,41 @@ function renderZigbeeTable() {
     })();
     return `<tr class="device-row" data-eid="${n.entity_id}">
       <td data-zbcol="name">${esc(n.name)}${isMuted ? ` <span title="Notifications muted" style="color:var(--bs-text-dim);font-size:.8rem">&#x1F515; <span style="color:var(--bs-text-dim)">(${muteRemaining(n.muted_until)})</span></span>` : ''}</td>
-      <td data-zbcol="lastseen" style="color:var(--bs-text-muted);font-size:.85rem">${zigbeeLastSeenStr(n.state)}</td>
       <td data-zbcol="status">${zigbeeStatusBadge(n.state)}</td>
-      <td data-zbcol="notify" onclick="event.stopPropagation()">
+      <td data-zbcol="lastseen" style="color:var(--bs-text-muted);font-size:.85rem">${zigbeeLastSeenStr(n.state)}</td>
+      ${v.notify !== false ? `<td data-zbcol="notify" onclick="event.stopPropagation()">
         <label class="notify-check"><input type="checkbox" data-zbeid="${n.entity_id}" data-field="notify_bell"   ${n.notify_bell  !== false ? 'checked' : ''}> UI</label>
         <label class="notify-check"><input type="checkbox" data-zbeid="${n.entity_id}" data-field="notify_email"  ${n.notify_email !== false ? 'checked' : ''}> Email</label>
         <label class="notify-check"><input type="checkbox" data-zbeid="${n.entity_id}" data-field="notify_mobile" ${n.notify_mobile ? 'checked' : ''}> Mobile</label>
-      </td>
-      <td data-zbcol="script">${scriptLabel}</td>
-      <td data-zbcol="area" class="muted">${esc(n.area || '')}</td>
+      </td>` : ''}
+      ${v.script !== false ? `<td data-zbcol="script">${scriptLabel}</td>` : ''}
+      ${v.area   !== false ? `<td data-zbcol="area" class="muted">${esc(n.area || '')}</td>` : ''}
     </tr>`;
   }).join('');
 
   const cg = [
     `<col data-zbcol="name"     style="width:${w.name}%">`,
-    `<col data-zbcol="lastseen" style="width:${w.lastseen}%">`,
     `<col data-zbcol="status"   style="width:${w.status}%">`,
-    `<col data-zbcol="notify"   style="width:${w.notify}%">`,
-    `<col data-zbcol="script"   style="width:${w.script}%">`,
-    `<col data-zbcol="area"     style="width:${w.area}%">`,
-  ].join('');
+    `<col data-zbcol="lastseen" style="width:${w.lastseen}%">`,
+    v.notify !== false && `<col data-zbcol="notify"   style="width:${w.notify}%">`,
+    v.script !== false && `<col data-zbcol="script"   style="width:${w.script}%">`,
+    v.area   !== false && `<col data-zbcol="area"     style="width:${w.area}%">`,
+  ].filter(Boolean).join('');
 
   document.getElementById("zigbee-content").innerHTML = sorted.length
     ? `<table style="width:100%;border-collapse:collapse;font-size:.9rem;table-layout:fixed">
         <colgroup>${cg}</colgroup>
         <thead><tr>
           <th data-zbcol="name"     style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Device <span style="color:var(--bs-text-dim);font-weight:normal;font-size:.8rem">(${_zigbeeNodes.length})</span>${arrow('name')}<span class="resize-handle zb-resize-handle" data-zbcol="name"></span></th>
-          <th data-zbcol="lastseen" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Last Seen${arrow('lastseen')}<span class="resize-handle zb-resize-handle" data-zbcol="lastseen"></span></th>
           <th data-zbcol="status"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Status${arrow('status')}<span class="resize-handle zb-resize-handle" data-zbcol="status"></span></th>
-          <th data-zbcol="notify"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap" onclick="event.stopPropagation()">
+          <th data-zbcol="lastseen" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Last Seen${arrow('lastseen')}<span class="resize-handle zb-resize-handle" data-zbcol="lastseen"></span></th>
+          ${v.notify !== false ? `<th data-zbcol="notify" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap" onclick="event.stopPropagation()">
             <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_bell"> UI</label>
             <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_email"> Email</label>
             <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_mobile"> Mobile</label>
-            <span class="resize-handle zb-resize-handle" data-zbcol="notify"></span></th>
-          <th data-zbcol="script"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap">Script<span class="resize-handle zb-resize-handle" data-zbcol="script"></span></th>
-          <th data-zbcol="area"     style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Room${arrow('area')}<span class="resize-handle zb-resize-handle" data-zbcol="area"></span></th>
+            <span class="resize-handle zb-resize-handle" data-zbcol="notify"></span></th>` : ''}
+          ${v.script !== false ? `<th data-zbcol="script" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap">Script<span class="resize-handle zb-resize-handle" data-zbcol="script"></span></th>` : ''}
+          ${v.area   !== false ? `<th data-zbcol="area"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Room${arrow('area')}<span class="resize-handle zb-resize-handle" data-zbcol="area"></span></th>` : ''}
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>`
@@ -2093,6 +2372,7 @@ async function scanZigbeeFromSettings() {
   }
 }
 
+
 // ── Battery type lookup ───────────────────────────────────────────────
 let _conflictData = [];
 
@@ -2207,6 +2487,16 @@ document.getElementById("conflict-modal").addEventListener("click", e => {
 });
 
 init();
+
+let _toastTimer = null;
+function showToast(msg, duration = 3500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+}
 </script>
+<div class="toast" id="toast"></div>
 </body>
 </html>

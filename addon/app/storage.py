@@ -32,6 +32,8 @@ DEFAULT_SETTINGS = {
     "notify_unavailable_delay": 5,
     "suppress_unavailable_if_monitored": True,
     "zwave_monitor_enabled": False,
+    "zwave_ping_enabled": False,
+    "zwave_ping_interval": 30,
     "zigbee_monitor_enabled": False,
     "zigbee_offline_threshold": 24,
     "zigbee_scan_interval": 30,
@@ -85,7 +87,7 @@ def save_settings(updates: dict) -> dict:
         "daily_report_enabled", "daily_report_time", "daily_report_days",
         "daily_report_include_all", "daily_report_send_if_ok", "report_include_battery_type",
         "notify_unavailable", "notify_unavailable_delay", "suppress_unavailable_if_monitored",
-        "zwave_monitor_enabled",
+        "zwave_monitor_enabled", "zwave_ping_enabled", "zwave_ping_interval",
         "zigbee_monitor_enabled", "zigbee_offline_threshold", "zigbee_scan_interval",
     )
     for key in allowed:
@@ -146,6 +148,11 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
             devices[eid].setdefault("notify_script", "")
             devices[eid].setdefault("script_last_run", None)
             devices[eid].setdefault("muted_until", None)
+
+    if live_entities:
+        live_eids = {e["entity_id"] for e in live_entities}
+        for k in [k for k in devices if k not in live_eids]:
+            del devices[k]
 
     _save(data)
     _LOGGER.info("Devices: %d total, %d new", len(live_entities), len(new_eids))
@@ -294,10 +301,11 @@ def merge_zwave_nodes(live_nodes: list) -> list:
         nodes[eid]["state"]     = node["state"]
         nodes[eid]["area"]      = node.get("area", nodes[eid].get("area", ""))
 
-    live_eids = {n["entity_id"] for n in live_nodes}
-    stale = [k for k in nodes if k not in live_eids]
-    for k in stale:
-        del nodes[k]
+    if live_nodes:
+        live_eids = {n["entity_id"] for n in live_nodes}
+        stale = [k for k in nodes if k not in live_eids]
+        for k in stale:
+            del nodes[k]
 
     _save(data)
     return [nodes[n["entity_id"]] for n in live_nodes]
@@ -374,9 +382,10 @@ def merge_zigbee_nodes(live_nodes: list) -> list:
         nodes[eid]["name"]      = node["name"]
         nodes[eid]["state"]     = node["state"]
 
-    live_eids = {n["entity_id"] for n in live_nodes}
-    for k in [k for k in nodes if k not in live_eids]:
-        del nodes[k]
+    if live_nodes:
+        live_eids = {n["entity_id"] for n in live_nodes}
+        for k in [k for k in nodes if k not in live_eids]:
+            del nodes[k]
 
     _save(data)
     return [nodes[n["entity_id"]] for n in live_nodes]

@@ -56,9 +56,9 @@ async def update_low_battery_notification(devices: list, settings: dict):
 
     _LOGGER.info("Low battery notification: %d device(s) below threshold", len(low))
     lines = [format_line(d, include_type) for d in low]
-    lines.append("\n*To mute a device, open it in Battery Sentinel.*")
+    lines.append("\n*To mute a device, open it in Battery Sentinel Plus.*")
     await _fire_persistent(
-        "Battery Sentinel: Low Batteries",
+        "Battery Sentinel Plus: Low Batteries",
         "\n".join(lines),
         notification_id=_LOW_NOTIFICATION_ID,
     )
@@ -75,7 +75,7 @@ async def fire_low_battery_email(title: str, message: str, settings: dict, devic
         if cc:
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
         if targets:
-            email_message = message + "\n\nTo mute this device, open it in Battery Sentinel."
+            email_message = message + "\n\nTo mute this device, open it in Battery Sentinel Plus."
             await _fire_notify_service(service, title, email_message, targets)
 
     if device.get("notify_mobile", False):
@@ -114,7 +114,7 @@ async def fire_notification(title: str, message: str, settings: dict, device: di
 # ── Unavailable / recovery notifications ──────────────────────────────
 
 async def fire_unavailable_notification(devices: list, settings: dict):
-    title = f"Battery Sentinel: {len(devices)} device(s) went unavailable"
+    title = f"Battery Sentinel Plus: {len(devices)} device(s) went unavailable"
     lines = [f"- {d['name']} ({d['entity_id']})" for d in devices]
     message = "\n".join(lines)
 
@@ -134,7 +134,7 @@ async def fire_unavailable_notification(devices: list, settings: dict):
 
 
 async def fire_recovery_notification(devices: list, settings: dict):
-    title = f"Battery Sentinel: {len(devices)} device(s) back online"
+    title = f"Battery Sentinel Plus: {len(devices)} device(s) back online"
     lines = [f"- {d['name']} ({d['entity_id']})" for d in devices]
     message = "\n".join(lines)
 
@@ -188,7 +188,7 @@ async def send_daily_report(devices: list, settings: dict):
         return
 
     html = build_report_html(low, ok, settings, now, include_all)
-    await _fire_notify_service(service, "Battery Sentinel: Daily Battery Report", html, targets, html=html)
+    await _fire_notify_service(service, "Battery Sentinel Plus: Daily Battery Report", html, targets, html=html)
     _LOGGER.info("Daily report sent (%d device(s))", len(all_devices))
 
 
@@ -211,8 +211,8 @@ async def fire_script(script_entity_id: str, variables: dict):
 # ── Z-Wave node alerts (per-node, respects per-node channel settings) ──
 
 async def fire_zwave_node_dead(node: dict, settings: dict):
-    title = f"Battery Sentinel: Z-Wave node dead — {node['name']}"
-    message = f"{node['name']} has gone offline."
+    title = "Battery Sentinel Plus"
+    message = f"Z-Wave Node dead:\n{node['name']}"
 
     if node.get("notify_bell", True):
         await _fire_persistent(title, message)
@@ -235,8 +235,8 @@ async def fire_zwave_node_dead(node: dict, settings: dict):
 
 
 async def fire_zwave_node_recovered(node: dict, settings: dict):
-    title = f"Battery Sentinel: Z-Wave node back online — {node['name']}"
-    message = f"{node['name']} has come back online."
+    title = "Battery Sentinel Plus"
+    message = f"Z-Wave Node back online:\n{node['name']}"
 
     if node.get("notify_bell", True):
         await _fire_persistent(title, message)
@@ -261,8 +261,8 @@ async def fire_zwave_node_recovered(node: dict, settings: dict):
 # ── Z-Wave controller / bulk dead alerts ─────────────────────────────
 
 async def fire_zwave_controller_alert(dead_count: int, total: int, settings: dict):
-    title = "Battery Sentinel: Z-Wave network disruption"
-    message = f"{dead_count} of {total} Z-Wave nodes are offline. This may indicate a Z-Wave controller or service issue."
+    title = "Battery Sentinel Plus"
+    message = f"Z-Wave network disruption:\n{dead_count} of {total} nodes offline. May indicate a controller or service issue."
 
     if settings.get("notify_persistent", True):
         await _fire_persistent(title, message)
@@ -283,8 +283,8 @@ async def fire_zwave_controller_alert(dead_count: int, total: int, settings: dic
 
 
 async def fire_zwave_controller_recovered(alive_count: int, total: int, settings: dict):
-    title = "Battery Sentinel: Z-Wave network recovered"
-    message = f"{alive_count} of {total} Z-Wave nodes are back online."
+    title = "Battery Sentinel Plus"
+    message = f"Z-Wave network recovered:\n{alive_count} of {total} nodes back online."
 
     if settings.get("notify_persistent", True):
         await _fire_persistent(title, message)
@@ -307,8 +307,8 @@ async def fire_zwave_controller_recovered(alive_count: int, total: int, settings
 # ── Zigbee node alerts ────────────────────────────────────────────────
 
 async def fire_zigbee_node_offline(node: dict, settings: dict):
-    title = f"Battery Sentinel: Zigbee device offline — {node['name']}"
-    message = f"{node['name']} has not been seen for longer than the configured threshold."
+    title = "Battery Sentinel Plus"
+    message = f"Zigbee device offline:\n{node['name']}"
 
     if node.get("notify_bell", True):
         await _fire_persistent(title, message)
@@ -331,8 +331,8 @@ async def fire_zigbee_node_offline(node: dict, settings: dict):
 
 
 async def fire_zigbee_node_recovered(node: dict, settings: dict):
-    title = f"Battery Sentinel: Zigbee device back online — {node['name']}"
-    message = f"{node['name']} has come back online."
+    title = "Battery Sentinel Plus"
+    message = f"Zigbee device back online:\n{node['name']}"
 
     if node.get("notify_bell", True):
         await _fire_persistent(title, message)

@@ -15,6 +15,7 @@ of notifications during routine Z-Wave service maintenance.
 
 Only loaded when zwave_monitor_enabled is True in settings."""
 
+import asyncio
 import datetime
 import logging
 import re
@@ -188,3 +189,34 @@ async def check_nodes(settings: dict, first_run: bool, metadata: dict = None):
                     node_with_settings = {**entry, "state": node["state"]}
                     _LOGGER.info("Z-Wave node recovery: %s", eid)
                     await notifications.fire_zwave_node_recovered(node_with_settings, settings)
+
+
+async def ping_nodes():
+    """Ping all alive Z-Wave nodes to help Z-Wave JS detect dead nodes faster.
+
+    Skips sleeping nodes (battery-powered) and already-dead nodes.
+    Called from zwave_ping_loop() in main.py on a configurable interval."""
+    nodes = await get_node_statuses()
+    targets = [n for n in nodes if n["state"] == "alive"]
+    if not targets:
+        _LOGGER.debug("Z-Wave ping: no alive nodes to ping")
+        return
+    _LOGGER.info("Z-Wave ping: pinging %d alive node(s)", len(targets))
+    async with aiohttp.ClientSession() as session:
+        for node in targets:
+            # Derive ping button entity from node_status entity:
+            # sensor.X_node_status -> button.X_ping (Z-Wave JS naming convention)
+            ping_eid = "button." + node["entity_id"].removeprefix("sensor.").removesuffix("_node_status") + "_ping"
+            try:
+                async with session.post(
+                    f"{HA_API_URL}/services/button/press",
+                    headers=_headers(),
+                    json={"entity_id": ping_eid},
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as resp:
+                    if resp.status != 200:
+                        _LOGGER.debug("Ping failed for %s (HTTP %d)", ping_eid, resp.status)
+            except Exception:
+                _LOGGER.debug("Ping error for %s", ping_eid)
+            await asyncio.sleep(2)
+    _LOGGER.info("Z-Wave ping: complete")

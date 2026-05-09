@@ -7294,6 +7294,13 @@
         },
         {
             "manufacturer": "Philips",
+            "model": "Hue dimmer switch gen 2",
+            "model_id": "929002398602",
+            "hw_version": "1",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Philips",
             "model": "Hue motion huiskamer Batterij",
             "hw_version": "67.115.5",
             "battery_type": "AA",
@@ -8914,12 +8921,23 @@
         },
         {
             "manufacturer": "SONOFF",
+            "model": "SNZB-02DR2",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "SONOFF",
             "model": "SNZB-02LD",
             "battery_type": "CR2477"
         },
         {
             "manufacturer": "SONOFF",
             "model": "SNZB-02P",
+            "battery_type": "CR2477"
+        },
+        {
+            "manufacturer": "SONOFF",
+            "model": "SNZB-02WD",
             "battery_type": "CR2477"
         },
         {
@@ -9474,6 +9492,21 @@
             "battery_type": "AAA"
         },
         {
+            "manufacturer": "Thermoworks",
+            "model": "rfx gateway",
+            "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "Thermoworks",
+            "model": "rfx meat",
+            "battery_type": "AAA"
+        },
+        {
+            "manufacturer": "Thermoworks",
+            "model": "signals",
+            "battery_type": "Rechargeable"
+        },
+        {
             "manufacturer": "Third Reality",
             "model": "3RSB015BZ",
             "battery_type": "AA",
@@ -9704,6 +9737,12 @@
             "hw_version": "0",
             "battery_type": "AAA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "TP-Link",
+            "model": "DL110",
+            "hw_version": "2.0",
+            "battery_type": "Rechargeable"
         },
         {
             "manufacturer": "TP-Link",
@@ -11372,6 +11411,11 @@
             "battery_quantity": 4
         },
         {
+            "manufacturer": "WeatherFlow",
+            "model": "Tempest",
+            "battery_type": "Rechargeable"
+        },
+        {
             "manufacturer": "Weenect",
             "model": "familykid",
             "battery_type": "Rechargeable"
@@ -11772,6 +11816,11 @@
             "manufacturer": "Xiaomi",
             "model": "ble XMWSDJ04MMC",
             "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Xiaomi",
+            "model": "BLE: MCCGQ02HL, isa.magnet.dw2hl",
+            "battery_type": "CR2032"
         },
         {
             "manufacturer": "Xiaomi",
@@ -12306,8 +12355,92 @@
             "battery_quantity": 2
         },
         {
+            "manufacturer": "YoLink",
+            "model": "YS5709-UC",
+            "model_id": "Switch",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "Yolink",
             "model": "YS7103",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "YoLink",
+            "model": "YS7201-UC",
+            "model_id": "VibrationSensor",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "YoLink",
+            "model": "YS7704-UC",
+            "model_id": "DoorSensor",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "YoLink",
+            "model": "YS7706-UC",
+            "model_id": "TiltSensor",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "YoLink",
+            "model": "YS7707-UC",
+            "model_id": "DoorSensor",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "YoLink",
+            "model": "YS7804-UC",
+            "model_id": "MotionSensor",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "YoLink",
+            "model": "YS7805-UC",
+            "model_id": "MotionSensor",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "YoLink",
+            "model": "YS7903-UC",
+            "model_id": "LeakSensor",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "YoLink",
+            "model": "YS7906-UC",
+            "model_id": "LeakSensor",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "YoLink",
+            "model": "YS7906-UC",
+            "model_id": "LeakSensor",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "YoLink",
+            "model": "YS8003-UC",
+            "model_id": "THSensor",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "YoLink",
+            "model": "YS8006-UC",
+            "model_id": "THSensor",
             "battery_type": "AA",
             "battery_quantity": 2
         },

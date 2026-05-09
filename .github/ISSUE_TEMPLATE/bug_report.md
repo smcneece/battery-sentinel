@@ -20,4 +20,9 @@ A clear description of the bug.
 
 **HA version** *(optional)*
 
+**Installation type** *(optional)*
+- [ ] Home Assistant OS
+- [ ] Home Assistant Supervised
+- [ ] Standalone Docker
+
 **Any relevant logs or screenshots?**

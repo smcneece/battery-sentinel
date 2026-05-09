@@ -10,7 +10,7 @@ import re
 
 import aiohttp
 
-from ha_config import HA_API_URL, _HA_WS_URL, _headers
+from ha_config import HA_API_URL, _HA_WS_URL, _headers, _token
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,8 +25,8 @@ def _clean_name(name: str) -> str:
 
 # ── HA data fetchers ───────────────────────────────────────────────────
 
-async def get_ha_timezone() -> str:
-    """Fetch the HA configured timezone string (e.g. 'America/Denver')."""
+async def get_ha_config() -> dict:
+    """Fetch HA /api/config and return the parsed JSON, or {} on failure."""
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(
@@ -35,12 +35,23 @@ async def get_ha_timezone() -> str:
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as resp:
                 if resp.status != 200:
-                    return ""
-                data = await resp.json()
-                return data.get("time_zone", "")
+                    return {}
+                return await resp.json()
     except Exception:
-        _LOGGER.exception("Failed to fetch HA config for timezone")
-        return ""
+        _LOGGER.exception("Failed to fetch HA config")
+        return {}
+
+
+async def get_ha_timezone() -> str:
+    """Fetch the HA configured timezone string (e.g. 'America/Denver')."""
+    data = await get_ha_config()
+    return data.get("time_zone", "")
+
+
+async def get_ha_version() -> str:
+    """Fetch the running HA version string (e.g. '2025.5.3')."""
+    data = await get_ha_config()
+    return data.get("version", "")
 
 
 async def get_battery_entities():
@@ -78,7 +89,7 @@ async def get_battery_entities():
 async def get_hidden_entity_ids() -> set:
     """Returns entity_ids marked not-visible in the HA entity registry.
     Uses WebSocket because the REST entity registry endpoint is not exposed through the Supervisor proxy."""
-    token = os.environ.get("SUPERVISOR_TOKEN", "")
+    token = _token()
     try:
         async with aiohttp.ClientSession() as session:
             async with session.ws_connect(
@@ -138,7 +149,7 @@ async def get_zigbee_last_seen_entities() -> list:
     """Fetch sensor.*_last_seen entities created by Zigbee2MQTT (platform=mqtt only).
     Returns list of {entity_id, name, state}."""
     _NAME_CLEANUP = re.compile(r'\s+last\s+seen\s*$', re.IGNORECASE)
-    token = os.environ.get("SUPERVISOR_TOKEN", "")
+    token = _token()
     try:
         # Get MQTT entity IDs from registry to exclude Z-Wave and other platforms
         mqtt_entity_ids: set = set()
@@ -333,7 +344,7 @@ _BATTERY_NOTES_PATH = os.path.join(os.path.dirname(__file__), "library.json")
 
 async def get_device_registry() -> dict:
     """Returns dict of device_id -> {manufacturer, model} for all HA devices."""
-    token = os.environ.get("SUPERVISOR_TOKEN", "")
+    token = _token()
     try:
         async with aiohttp.ClientSession() as session:
             async with session.ws_connect(_HA_WS_URL) as ws:
@@ -432,7 +443,7 @@ def lookup_battery_types(devices: list, registry: dict, db: list) -> tuple:
 
 async def rename_entity(entity_id: str, new_name: str) -> bool:
     """Rename an entity's friendly name via the HA WebSocket API."""
-    token = os.environ.get("SUPERVISOR_TOKEN", "")
+    token = _token()
     try:
         async with aiohttp.ClientSession() as session:
             async with session.ws_connect(_HA_WS_URL) as ws:
@@ -465,5 +476,106 @@ async def rename_entity(entity_id: str, new_name: str) -> bool:
     except Exception:
         _LOGGER.exception("Failed to rename entity %s via WebSocket", entity_id)
         return False
+
+
+async def get_entity_history(entity_id: str, start_str: str, end_str: str) -> list:
+    """Fetch raw recorder history for entity_id between start_str and end_str (UTC Z strings).
+    Returns [{t: unix_ms, v: float}]. Binary sensor on/off mapped to 0/100."""
+    import datetime
+    from urllib.parse import urlencode
+    params = urlencode({
+        "filter_entity_id": entity_id,
+        "end_time": end_str,
+        "minimal_response": "true",
+        "no_attributes": "true",
+    })
+    url = f"{HA_API_URL}/history/period/{start_str}?{params}"
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                url, headers=_headers(), timeout=aiohttp.ClientTimeout(total=30)
+            ) as resp:
+                if resp.status != 200:
+                    _LOGGER.warning("History API returned %d for %s", resp.status, entity_id)
+                    return []
+                data = await resp.json()
+        _LOGGER.debug("History for %s: %d series, %d points",
+                      entity_id, len(data), len(data[0]) if data else 0)
+        if not data or not data[0]:
+            return []
+        points = []
+        for item in data[0]:
+            state = item.get("state", "")
+            ts    = item.get("last_changed", "")
+            if state in ("unavailable", "unknown", ""):
+                continue
+            if state == "on":
+                v = 0.0
+            elif state == "off":
+                v = 100.0
+            else:
+                try:
+                    v = float(state)
+                except (ValueError, TypeError):
+                    continue
+            try:
+                dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                t_ms = int(dt.timestamp() * 1000)
+            except Exception:
+                continue
+            points.append({"t": t_ms, "v": v})
+        return points
+    except Exception:
+        _LOGGER.exception("Failed to fetch history for %s", entity_id)
+        return []
+
+
+async def get_entity_statistics(entity_id: str, start_str: str, end_str: str, period: str = "day") -> list:
+    """Fetch long-term statistics via WebSocket (recorder/statistics_during_period).
+    Returns [{t: unix_ms, v: float}] using mean values. Falls back gracefully."""
+    import datetime
+    token = _token()
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.ws_connect(_HA_WS_URL) as ws:
+                msg = await asyncio.wait_for(ws.receive_json(), timeout=5)
+                if msg.get("type") != "auth_required":
+                    return []
+                await ws.send_json({"type": "auth", "access_token": token})
+                msg = await asyncio.wait_for(ws.receive_json(), timeout=5)
+                if msg.get("type") != "auth_ok":
+                    return []
+                await ws.send_json({
+                    "id": 1,
+                    "type": "recorder/statistics_during_period",
+                    "start_time":    start_str.replace("Z", "+00:00"),
+                    "end_time":      end_str.replace("Z", "+00:00"),
+                    "statistic_ids": [entity_id],
+                    "period":        period,
+                })
+                msg = await asyncio.wait_for(ws.receive_json(), timeout=30)
+                if not msg.get("success"):
+                    _LOGGER.warning("Statistics WS failed for %s: %s", entity_id, msg.get("error"))
+                    return []
+                data = msg.get("result", {})
+        stats = data.get(entity_id, [])
+        points = []
+        for item in stats:
+            v_raw = item.get("mean")
+            if v_raw is None:
+                v_raw = item.get("state")  # fallback for non-measurement state_class
+            if v_raw is None:
+                continue
+            ts = item.get("start", "")
+            try:
+                t_ms = int(ts) if isinstance(ts, (int, float)) else int(datetime.datetime.fromisoformat(ts).timestamp() * 1000)
+            except Exception:
+                continue
+            points.append({"t": t_ms, "v": round(float(v_raw), 1)})
+        _LOGGER.debug("Statistics for %s (%s): %d points", entity_id, period, len(points))
+        return points
+    except Exception:
+        _LOGGER.exception("Failed to fetch statistics for %s", entity_id)
+        return []
 
 

@@ -11,7 +11,7 @@ Dead devices break automations. Battery Sentinel Plus monitors every battery-pow
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/smcneece/battery-sentinel)](https://github.com/smcneece/battery-sentinel/releases)
 [![GitHub](https://img.shields.io/github/license/smcneece/battery-sentinel)](LICENSE)
 
-> ⚠️ **Supervisor Required**: Battery Sentinel Plus is a Home Assistant **add-on** and requires a Supervisor-managed installation. It will **not** work on Home Assistant Core (Python package) or Home Assistant Container (Docker-only). If you are running **Home Assistant OS** or **Home Assistant Supervised**, you're good to go.
+> ⚠️ **Installation type**: Battery Sentinel Plus is primarily a Home Assistant **add-on** requiring a Supervisor-managed installation (HA OS or HA Supervised). **Docker support is available in beta** for users running Home Assistant Container or any standalone HA instance -- see [Docker Installation (beta)](#docker-installation-beta) below. Home Assistant Core (Python package only) is not supported.
 
 > [![Sponsor](https://img.shields.io/badge/Sponsor-💖-pink)](https://github.com/sponsors/smcneece) If Battery Sentinel Plus saves you from dead Z-Wave sensors, drained Zigbee devices, or a phone or tablet that's quietly hitting 10% in the background, consider sponsoring! Even a small one-time amount shows appreciation. Check out my [other HA projects](https://github.com/smcneece?tab=repositories) while you're here.
 >
@@ -26,6 +26,8 @@ Dead devices break automations. Battery Sentinel Plus monitors every battery-pow
 
 ![Device Detail](images/device-modal.png)
 
+![Battery History Chart](images/historygraph.png)
+
 ![Settings Page](images/settings-page.png)
 
 ![Daily Report Email](images/email.png)
@@ -38,6 +40,7 @@ Dead devices break automations. Battery Sentinel Plus monitors every battery-pow
 
 ### Device Discovery and Display
 - Auto-discovers all battery-powered devices from Home Assistant; no manual configuration required
+- **Battery type auto-lookup**: one click in Settings fills in battery types for all recognized devices using the Battery Notes community database -- no manual entry needed; devices with conflicting types are shown in a review modal so you can keep yours or accept the database suggestion
 - Handles both numeric sensors (percentage) and binary sensors (Low/OK)
 - Color-coded battery level indicators: red below 10%, amber below 25%, green otherwise
 - Room/area column sourced from the HA area registry
@@ -47,6 +50,7 @@ Dead devices break automations. Battery Sentinel Plus monitors every battery-pow
 - Live filter box above the device list; type any part of a device name to narrow the list instantly
 - Battery Type column header filter: show only devices with a specific type, or find all unassigned devices at a glance
 - Column visibility controls in Settings: show or hide any column (Level, Battery Type, Alert Threshold, Notifications, Script, Room)
+- Help / About button in the page header: shows the current app version, HA version, and install mode, with quick links to the documentation, changelog, and issue tracker
 
 ### Bulk Edit
 - **Battery Type toolbar**: pick a type from the dropdown and apply it to all text-filtered devices at once; useful for tagging a whole category (e.g., all smoke detectors) in one step
@@ -63,6 +67,7 @@ Click any device in the list to open its detail panel.
 - Last replaced date, manually editable or stamped with the Replaced/Recharged Today button
 - Per-device notification controls: UI, Email, and Mobile toggles; email address override; mobile app service selector
 - **Mute notifications**: silence alerts for a device for 1 hour, 3 hours, 8 hours, 1 day, 3 days, or 1 week; a bell icon appears in the device list next to muted devices; mutes expire automatically with no cleanup needed
+- **Battery history chart**: the History tab inside each device panel shows a line chart of battery level over time; range selector offers 7d, 30d, 90d, 6m, 1y, and a custom date range; recent data uses HA recorder history, and longer ranges automatically switch to HA long-term statistics so you can see months or years of drain history; the alert threshold is shown as a dashed line; recharge events on rechargeable devices appear as a clear spike back to 100%
 - Hide device: removes it from the list and suppresses all alerts; hidden devices are accessible in a collapsible section at the bottom of the Devices tab where they can be restored or permanently deleted. Note: if the entity still exists in Home Assistant, permanently deleted devices will reappear on the next scan.
 
 ### Notifications
@@ -141,6 +146,7 @@ This covers your entire Z-Wave network, not just battery-powered devices. Mains-
 - Suppressed on the first scan after add-on startup so a rebooting HA instance does not flood you with alerts while Z-Wave JS is still initialising
 - Per-node notification channels (bell, email, mobile push) and mute periods in the Z-Wave tab; global alert delay shared with other monitors in the Notifications settings
 - Optional script trigger passes `device_name`, `entity_id`, `node_status`, and `device_type` (`z-wave`) to the global script configured in Notifications
+- **Periodic node pinging**: optionally pings all alive nodes on a configurable interval (default 30 minutes) via `zwave_js.ping`; prompts Z-Wave JS to update node status immediately rather than waiting for its natural mesh update cycle, so dead nodes are detected and alerted sooner; sleeping battery-powered nodes are skipped automatically
 
 > Future: dead Z-Wave nodes may appear directly in the device list so they can be muted or acknowledged the same way battery devices are.
 
@@ -215,6 +221,30 @@ Once the repository is added:
 2. Go to **Settings > Apps > App Store**, click the menu and select **Check for updates**.
 3. Battery Sentinel Plus will appear under **Local add-ons**. Click **Install**, then **Start**.
 
+### Docker Installation *(beta)*
+
+> **Beta:** Docker support is new and has been tested in a limited environment. The developer does not run a full Docker-based HA stack, so feedback from Docker users is especially welcome. Please [open an issue](https://github.com/smcneece/battery-sentinel/issues) if you run into problems.
+
+For users running Home Assistant Container or any standalone HA instance, Battery Sentinel Plus can run as a plain Docker container. You will need a [long-lived access token](https://www.home-assistant.io/docs/authentication/#your-account-profile) from your HA profile page.
+
+```bash
+git clone https://github.com/smcneece/battery-sentinel
+cd battery-sentinel/addon
+docker build -t battery-sentinel .
+docker run -d \
+  --name battery-sentinel \
+  --network host \
+  --restart unless-stopped \
+  -v /path/to/data:/data \
+  -e HA_BASE_URL=http://your-ha-ip:8123 \
+  -e HA_TOKEN=your-long-lived-token \
+  battery-sentinel
+```
+
+Replace `/path/to/data` with a local directory for persistent storage, `your-ha-ip:8123` with your HA address, and `your-long-lived-token` with the token from your HA profile. The UI is accessible at `http://your-host-ip:8099` once the container is running. Ingress is not available in Docker mode; access the UI directly via the port.
+
+> ⚠️ **Updates are manual in Docker mode.** There are no automatic update notifications. To get notified of new releases, click **Watch → Custom → Releases** on the [GitHub repository](https://github.com/smcneece/battery-sentinel) -- GitHub will email you when a new version is published. Then `git pull`, rebuild the image, and restart the container to update.
+
 ---
 
 ## Data & Backups
@@ -275,6 +305,8 @@ All configuration is done within the add-on UI. There is no YAML to edit.
 | Setting | Default | Description |
 |---------|---------|-------------|
 | Alert when a Z-Wave node goes dead | Off | Enables node status monitoring for all Z-Wave JS devices; notification channels and mute periods are configured per-node in the Z-Wave tab |
+| Periodically ping Z-Wave nodes | Off | Pings all alive nodes on a configurable interval so Z-Wave JS detects failures faster; sleeping battery-powered nodes are skipped automatically |
+| Ping interval | 30 min | How often Battery Sentinel Plus pings alive Z-Wave nodes; minimum 10 minutes; only active when node monitoring is also enabled |
 | Alert when a Zigbee device goes offline | Off | Enables Last Seen monitoring for Zigbee2MQTT devices; notification channels and mute periods are configured per-device in the Zigbee tab |
 | Offline threshold | 24 hours | Hours without a check-in before a Zigbee device is considered offline; set higher than your Z2M availability timeout |
 | Scan interval | 30 min | How often Battery Sentinel Plus checks Zigbee Last Seen timestamps; independent from the battery check interval |
@@ -364,6 +396,20 @@ Once enabled, go to the Battery Sentinel Plus Settings tab, enable Zigbee Device
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for the full version history.
+
+---
+
+## Contributing
+
+Pull requests are welcome. A few things to keep in mind before opening one:
+
+**Test your changes against a real Home Assistant instance.** PRs that have not been run will be closed. If the app does not start, that will be caught immediately.
+
+**Describe what you tested.** In your PR description, say what environment you ran it in (Supervisor add-on, Docker, etc.) and what functionality you verified. "It works" is not enough -- be specific about what you tested and what you could not test due to your setup.
+
+**Understand the scope.** Some things like Z-Wave or Zigbee monitoring require specific hardware. If you cannot test a feature end to end, say so and we will work out how to verify it before merging. Nothing merges without a real test run on the maintainer's end regardless.
+
+**Rebase against the current main branch** before opening a PR. The codebase moves fast and a stale PR creates more work for everyone.
 
 ---
 
