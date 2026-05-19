@@ -1,5 +1,11 @@
 # Battery Sentinel Plus Changelog
 
+## 2026.05.3
+- Clicking the battery level in the device list now opens the device panel directly on the History tab; clicking the device name or anywhere else on the row still opens the Details tab as before
+- Z-Wave ping: battery-powered nodes (those with a matching battery entity in Battery Sentinel) are now skipped during routine alive pings; they are still pinged immediately when detected dead, avoiding unnecessary radio traffic on locks, sensors, and remotes
+- Z-Wave ping: when a node is first detected dead, an immediate targeted ping is sent rather than waiting up to 30 minutes for the next scheduled ping cycle; if the node responds, Z-Wave JS clears the dead status before the alert delay expires and no notification is sent
+- Troubleshooting guide added (TROUBLESHOOTING.md): covers common issues including no devices appearing, hidden entities, persistent HA API errors, and the HA Supervised Docker manifest error
+
 ## 2026.05.2
 - Help / About button added to the page header: opens a modal showing the current Battery Sentinel Plus version, HA version, and install mode, with links to the GitHub repository, README, Changelog, and issue tracker
 - Fixed: battery entities that were hidden in Battery Sentinel and then deleted from HA were retained in storage indefinitely; deleted entities are now pruned automatically on the next scan, matching the existing behavior for Z-Wave and Zigbee nodes

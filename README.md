@@ -57,7 +57,7 @@ Dead devices break automations. Battery Sentinel Plus monitors every battery-pow
 - **Alert Threshold toolbar**: same bulk-set pattern for thresholds; filter by name, pick a threshold, apply to all matching devices with one confirmation
 
 ### Per-device Management
-Click any device in the list to open its detail panel.
+Click any device in the list to open its detail panel. Click the **battery level** directly to jump straight to the History tab.
 
 - **Inline rename**: click the device name at the top of the panel to edit it; saving writes the new friendly name back to Home Assistant via the entity registry (entity ID is unchanged, so automations and dashboards are unaffected). Note: this renames the battery *entity* only, not the parent device; the device name in HA's device registry is separate and will not change
 - Manufacturer and model number shown below the entity ID (pulled from the HA device registry; blank if the device has no registry entry)
@@ -168,6 +168,12 @@ Battery Sentinel Plus monitors Zigbee device health by tracking the Last Seen ti
 - Per-device notification channels (bell, email, mobile push) and mute periods in the Zigbee tab; global alert delay shared with other monitors in the Notifications settings
 - Optional script trigger passes `device_name`, `entity_id`, `last_seen`, and `device_type` (`zigbee`) to the global script configured in Notifications
 - Per-device settings in the Zigbee tab: notes, mute, and per-channel notification overrides
+
+### Zigbee and ZHA Battery Devices
+
+Battery Sentinel Plus discovers any entity with `device_class: battery` regardless of the integration that created it. **ZHA (Zigbee Home Automation) battery devices are fully supported** in the main Devices tab alongside Z2M, Z-Wave JS, Bluetooth, Wi-Fi, and Matter devices -- no extra setup required.
+
+The **Zigbee offline monitoring** feature (Zigbee tab) is Zigbee2MQTT-specific because it relies on the `sensor.*_last_seen` entities that Z2M publishes. ZHA does not create those entities, so the offline monitoring tab is not available for ZHA setups. Battery level tracking works for both.
 
 ### Battery Type Lookup
 Battery Sentinel Plus can automatically identify battery types for your devices using the [Battery Notes](https://github.com/andrew-codechimp/HA-Battery-Notes) community database, a crowd-sourced library of thousands of smart home devices and their battery types maintained by [andrew-codechimp](https://github.com/andrew-codechimp). The database is bundled locally with the add-on and refreshed weekly, lookups are instant with no external network calls, but it may not include devices added to the community library in the last few days. If the lookup saves you time, consider [buying him a coffee](https://www.buymeacoffee.com/codechimp), the database is a significant community effort.
@@ -427,6 +433,7 @@ Pull requests are welcome. A few things to keep in mind before opening one:
 
 ## Support
 
+- **Troubleshooting**: [Troubleshooting guide](TROUBLESHOOTING.md) — check here first before opening an issue
 - **Issues & bug reports**: [GitHub Issues](https://github.com/smcneece/battery-sentinel/issues)
 - **Feature requests & general questions**: [GitHub Issues](https://github.com/smcneece/battery-sentinel/issues)
 - **Community**: [Home Assistant Community Forum](https://community.home-assistant.io/)

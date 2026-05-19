@@ -161,6 +161,8 @@ async def check_nodes(settings: dict, first_run: bool, metadata: dict = None):
                     "alert_sent": False,
                 })
                 entry = storage.get_zwave_nodes().get(eid, entry)
+                if settings.get("zwave_ping_enabled") and not first_run:
+                    await ping_single_node(eid)
 
             if not entry.get("alert_sent") and not first_run and not is_muted:
                 try:
@@ -191,17 +193,61 @@ async def check_nodes(settings: dict, first_run: bool, metadata: dict = None):
                     await notifications.fire_zwave_node_recovered(node_with_settings, settings)
 
 
-async def ping_nodes():
-    """Ping all alive Z-Wave nodes to help Z-Wave JS detect dead nodes faster.
+async def ping_single_node(entity_id: str):
+    """Immediately ping one Z-Wave node -- called when it is first detected dead.
+    Gives Z-Wave JS a chance to update status before the alert delay expires."""
+    ping_eid = "button." + entity_id.removeprefix("sensor.").removesuffix("_node_status") + "_ping"
+    _LOGGER.info("Z-Wave immediate ping: %s (newly detected dead)", entity_id)
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f"{HA_API_URL}/services/button/press",
+                headers=_headers(),
+                json={"entity_id": ping_eid},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as resp:
+                if resp.status != 200:
+                    _LOGGER.debug("Immediate ping failed for %s (HTTP %d)", ping_eid, resp.status)
+    except Exception:
+        _LOGGER.debug("Immediate ping error for %s", entity_id)
 
-    Skips sleeping nodes (battery-powered) and already-dead nodes.
+
+async def ping_nodes():
+    """Ping Z-Wave nodes to help Z-Wave JS detect/recover dead nodes faster.
+
+    Mains-powered nodes (no battery entity): ping if alive or dead.
+    Battery-powered nodes (has a matching battery entity in storage): ping only if dead,
+    to avoid unnecessary radio traffic that could affect battery life.
+    Sleeping nodes are always skipped.
     Called from zwave_ping_loop() in main.py on a configurable interval."""
     nodes = await get_node_statuses()
-    targets = [n for n in nodes if n["state"] == "alive"]
-    if not targets:
-        _LOGGER.debug("Z-Wave ping: no alive nodes to ping")
+    if not nodes:
         return
-    _LOGGER.info("Z-Wave ping: pinging %d alive node(s)", len(targets))
+
+    battery_eids = storage.get_device_entity_ids()
+
+    targets = []
+    for node in nodes:
+        state = node["state"]
+        if state not in ("alive", "dead"):
+            continue
+        base = node["entity_id"].removeprefix("sensor.").removesuffix("_node_status")
+        has_battery = any(
+            eid.startswith(f"sensor.{base}_") or eid.startswith(f"binary_sensor.{base}_")
+            for eid in battery_eids
+        )
+        if has_battery and state == "alive":
+            _LOGGER.debug("Z-Wave ping: skipping battery-powered alive node %s", node["entity_id"])
+            continue
+        targets.append(node)
+
+    if not targets:
+        _LOGGER.debug("Z-Wave ping: no nodes to ping")
+        return
+
+    alive_count = sum(1 for n in targets if n["state"] == "alive")
+    dead_count  = sum(1 for n in targets if n["state"] == "dead")
+    _LOGGER.info("Z-Wave ping: pinging %d node(s) (%d alive, %d dead)", len(targets), alive_count, dead_count)
     async with aiohttp.ClientSession() as session:
         for node in targets:
             # Derive ping button entity from node_status entity:

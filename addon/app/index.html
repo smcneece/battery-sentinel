@@ -1043,7 +1043,7 @@ function renderTable() {
     const isMuted = d.muted_until && new Date(d.muted_until) > new Date();
     return `<tr class="device-row" data-eid="${d.entity_id}"${dim}>
       <td data-col="name">${esc(d.name)}${isMuted ? ` <span title="Notifications muted" style="color:var(--bs-text-dim);font-size:.8rem">&#x1F515; <span style="color:var(--bs-text-dim)">(${muteRemaining(d.muted_until)})</span></span>` : ''}</td>
-      ${v.level  ? `<td data-col="level">${levelCell(d)}</td>` : ''}
+      ${v.level  ? `<td data-col="level" title="View history" onclick="event.stopPropagation();openModal('${d.entity_id}','history')">${levelCell(d)}</td>` : ''}
       ${v.btype  ? `<td data-col="btype" onclick="event.stopPropagation()"><select class="inline-select" data-eid="${d.entity_id}" data-field="battery_type">${typeOptions(d.battery_type||'')}</select></td>` : ''}
       ${v.alert  ? `<td data-col="alert" onclick="event.stopPropagation()"><select class="inline-select" data-eid="${d.entity_id}">${thrCell}</select></td>` : ''}
       ${v.notify ? `<td data-col="notify" onclick="event.stopPropagation()">
@@ -1232,7 +1232,7 @@ function toggleCol(col, show) {
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────
-function openModal(eid) {
+function openModal(eid, tab = 'details') {
   const d = _devices.find(x => x.entity_id === eid);
   if (!d) return;
   _activeEntity = eid;
@@ -1309,6 +1309,7 @@ function openModal(eid) {
   else if (!d.notify_script) scriptEl.value = '';
 
   resetModalTabs();
+  if (tab === 'history') switchModalTab('history');
   document.getElementById("modal").classList.add("open");
 }
 

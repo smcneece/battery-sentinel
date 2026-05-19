@@ -133,13 +133,6 @@
             "battery_quantity": 2
         },
         {
-            "manufacturer": "_TZ3000_6zvw8ham",
-            "model": "TS0203",
-            "model_id": "TS0203",
-            "battery_type": "AAA",
-            "battery_quantity": 2
-        },
-        {
             "manufacturer": "_TZ3000_7d8yme6f",
             "model": "TS0203",
             "battery_type": "CR2032"
@@ -1756,13 +1749,6 @@
         },
         {
             "manufacturer": "Aqara",
-            "model": "Vibration Sensor",
-            "model_id": "DJT11LM",
-            "hw_version": "3",
-            "battery_type": "CR2032"
-        },
-        {
-            "manufacturer": "Aqara",
             "model": "Vibration sensor (DJT11LM)",
             "battery_type": "CR2032"
         },
@@ -1946,6 +1932,12 @@
             "manufacturer": "Arlo",
             "model": "Pro 2",
             "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "arre home LLC",
+            "model": "Temperature Sensor",
+            "hw_version": "2.0",
+            "battery_type": "CR2032"
         },
         {
             "manufacturer": "Arteco",
@@ -2174,13 +2166,6 @@
         {
             "manufacturer": "AVM",
             "model": "FRITZ!Smart Thermo 302",
-            "battery_type": "AA",
-            "battery_quantity": 3
-        },
-        {
-            "manufacturer": "AVM",
-            "model": "FRITZ!Smart Thermo 302",
-            "hw_version": "5.26",
             "battery_type": "AA",
             "battery_quantity": 3
         },
@@ -3900,16 +3885,14 @@
         },
         {
             "manufacturer": "Eve Systems",
-            "model": "Eve Motion 20EBY9901",
-            "model_id": "89",
+            "model": "Eve MotionBlinds 20CAA9901",
+            "model_id": "85",
             "hw_version": "1.1",
-            "battery_type": "AAA",
-            "battery_quantity": 2
+            "battery_type": "Rechargeable"
         },
         {
             "manufacturer": "Eve Systems",
-            "model": "Eve MotionBlinds 20CAA9901",
-            "model_id": "85",
+            "model": "Eve Room 20EBX9901",
             "hw_version": "1.1",
             "battery_type": "Rechargeable"
         },
@@ -3933,6 +3916,12 @@
             "manufacturer": "Eve Systems",
             "model": "Eve Weather",
             "model_id": "20EBS9901",
+            "hw_version": "1.1",
+            "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Eve Systems",
+            "model": "Eve Weather 20EBS9901",
             "hw_version": "1.1",
             "battery_type": "CR2450"
         },
@@ -4637,6 +4626,12 @@
             "battery_type": "CR123A"
         },
         {
+            "manufacturer": "Haozee",
+            "model": "Haozee Zigbee Temperature and Humidity sensor",
+            "model_id": "ZG-227Z",
+            "battery_type": "CR2450"
+        },
+        {
             "manufacturer": "HARMAN International Industries",
             "model": "JBL BAR 1000",
             "hw_version": "MT8518",
@@ -4712,13 +4707,6 @@
             "battery_type": "CR2450"
         },
         {
-            "manufacturer": "HEIMAN",
-            "model": "Remote dimmer and color control",
-            "model_id": "HS2WDSR-E",
-            "hw_version": "16",
-            "battery_type": "CR2450"
-        },
-        {
             "manufacturer": "Heiman",
             "model": "Smart air quality monitor",
             "model_id": "HS3AQ",
@@ -4762,12 +4750,6 @@
         {
             "manufacturer": "HEIMAN",
             "model": "Smoke detector (HS1SA)",
-            "battery_type": "CR123A"
-        },
-        {
-            "manufacturer": "HEIMAN",
-            "model": "Smoke detector (HS1SA)",
-            "hw_version": "16",
             "battery_type": "CR123A"
         },
         {
@@ -4846,6 +4828,14 @@
         },
         {
             "manufacturer": "Hive",
+            "model": "Radiator valve",
+            "model_id": "UK7004240",
+            "hw_version": "69",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Hive",
             "model": "Radiator valve (UK7004240)",
             "battery_type": "AA",
             "battery_quantity": 2
@@ -4867,6 +4857,14 @@
             "manufacturer": "HOBEIAN",
             "model": "Door/window sensor",
             "model_id": "ZG-102ZA",
+            "hw_version": "1",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "HOBEIAN",
+            "model": "Human Presence Sensor",
+            "model_id": "ZG-204ZH",
             "hw_version": "1",
             "battery_type": "AAA",
             "battery_quantity": 2
@@ -6192,6 +6190,11 @@
         },
         {
             "manufacturer": "LUMI",
+            "model": "lumi.motion.agl02",
+            "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "LUMI",
             "model": "lumi.motion.agl04",
             "battery_type": "CR2450",
             "battery_quantity": 2
@@ -6309,6 +6312,12 @@
         {
             "manufacturer": "LUMI",
             "model": "lumi.weather",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Lutron",
+            "model": "Lutron Aurora",
+            "model_id": "Z3-1BRL",
             "battery_type": "CR2032"
         },
         {
@@ -6480,6 +6489,13 @@
         },
         {
             "manufacturer": "Moes",
+            "model": "Scene remote with 3 keys",
+            "model_id": "ZT-B-EU3",
+            "hw_version": "1",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Moes",
             "model": "Smart button",
             "model_id": "ERS-10TZBVB-AA",
             "hw_version": "1",
@@ -6490,6 +6506,13 @@
             "model": "Smart door and window sensor (ZSS-JM-GWM-C-MS)",
             "model_id": "_TZ3000_decxrtwa",
             "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Moes",
+            "model": "Smart knob",
+            "model_id": "ZG-101ZD",
+            "hw_version": "1",
+            "battery_type": "CR2450"
         },
         {
             "manufacturer": "Moes",
@@ -7259,21 +7282,7 @@
         {
             "manufacturer": "Philips",
             "model": "Hue dimmer switch",
-            "model_id": "324131092621",
-            "hw_version": "1",
-            "battery_type": "CR2450"
-        },
-        {
-            "manufacturer": "Philips",
-            "model": "Hue dimmer switch",
             "model_id": "929002398602",
-            "battery_type": "CR2032"
-        },
-        {
-            "manufacturer": "Philips",
-            "model": "Hue dimmer switch",
-            "model_id": "929002398602",
-            "hw_version": "1",
             "battery_type": "CR2032"
         },
         {
@@ -7700,6 +7709,12 @@
         },
         {
             "manufacturer": "Ring",
+            "model": "Glassbreak Sensor",
+            "battery_type": "AA",
+            "battery_quantity": 3
+        },
+        {
+            "manufacturer": "Ring",
             "model": "Intercom",
             "battery_type": "Rechargeable"
         },
@@ -7726,6 +7741,11 @@
         },
         {
             "manufacturer": "Ring",
+            "model": "Spotlight Cam",
+            "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "Ring",
             "model": "Spotlight Cam Battery",
             "battery_type": "Rechargeable",
             "battery_quantity": 2
@@ -7733,6 +7753,11 @@
         {
             "manufacturer": "Ring",
             "model": "Spotlight Cam Plus",
+            "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "Ring",
+            "model": "Stick Up Cam",
             "battery_type": "Rechargeable"
         },
         {
@@ -8044,6 +8069,14 @@
             "manufacturer": "Schneider Electric",
             "model": "W599001",
             "battery_type": "Irreplaceable"
+        },
+        {
+            "manufacturer": "Schneider Electric",
+            "model": "Wiser radiator thermostat",
+            "model_id": "WV704R0A0902",
+            "hw_version": "0",
+            "battery_type": "AA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Schneider Electric",
@@ -8776,6 +8809,11 @@
             "battery_type": "Rechargeable"
         },
         {
+            "manufacturer": "SmartWings",
+            "model": "WM25L",
+            "battery_type": "Rechargeable"
+        },
+        {
             "manufacturer": "Smoke detector",
             "model": "SSHM-I1",
             "battery_type": "CR123A"
@@ -8839,24 +8877,18 @@
             "battery_type": "CR2032"
         },
         {
-            "manufacturer": "SONOFF",
-            "model": "Contact sensor",
-            "model_id": "SNZB-04",
-            "hw_version": "1",
-            "battery_type": "CR2032"
-        },
-        {
             "manufacturer": "Sonoff",
             "model": "Contact Sensor",
             "model_id": "SNZB-04P",
             "battery_type": "CR2477"
         },
         {
-            "manufacturer": "SONOFF",
+            "manufacturer": "Sonoff",
             "model": "Contact sensor",
-            "model_id": "SNZB-04P",
+            "model_id": "SNZB-04PR2",
             "hw_version": "0",
-            "battery_type": "CR2477"
+            "battery_type": "AAA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Sonoff",
@@ -8911,12 +8943,6 @@
         {
             "manufacturer": "SONOFF",
             "model": "SNZB-02D",
-            "battery_type": "CR2450"
-        },
-        {
-            "manufacturer": "SONOFF",
-            "model": "SNZB-02D",
-            "hw_version": "0",
             "battery_type": "CR2450"
         },
         {
@@ -9454,15 +9480,6 @@
             "manufacturer": "TFA Dostmann",
             "model": "Klima@Home",
             "model_id": "30.3060.01.IT",
-            "hw_version": "V001 A18 (09/2019)",
-            "battery_type": "AA",
-            "battery_quantity": 3
-        },
-        {
-            "manufacturer": "TFA Dostmann",
-            "model": "Klima@Home",
-            "model_id": "30.3060.54.IT",
-            "hw_version": "V001 A18 (05/2018)",
             "battery_type": "AA",
             "battery_quantity": 3
         },
@@ -10058,13 +10075,7 @@
         {
             "manufacturer": "TuYa",
             "model": "Door sensor (TS0203)",
-            "battery_type": "CR2032"
-        },
-        {
-            "manufacturer": "Tuya",
-            "model": "Door sensor (TS0203)",
-            "battery_type": "AAA",
-            "battery_quantity": 2
+            "battery_type": "MANUAL"
         },
         {
             "manufacturer": "TuYa",
@@ -10880,12 +10891,6 @@
             "battery_type": "CR123A"
         },
         {
-            "manufacturer": "Tuya",
-            "model": "TS0205",
-            "model_id": "_TYZB01_dsjszp0x",
-            "battery_type": "CR123A"
-        },
-        {
             "manufacturer": "tuya",
             "model": "TS0210",
             "battery_type": "AAA",
@@ -11203,6 +11208,23 @@
             "model": "USL Environmental",
             "model_id": "USL-Environmental-US",
             "battery_type": "CR123A"
+        },
+        {
+            "manufacturer": "Ujin",
+            "model": "Aqua-Sense BLE",
+            "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Ujin",
+            "model": "RHT-Z-H367",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Ujin",
+            "model": "RHT-Z-H368",
+            "battery_type": "AA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Ultraloq",
@@ -11888,12 +11910,6 @@
         },
         {
             "manufacturer": "Xiaomi",
-            "model": "LYWSD03MMC",
-            "hw_version": "BTHome v2",
-            "battery_type": "CR2032"
-        },
-        {
-            "manufacturer": "Xiaomi",
             "model": "LYWSD03MMC-z",
             "battery_type": "CR2032"
         },
@@ -12281,6 +12297,12 @@
             "battery_quantity": 4
         },
         {
+            "manufacturer": "Yale/August",
+            "model": "AUGUST_MODEL_NUMBER_HERE",
+            "battery_type": "AA",
+            "battery_quantity": 4
+        },
+        {
             "manufacturer": "Yeelight",
             "model": "ble YLAI003",
             "battery_type": "CR2032"
@@ -12425,13 +12447,6 @@
         },
         {
             "manufacturer": "YoLink",
-            "model": "YS7906-UC",
-            "model_id": "LeakSensor",
-            "battery_type": "AAA",
-            "battery_quantity": 2
-        },
-        {
-            "manufacturer": "YoLink",
             "model": "YS8003-UC",
             "model_id": "THSensor",
             "battery_type": "AAA",
@@ -12460,6 +12475,13 @@
             "model": "Temperature and humidity sensor",
             "model_id": "TH01",
             "battery_type": "MANUAL"
+        },
+        {
+            "manufacturer": "Zbeacon",
+            "model": "Temperature and humidity sensor",
+            "model_id": "TH01",
+            "hw_version": "0",
+            "battery_type": "CR2032"
         },
         {
             "manufacturer": "Zbeacon",

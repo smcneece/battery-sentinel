@@ -248,6 +248,11 @@ def set_script_last_run(entity_id: str, date_str: str):
         _save(data)
 
 
+def get_device_entity_ids() -> set:
+    """Return the set of all tracked battery device entity IDs."""
+    return set(_load().get("devices", {}).keys())
+
+
 def get_zwave_nodes() -> dict:
     """Return the full _zwave_nodes tracking dict, keyed by entity_id."""
     return _load().get("_zwave_nodes", {})

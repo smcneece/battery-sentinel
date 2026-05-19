@@ -6,6 +6,8 @@ labels: bug
 assignees: ''
 ---
 
+> Before submitting, please check the [Troubleshooting guide](../../TROUBLESHOOTING.md) -- your issue may already be documented there.
+
 **What happened?**
 A clear description of the bug.
 
