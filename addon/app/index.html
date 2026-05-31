@@ -599,7 +599,11 @@
         </div>
       </div>
       <div class="field">
-        <label>Mute notifications</label>
+        <label>Notes</label>
+        <textarea id="modal-notes" placeholder="Optional notes about this device or its battery..."></textarea>
+      </div>
+      <div class="field">
+        <label>Mute battery level notifications</label>
         <select id="modal-mute-select">
           <option value="">Not muted</option>
           <option value="1h">1 hour</option>
@@ -611,15 +615,17 @@
         </select>
       </div>
       <div class="field">
-        <label>Notes</label>
-        <textarea id="modal-notes" placeholder="Optional notes about this device or its battery..."></textarea>
-      </div>
-      <div class="field">
-        <label>Notifications</label>
+        <label>Battery level notifications</label>
         <div style="display:flex;gap:1.25rem;margin-top:.25rem">
           <label class="notify-check"><input type="checkbox" id="modal-notify-bell"> UI (HA)</label>
           <label class="notify-check"><input type="checkbox" id="modal-notify-email"> Email</label>
           <label class="notify-check"><input type="checkbox" id="modal-notify-mobile"> Mobile</label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="notify-row">
+          <input type="checkbox" id="modal-notify-unavailable">
+          <label for="modal-notify-unavailable" style="font-size:.85rem">Send unavailable notifications</label>
         </div>
       </div>
       <div class="field">
@@ -1287,10 +1293,11 @@ function openModal(eid, tab = 'details') {
     typeEl.innerHTML += `<option value="${d.battery_type}" selected>${d.battery_type} (custom)</option>`;
   }
 
-  document.getElementById("modal-notify-bell").checked   = d.notify_bell  !== false;
-  document.getElementById("modal-notify-email").checked  = d.notify_email !== false;
-  document.getElementById("modal-notify-mobile").checked = !!d.notify_mobile;
-  document.getElementById("modal-notify-addr").value    = d.notify_email_address || '';
+  document.getElementById("modal-notify-bell").checked        = d.notify_bell  !== false;
+  document.getElementById("modal-notify-email").checked       = d.notify_email !== false;
+  document.getElementById("modal-notify-mobile").checked      = !!d.notify_mobile;
+  document.getElementById("modal-notify-unavailable").checked = d.notify_unavailable_device !== false;
+  document.getElementById("modal-notify-addr").value         = d.notify_email_address || '';
 
   const mobileEl  = document.getElementById("modal-mobile-service");
   const mobileSvcs = _notifyServices.filter(s => s.startsWith("mobile_app_"));
@@ -1584,10 +1591,11 @@ async function saveDevice() {
     battery_type:          document.getElementById("modal-type").value,
     alert_threshold:       parseInt(document.getElementById("modal-threshold").value, 10),
     last_replaced:         document.getElementById("modal-replaced").value || null,
-    notify_bell:           document.getElementById("modal-notify-bell").checked,
-    notify_email:          document.getElementById("modal-notify-email").checked,
-    notify_mobile:         document.getElementById("modal-notify-mobile").checked,
-    notify_email_address:  document.getElementById("modal-notify-addr").value.trim(),
+    notify_bell:                document.getElementById("modal-notify-bell").checked,
+    notify_email:               document.getElementById("modal-notify-email").checked,
+    notify_mobile:              document.getElementById("modal-notify-mobile").checked,
+    notify_unavailable_device:  document.getElementById("modal-notify-unavailable").checked,
+    notify_email_address:       document.getElementById("modal-notify-addr").value.trim(),
     notify_mobile_service: document.getElementById("modal-mobile-service").value,
     notify_script:         document.getElementById("modal-notify-script").value,
     muted_until:           (() => {

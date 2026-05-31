@@ -1189,6 +1189,16 @@
             "battery_type": "Rechargeable"
         },
         {
+            "manufacturer": "American Power Conversion",
+            "model": "Back-UPS XS 800CI",
+            "battery_type": "RBCBX800-BD1"
+        },
+        {
+            "manufacturer": "American Power Conversion",
+            "model": "Back-UPS XS 950U",
+            "battery_type": "RBCBX950-BD1"
+        },
+        {
             "manufacturer": "AMV FritzBox",
             "model": "FRITZ!DECT 302",
             "battery_type": "AA",
@@ -1216,6 +1226,11 @@
             "manufacturer": "APC",
             "model": "Back-UPS XS 1500M",
             "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "APC",
+            "model": "Smart-UPS 1500",
+            "battery_type": "APCRBC164-LI"
         },
         {
             "manufacturer": "APC",
@@ -3249,6 +3264,12 @@
         },
         {
             "manufacturer": "eQ-3",
+            "model": "HM-Sec-WDS-2",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
             "model": "HM-Sec-Win",
             "battery_type": "HM-Sec-Win-BaP"
         },
@@ -3289,6 +3310,12 @@
             "model": "HM-Sen-MDIR-WM55",
             "battery_type": "AAA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
+            "model": "HM-Sen-Wa-Od",
+            "battery_type": "AA",
+            "battery_quantity": 3
         },
         {
             "manufacturer": "eQ-3",

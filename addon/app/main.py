@@ -23,7 +23,7 @@ from device_utils import device_is_low, level_str, format_line
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.05.3"
+VERSION = "2026.05.4"
 
 _cache: list = []
 _startup_logged = False
@@ -206,7 +206,8 @@ async def do_refresh():
                     if (now - since).total_seconds() >= delay_seconds and not is_muted_unavail:
                         storage.set_unavailable_sent(eid, True)
                         device["unavailable_sent"] = True
-                        newly_unavailable.append(device)
+                        if device.get("notify_unavailable_device", True):
+                            newly_unavailable.append(device)
                 except Exception:
                     pass
         else:
@@ -216,7 +217,8 @@ async def do_refresh():
             if device.get("unavailable_sent"):
                 storage.set_unavailable_sent(eid, False)
                 device["unavailable_sent"] = False
-                newly_recovered.append(device)
+                if device.get("notify_unavailable_device", True):
+                    newly_recovered.append(device)
 
     if settings.get("suppress_unavailable_if_monitored", True):
         if settings.get("zwave_monitor_enabled") or settings.get("zigbee_monitor_enabled"):

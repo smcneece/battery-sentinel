@@ -1,5 +1,12 @@
 # Battery Sentinel Plus Changelog
 
+For full release notes and details on each version, see the [GitHub Releases page](https://github.com/smcneece/battery-sentinel/releases).
+
+## 2026.05.4
+- Per-device "Send unavailable notifications" checkbox in the device detail panel: uncheck for any device that is expected to go offline (a laptop, a phone, a tablet) and it will be silently skipped for both went-unavailable and back-online alerts; battery level monitoring and all other notifications are unaffected; checked by default so existing behavior is unchanged
+- Device panel: Notes field moved above the notification controls
+- Device panel: "Mute notifications" renamed to "Mute battery level notifications"; "Notifications" checkbox group renamed to "Battery level notifications" to distinguish them from the new unavailable notification control
+
 ## 2026.05.3
 - Clicking the battery level in the device list now opens the device panel directly on the History tab; clicking the device name or anywhere else on the row still opens the Details tab as before
 - Z-Wave ping: battery-powered nodes (those with a matching battery entity in Battery Sentinel) are now skipped during routine alive pings; they are still pinged immediately when detected dead, avoiding unnecessary radio traffic on locks, sensors, and remotes
