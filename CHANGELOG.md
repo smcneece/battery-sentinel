@@ -2,6 +2,9 @@
 
 For full release notes and details on each version, see the [GitHub Releases page](https://github.com/smcneece/battery-sentinel/releases).
 
+## 2026.05.5
+- Fixed: "Send unavailable notifications" checkbox introduced in 2026.05.4 was not saving; the value was silently discarded by the storage layer's field allowlist which did not include the new field
+
 ## 2026.05.4
 - Per-device "Send unavailable notifications" checkbox in the device detail panel: uncheck for any device that is expected to go offline (a laptop, a phone, a tablet) and it will be silently skipped for both went-unavailable and back-online alerts; battery level monitoring and all other notifications are unaffected; checked by default so existing behavior is unchanged
 - Device panel: Notes field moved above the notification controls

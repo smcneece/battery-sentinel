@@ -127,6 +127,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
                 "notify_bell": True,
                 "notify_email": True,
                 "notify_mobile": False,
+                "notify_unavailable_device": True,
                 "notify_email_address": "",
                 "notify_mobile_service": "",
                 "notify_script": "",
@@ -143,6 +144,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
             devices[eid].setdefault("notify_bell", True)
             devices[eid].setdefault("notify_email", True)
             devices[eid].setdefault("notify_mobile", False)
+            devices[eid].setdefault("notify_unavailable_device", True)
             devices[eid].setdefault("notify_email_address", "")
             devices[eid].setdefault("notify_mobile_service", "")
             devices[eid].setdefault("notify_script", "")
@@ -181,7 +183,7 @@ def save_device(entity_id: str, fields: dict) -> dict:
         raise KeyError(f"Device {entity_id} not found")
     allowed = {
         "notes", "battery_type", "alert_threshold", "last_replaced",
-        "notify_bell", "notify_email", "notify_mobile",
+        "notify_bell", "notify_email", "notify_mobile", "notify_unavailable_device",
         "notify_email_address", "notify_mobile_service", "notify_script",
         "muted_until",
     }
