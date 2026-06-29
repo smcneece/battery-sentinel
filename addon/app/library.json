@@ -512,6 +512,12 @@
             "battery_quantity": 2
         },
         {
+            "manufacturer": "_TZ3290_j37rooaxrcdcqo5n",
+            "model": "TS1201",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "_TZ3290_ot6ewjvmejq5ekhl",
             "model": "TS1201",
             "battery_type": "AAA",
@@ -775,6 +781,12 @@
         },
         {
             "manufacturer": "_TZE284_nhgdf6qr",
+            "model": "TS0601",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "_TZE284_nt4pquef",
             "model": "TS0601",
             "battery_type": "AAA",
             "battery_quantity": 2
@@ -5036,6 +5048,12 @@
         },
         {
             "manufacturer": "HOBEIAN",
+            "model": "Motion sensor",
+            "model_id": "ZG-204Z",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "HOBEIAN",
             "model": "Rainwater detection sensor",
             "model_id": "ZG-223Z",
             "hw_version": "1",
@@ -5435,6 +5453,12 @@
             "hw_version": "P2.0",
             "battery_type": "AAA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "IKEA",
+            "model": "BILRESA remote control with buttons",
+            "model_id": "09B9",
+            "battery_type": "CR2032"
         },
         {
             "manufacturer": "IKEA",
@@ -6524,6 +6548,12 @@
             "manufacturer": "Mammotion",
             "model": "LubaVAWD5000",
             "model_id": "Luba2AWD10000H",
+            "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "Mammotion",
+            "model": "YUKA mini 2 1000",
+            "model_id": "YUKA mini 2 1000",
             "battery_type": "Rechargeable"
         },
         {
@@ -11794,6 +11824,12 @@
         },
         {
             "manufacturer": "X-Sense",
+            "model": "SW50A",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "X-Sense",
             "model": "Waterleak sensor",
             "model_id": "SWS51",
             "battery_type": "AAA",
@@ -11822,6 +11858,11 @@
         {
             "manufacturer": "X-SENSE",
             "model": "XS0B-MR",
+            "battery_type": "CR123A"
+        },
+        {
+            "manufacturer": "X-Sense",
+            "model": "XS0D-MR",
             "battery_type": "CR123A"
         },
         {
@@ -12383,6 +12424,11 @@
         },
         {
             "manufacturer": "Xiaomi Aqara",
+            "model": "remote.b1acn01",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Xiaomi Aqara",
             "model": "sensor_magnet.aq2",
             "battery_type": "CR1632"
         },
@@ -12394,6 +12440,11 @@
         {
             "manufacturer": "Xiaomi Aqara",
             "model": "sensor_wleak.aq1",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Xiaomi Aqara",
+            "model": "weather.v1",
             "battery_type": "CR2032"
         },
         {
