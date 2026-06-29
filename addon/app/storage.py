@@ -120,6 +120,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
                 "battery_type": "",
                 "alert_threshold": default_threshold,
                 "alert_sent": False,
+                "alert_cooldown_until": None,
                 "unavailable_sent": False,
                 "unavailable_since": None,
                 "hidden": False,
@@ -138,6 +139,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
             devices[eid]["name"] = entity["name"]
             devices[eid].setdefault("alert_threshold", default_threshold)
             devices[eid].setdefault("alert_sent", False)
+            devices[eid].setdefault("alert_cooldown_until", None)
             devices[eid].setdefault("unavailable_sent", False)
             devices[eid].setdefault("unavailable_since", None)
             devices[eid].setdefault("hidden", False)
@@ -226,6 +228,13 @@ def set_alert_sent(entity_id: str, sent: bool):
     data = _load()
     if entity_id in data.get("devices", {}):
         data["devices"][entity_id]["alert_sent"] = sent
+        _save(data)
+
+
+def set_alert_cooldown_until(entity_id: str, value):
+    data = _load()
+    if entity_id in data.get("devices", {}):
+        data["devices"][entity_id]["alert_cooldown_until"] = value
         _save(data)
 
 

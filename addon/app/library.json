@@ -31,6 +31,11 @@
             "battery_type": "CR2450"
         },
         {
+            "manufacturer": "_TYZB01_iev4cs4x",
+            "model": "TS0205",
+            "battery_type": "CR123A"
+        },
+        {
             "manufacturer": "_TYZB01_ohyttvf6",
             "model": "TS0205",
             "battery_type": "CR123A"
@@ -172,6 +177,11 @@
             "manufacturer": "_TZ3000_amis43tj",
             "model": "TS0207",
             "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "_TZ3000_an5rjiwd",
+            "model": "TS0041",
+            "battery_type": "CR2032"
         },
         {
             "manufacturer": "_TZ3000_au1rjicn",
@@ -405,6 +415,12 @@
             "battery_type": "CR2032"
         },
         {
+            "manufacturer": "_TZ3000_ukzswb8o",
+            "model": "TS0203",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "_TZ3000_upgcbody",
             "model": "TS0207",
             "battery_type": "AAA",
@@ -617,6 +633,11 @@
             "model": "TS0601",
             "battery_type": "AA",
             "battery_quantity": 3
+        },
+        {
+            "manufacturer": "_TZE200_kf2hbko4",
+            "model": "TS0601",
+            "battery_type": "CR2032"
         },
         {
             "manufacturer": "_TZE200_kfvq6avy",
@@ -1276,6 +1297,12 @@
         },
         {
             "manufacturer": "Aqara",
+            "model": "Aqara Door and Window Sensor",
+            "hw_version": "1",
+            "battery_type": "CR1632"
+        },
+        {
+            "manufacturer": "Aqara",
             "model": "Aqara Door and Window Sensor P2",
             "battery_type": "CR123A"
         },
@@ -1297,6 +1324,19 @@
             "model_id": "8195",
             "hw_version": "1.0.0.0",
             "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Aqara",
+            "model": "Aqara Motion Sensor",
+            "hw_version": "1",
+            "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Aqara",
+            "model": "Aqara Motion Sensor P1",
+            "hw_version": "1",
+            "battery_type": "CR2450",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Aqara",
@@ -1335,6 +1375,13 @@
             "model": "Aqara Temp/Humidity Sensor",
             "hw_version": "1",
             "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Aqara",
+            "model": "Aqara TVOC Air Quality Monitor",
+            "hw_version": "1",
+            "battery_type": "CR2450",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Aqara",
@@ -1953,6 +2000,13 @@
             "model": "Temperature Sensor",
             "hw_version": "2.0",
             "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Arteco",
+            "model": "Soil fertility sensor",
+            "model_id": "ZS-SF00",
+            "battery_type": "AAA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Arteco",
@@ -3400,6 +3454,12 @@
         },
         {
             "manufacturer": "eQ-3",
+            "model": "HMIP-DLS",
+            "model_id": "Homematic IP T\u00fcrschlosssensor",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "eQ-3",
             "model": "HmIP-DSD-PCB",
             "battery_type": "AAA",
             "battery_quantity": 2
@@ -3418,7 +3478,21 @@
         },
         {
             "manufacturer": "eQ-3",
+            "model": "HMIP-eTRV",
+            "model_id": "Homematic IP Heizk\u00f6rperthermostat",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
             "model": "HMIP-eTRV-2",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
+            "model": "HmIP-eTRV-2",
+            "model_id": "Homematic IP Heizk\u00f6rperthermostat",
             "battery_type": "AA",
             "battery_quantity": 2
         },
@@ -3517,6 +3591,13 @@
             "battery_quantity": 2
         },
         {
+            "manufacturer": "eQ-3",
+            "model": "HmIP-RC8",
+            "model_id": "Homematic IP Fernbedienung, 8 Kanal",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "EQ-3",
             "model": "HmIP-RCB1",
             "hw_version": "1.2.4",
@@ -3543,6 +3624,13 @@
         {
             "manufacturer": "eQ-3",
             "model": "HmIP-SMI",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
+            "model": "HMIP-SMI",
+            "model_id": "Homematic IP Bewegungsmelder innen",
             "battery_type": "AA",
             "battery_quantity": 2
         },
@@ -3584,6 +3672,13 @@
         },
         {
             "manufacturer": "eQ-3",
+            "model": "HMIP-SPI",
+            "model_id": "Homematic IP Pr\u00e4senzmelder - innen",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
             "model": "HmIP-SRH",
             "battery_type": "AAA"
         },
@@ -3602,6 +3697,13 @@
         {
             "manufacturer": "eQ-3",
             "model": "HmIP-STHD",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
+            "model": "HmIP-STHD",
+            "model_id": "Homematic IP Temperatur- und Luftfeuchtigkeitssensor mit Display - innen",
             "battery_type": "AAA",
             "battery_quantity": 2
         },
@@ -3654,6 +3756,12 @@
         },
         {
             "manufacturer": "eQ-3",
+            "model": "HMIP-SWDO",
+            "model_id": "Homematic IP Fenster- und T\u00fcrkontakt - optisch",
+            "battery_type": "AAA"
+        },
+        {
+            "manufacturer": "eQ-3",
             "model": "HmIP-SWDO-2",
             "battery_type": "AAA"
         },
@@ -3690,6 +3798,13 @@
         {
             "manufacturer": "eQ-3",
             "model": "HmIP-SWSD",
+            "battery_type": "FDK CR17450E-N (3V)",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
+            "model": "HmIP-SWSD",
+            "model_id": "Homematic IP Rauchmelder",
             "battery_type": "FDK CR17450E-N (3V)",
             "battery_quantity": 2
         },
@@ -3751,6 +3866,13 @@
         {
             "manufacturer": "eQ-3",
             "model": "HmIP-WTH-2",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
+            "model": "HmIP-WTH-2",
+            "model_id": "Homematic IP Wandthermostat mit Luftfeuchtigkeitssensor",
             "battery_type": "AAA",
             "battery_quantity": 2
         },
@@ -4613,6 +4735,14 @@
             "manufacturer": "GS",
             "model": "Temperature and humidity sensor (STHM-I1H)",
             "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "GS",
+            "model": "Water leakage sensor",
+            "model_id": "SWHM-I1",
+            "hw_version": "16",
+            "battery_type": "AAA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "GS",
@@ -6100,6 +6230,12 @@
             "battery_quantity": 2
         },
         {
+            "manufacturer": "Lincukoo",
+            "model": "Wireless switch with 1 button",
+            "model_id": "CZB01",
+            "battery_type": "CR2032"
+        },
+        {
             "manufacturer": "Linkind",
             "model": "Door/window Sensor",
             "model_id": "ZS110050078",
@@ -7564,6 +7700,12 @@
             "battery_type": "CR123A"
         },
         {
+            "manufacturer": "PushOK Hardware",
+            "model": "POK002",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "PushOk Hardware",
             "model": "POK005",
             "battery_type": "CR14250"
@@ -7635,6 +7777,12 @@
             "model": "ismartgateMINI",
             "battery_type": "LR1",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Reolink",
+            "model": "Argus 3 Ultra",
+            "hw_version": "BIPC_560MIX16M35C10G8MP",
+            "battery_type": "Rechargeable"
         },
         {
             "manufacturer": "reolink",
@@ -10532,6 +10680,14 @@
         },
         {
             "manufacturer": "Tuya",
+            "model": "Soil sensor",
+            "model_id": "SGS02Z",
+            "hw_version": "1",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Tuya",
             "model": "Soil Sensor",
             "model_id": "TS0601_soil",
             "hw_version": "1",
@@ -11487,6 +11643,12 @@
             "battery_quantity": 4
         },
         {
+            "manufacturer": "Wing",
+            "model": "TS0201",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "Wink Inc.",
             "model": "D/W SENSOR",
             "battery_type": "CR14250"
@@ -12126,6 +12288,12 @@
         },
         {
             "manufacturer": "Xiaomi",
+            "model": "Temperature and Humidity Monitor 3 Mini (pvxx/ZigbeeTLc)",
+            "model_id": "MJWSD06MMC-z",
+            "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Xiaomi",
             "model": "temperature and humidity sensor",
             "model_id": "WSDCGQ01LM",
             "hw_version": "30",
@@ -12328,6 +12496,19 @@
             "model": "AUGUST_MODEL_NUMBER_HERE",
             "battery_type": "AA",
             "battery_quantity": 4
+        },
+        {
+            "manufacturer": "Yandex",
+            "model": "Double gang wireless switch",
+            "model_id": "YNDX_00535",
+            "battery_type": "CR2450",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Yandex",
+            "model": "Motion and illuminance sensor",
+            "model_id": "YNDX_00528",
+            "battery_type": "CR2450"
         },
         {
             "manufacturer": "Yeelight",

@@ -2,6 +2,10 @@
 
 For full release notes and details on each version, see the [GitHub Releases page](https://github.com/smcneece/battery-sentinel/releases).
 
+## 2026.06.1
+- Fixed: low battery alert emails for binary sensors (devices that report Low/OK rather than a percentage) no longer include "Threshold: 20%" in the message body, since a numeric threshold is not meaningful for these sensors
+- Low battery alerts now enforce a 24-hour per-device cooldown: once an alert fires for a device, it will not re-fire for that device for 24 hours, even if the device bounces between Low and OK states within that window
+
 ## 2026.05.5
 - Fixed: "Send unavailable notifications" checkbox introduced in 2026.05.4 was not saving; the value was silently discarded by the storage layer's field allowlist which did not include the new field
 

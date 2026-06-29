@@ -23,7 +23,7 @@ from device_utils import device_is_low, level_str, format_line
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.05.5"
+VERSION = "2026.06.1"
 
 _cache: list = []
 _startup_logged = False
@@ -142,15 +142,26 @@ async def do_refresh():
             except Exception:
                 pass
 
-        if is_low and not device.get("alert_sent") and not is_muted:
+        in_cooldown = False
+        cooldown_until = device.get("alert_cooldown_until")
+        if cooldown_until:
+            try:
+                in_cooldown = datetime.datetime.now() < datetime.datetime.fromisoformat(cooldown_until)
+            except Exception:
+                pass
+
+        if is_low and not device.get("alert_sent") and not is_muted and not in_cooldown:
             _LOGGER.info("Alert: %s is low (%s), sending notifications", device["name"], level_str(device))
             await notifications.fire_low_battery_email(
                 "Battery Sentinel Plus: Low battery",
-                f"{device['name']} battery is low ({level_str(device)}). Threshold: {device.get('alert_threshold', 15)}%",
+                f"{device['name']} battery is low ({level_str(device)})."
+                + ("" if device["entity_id"].startswith("binary_sensor.") else f" Threshold: {device.get('alert_threshold', 15)}%"),
                 settings,
                 device,
             )
             storage.set_alert_sent(device["entity_id"], True)
+            cooldown_dt = datetime.datetime.now() + datetime.timedelta(hours=24)
+            storage.set_alert_cooldown_until(device["entity_id"], cooldown_dt.isoformat())
         elif not is_low and device.get("alert_sent"):
             _LOGGER.info("Alert reset: %s recovered (%s)", device["name"], level_str(device))
             storage.set_alert_sent(device["entity_id"], False)
