@@ -2,6 +2,11 @@
 
 For full release notes and details on each version, see the [GitHub Releases page](https://github.com/smcneece/battery-sentinel/releases).
 
+## 2026.07.1
+- Settings page reorganized into four sub-tabs (General, Notifications, Daily Report, Device Monitoring) to reduce scrolling and make it easier to find specific settings; the active sub-tab is remembered across page loads
+- Columns card renamed to Display and now includes the battery level color settings; column visibility and color thresholds are grouped together as display preferences
+- Configurable battery level color thresholds in Settings: set the percentage where the level display switches from green to yellow and from yellow to red; defaults match the previous hardcoded values (yellow below 25%, red below 10%) so existing installs look identical until changed; binary sensors (Low/OK) are always red or green and are unaffected
+
 ## 2026.06.1
 - Fixed: low battery alert emails for binary sensors (devices that report Low/OK rather than a percentage) no longer include "Threshold: 20%" in the message body, since a numeric threshold is not meaningful for these sensors
 - Low battery alerts now enforce a 24-hour per-device cooldown: once an alert fires for a device, it will not re-fire for that device for 24 hours, even if the device bounces between Low and OK states within that window

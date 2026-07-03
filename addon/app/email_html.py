@@ -87,9 +87,12 @@ def build_report_html(low: list, ok: list, settings: dict, now: datetime.datetim
     timestamp = now.strftime("%B %d, %Y at %I:%M %p")
     cols = 4 if include_type else 3
 
+    red_thr    = int(settings.get("color_threshold_red", 10))
+    yellow_thr = int(settings.get("color_threshold_yellow", 25))
+
     def device_row(d, stripe):
         bg    = "#fff9f9" if stripe and device_is_low(d) else ("#f9f9f9" if stripe else "#fff")
-        color = level_color(d)
+        color = level_color(d, red_thr, yellow_thr)
         lvl   = level_str(d)
         area  = html_mod.escape(d.get("area") or "")
         btype = f"<td style='padding:7px 14px;color:#888;font-size:.85em'>{html_mod.escape(d.get('battery_type', ''))}</td>" if include_type else ""

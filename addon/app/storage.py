@@ -44,6 +44,8 @@ DEFAULT_SETTINGS = {
     "daily_report_include_all": False,
     "daily_report_send_if_ok": False,
     "report_include_battery_type": False,
+    "color_threshold_red": 10,
+    "color_threshold_yellow": 25,
 }
 
 
@@ -89,6 +91,7 @@ def save_settings(updates: dict) -> dict:
         "notify_unavailable", "notify_unavailable_delay", "suppress_unavailable_if_monitored",
         "zwave_monitor_enabled", "zwave_ping_enabled", "zwave_ping_interval",
         "zigbee_monitor_enabled", "zigbee_offline_threshold", "zigbee_scan_interval",
+        "color_threshold_red", "color_threshold_yellow",
     )
     for key in allowed:
         if key in updates:

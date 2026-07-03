@@ -137,6 +137,12 @@
   .type-delete:hover { color: var(--bs-crit); }
   .type-add { display: flex; gap: .5rem; margin-top: .25rem; }
   .type-add input { flex: 1; }
+  .settings-subtab-bar { display: flex; gap: .25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--bs-border); padding-bottom: 0; }
+  .settings-subtab { background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; color: var(--bs-text-muted); font-size: .88rem; padding: .4rem .85rem; cursor: pointer; border-radius: 4px 4px 0 0; transition: color .15s; }
+  .settings-subtab:hover { color: var(--bs-text); background: color-mix(in srgb, var(--bs-text) 5%, transparent); }
+  .settings-subtab.active { color: var(--bs-accent); border-bottom-color: var(--bs-accent); font-weight: 600; }
+  .settings-subtab-panel { display: none; }
+  .settings-subtab-panel.active { display: block; }
   .settings-footer { position: sticky; bottom: 0; z-index: 10; background: var(--bs-bg); margin-top: 1.25rem; display: flex; align-items: center; justify-content: center; gap: .75rem; padding: .75rem 1rem; border-top: 1px solid var(--bs-border); }
   .save-status { font-size: .82rem; color: var(--bs-ok); }
   .notify-row { display: flex; align-items: center; gap: .6rem; margin-bottom: .5rem; font-size: .9rem; }
@@ -246,115 +252,148 @@
 </div>
 
 <div id="tab-settings" class="tab-content">
-  <div class="settings-grid">
+  <div class="settings-subtab-bar">
+    <button class="settings-subtab active" data-stab="general"       onclick="showSettingsTab('general')">General</button>
+    <button class="settings-subtab"        data-stab="notifications"  onclick="showSettingsTab('notifications')">Notifications</button>
+    <button class="settings-subtab"        data-stab="report"         onclick="showSettingsTab('report')">Daily Report</button>
+    <button class="settings-subtab"        data-stab="monitoring"     onclick="showSettingsTab('monitoring')">Device Monitoring</button>
+  </div>
 
-    <div class="settings-card">
-      <h3>General</h3>
-      <div class="scan-bar" style="margin-bottom:.6rem">
-        <button class="btn btn-secondary" onclick="scanNow()">Scan Now</button>
-        <span class="scan-status" id="scan-status"></span>
+  <div id="stab-general" class="settings-subtab-panel active">
+    <div class="settings-grid">
+      <div class="settings-card">
+        <h3>General</h3>
+        <div class="scan-bar" style="margin-bottom:.6rem">
+          <button class="btn btn-secondary" onclick="scanNow()">Scan Now</button>
+          <span class="scan-status" id="scan-status"></span>
+        </div>
+        <p class="muted" style="font-size:.82rem;margin-bottom:1.25rem">Refreshes battery levels and discovers new devices. Notifications only fire if a device newly crosses its threshold.</p>
+        <div class="setting-row">
+          <label>Check interval (minutes)</label>
+          <p>How often Battery Sentinel Plus polls HA for new devices and current battery levels. Range: 1 to 120 minutes.</p>
+          <input type="number" id="setting-check-interval" min="1" max="120" style="max-width:80px" value="10">
+        </div>
+        <div class="setting-row">
+          <label>Battery Types</label>
+          <p>Available in the per-device battery type dropdown. Add or remove as needed.</p>
+        </div>
+        <ul class="type-list" id="type-list"></ul>
+        <div class="type-add">
+          <input type="text" id="type-input" placeholder="Add type, e.g. CR2477">
+          <button class="btn btn-secondary" onclick="addType()">Add</button>
+        </div>
+        <div class="scan-bar" style="margin-top:.85rem">
+          <button id="lookup-btn" class="btn btn-secondary" onclick="lookupBatteryTypes()">Look Up Battery Types</button>
+          <span class="scan-status" id="lookup-status"></span>
+        </div>
+        <p class="muted" style="font-size:.82rem;margin-top:.35rem">Uses a locally bundled copy of the Battery Notes community database to auto-fill missing battery types. No external network calls are made.</p>
       </div>
-      <p class="muted" style="font-size:.82rem;margin-bottom:1.25rem">Refreshes battery levels and discovers new devices. Notifications only fire if a device newly crosses its threshold.</p>
-      <div class="setting-row">
-        <label>Check interval (minutes)</label>
-        <p>How often Battery Sentinel Plus polls HA for new devices and current battery levels. Range: 1 to 120 minutes.</p>
-        <input type="number" id="setting-check-interval" min="1" max="120" style="max-width:80px" value="10">
-      </div>
-      <div class="setting-row">
-        <label>Battery Types</label>
-        <p>Available in the per-device battery type dropdown. Add or remove as needed.</p>
-      </div>
-      <ul class="type-list" id="type-list"></ul>
-      <div class="type-add">
-        <input type="text" id="type-input" placeholder="Add type, e.g. CR2477">
-        <button class="btn btn-secondary" onclick="addType()">Add</button>
-      </div>
-      <div class="scan-bar" style="margin-top:.85rem">
-        <button id="lookup-btn" class="btn btn-secondary" onclick="lookupBatteryTypes()">Look Up Battery Types</button>
-        <span class="scan-status" id="lookup-status"></span>
-      </div>
-      <p class="muted" style="font-size:.82rem;margin-top:.35rem">Uses a locally bundled copy of the Battery Notes community database to auto-fill missing battery types. No external network calls are made.</p>
-    </div>
-
-    <div class="settings-card">
-      <h3>Notifications</h3>
-      <div class="setting-row">
-        <label>Default alert threshold</label>
-        <p>Applied to any newly discovered device.</p>
-        <select id="setting-threshold" style="max-width:180px">
-          <option value="5">5%</option>
-          <option value="10">10%</option>
-          <option value="15">15%</option>
-          <option value="20">20%</option>
-          <option value="25">25%</option>
-          <option value="30">30%</option>
-          <option value="35">35%</option>
-          <option value="40">40%</option>
-          <option value="45">45%</option>
-          <option value="50">50%</option>
-          <option value="55">55%</option>
-          <option value="60">60%</option>
-          <option value="-1">Ignore</option>
-        </select>
-      </div>
-      <div class="notify-row">
-        <input type="checkbox" id="setting-notify-persistent">
-        <label for="setting-notify-persistent">UI notification (HA persistent) for low batteries</label>
-      </div>
-      <div class="setting-row" style="margin-top:.5rem;margin-bottom:.5rem">
-        <label>Default mobile service</label>
-        <p>Used when a device has Mobile enabled but no specific service set.</p>
-        <select id="setting-mobile-default">
-          <option value="">-- None --</option>
-        </select>
-      </div>
-      <div class="setting-row" style="margin-bottom:.5rem">
-        <label>Global script trigger</label>
-        <p>Script to run when any device crosses its threshold. Per-device script overrides this.</p>
-        <select id="setting-notify-script">
-          <option value="">-- None --</option>
-        </select>
-      </div>
-      <div class="notify-row" style="margin-bottom:.85rem">
-        <input type="checkbox" id="setting-notify-new-device">
-        <label for="setting-notify-new-device">Alert when a new battery device is discovered</label>
-      </div>
-      <div class="notify-row" style="margin-bottom:.5rem">
-        <input type="checkbox" id="setting-notify-unavailable">
-        <label for="setting-notify-unavailable">Alert when a battery device goes unavailable or unknown</label>
-      </div>
-      <div class="setting-row" style="margin-bottom:.5rem;padding-left:1.6rem">
-        <label style="font-size:.85rem;color:var(--bs-text-muted)">Alert delay</label>
-        <p style="font-size:.8rem">Wait this many minutes before sending any unavailable, dead-node, or offline alert. Devices that recover before the delay expires are silently ignored. A recovery alert is sent when the device comes back.</p>
-        <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
-          <input type="number" id="setting-unavailable-delay" min="0" max="60" step="1"
-            style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
-          <span style="color:var(--bs-text-muted);font-size:.9rem">minutes (0 = immediate)</span>
+      <div class="settings-card" style="flex: none;">
+        <h3>Display</h3>
+        <p class="muted" style="font-size:.82rem;margin-bottom:.85rem">Choose which columns appear in the device list. Device name is always shown.</p>
+        <div class="notify-row"><input type="checkbox" id="col-level"  onchange="toggleCol('level',  this.checked)"><label for="col-level">Level</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-btype"  onchange="toggleCol('btype',  this.checked)"><label for="col-btype">Battery Type</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-alert"  onchange="toggleCol('alert',  this.checked)"><label for="col-alert">Alert Threshold</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-notify" onchange="toggleCol('notify', this.checked)"><label for="col-notify">Notifications (UI / Email / Mobile)</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-script" onchange="toggleCol('script', this.checked)"><label for="col-script">Script</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-area"   onchange="toggleCol('area',   this.checked)"><label for="col-area">Room</label></div>
+        <div class="setting-row" style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--bs-border)">
+          <label>Battery level colors</label>
+          <p>Set the percentage thresholds where the level display changes color. Binary sensors (Low/OK) are always red or green.</p>
+          <div style="display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-top:.35rem">
+            <label style="font-size:.88rem">Red below <input type="number" id="setting-color-red" min="1" max="99" style="width:3.5rem;background:var(--bs-input-bg);border:1px solid var(--bs-border);border-radius:4px;color:#cc3333;font-weight:bold;padding:.15rem .35rem;font-size:.88rem;text-align:center"> %</label>
+            <label style="font-size:.88rem">Yellow below <input type="number" id="setting-color-yellow" min="1" max="99" style="width:3.5rem;background:var(--bs-input-bg);border:1px solid var(--bs-border);border-radius:4px;color:#cc8800;font-weight:bold;padding:.15rem .35rem;font-size:.88rem;text-align:center"> %</label>
+            <span style="font-size:.88rem;color:var(--bs-text-muted)">Green: everything above yellow</span>
+          </div>
         </div>
       </div>
-      <div class="notify-row" style="margin-bottom:.85rem;padding-left:1.6rem">
-        <input type="checkbox" id="setting-suppress-unavailable-monitored">
-        <label for="setting-suppress-unavailable-monitored">Skip unavailable alerts for devices already covered by Z-Wave or Zigbee monitoring</label>
-      </div>
-      <div class="setting-row">
-        <label>Email notify service</label>
-        <p>Which HA notify service sends email alerts. Select a Gmail, SMTP, or similar email-capable service.</p>
-        <select id="setting-notify-service">
-          <option value="">-- None --</option>
-        </select>
-      </div>
-      <div class="setting-row">
-        <label>Default To address</label>
-        <input type="email" id="setting-notify-to" placeholder="you@example.com">
-      </div>
-      <div class="setting-row">
-        <label>CC addresses</label>
-        <p>Separate multiple addresses with commas.</p>
-        <input type="text" id="setting-notify-cc" placeholder="person@example.com, other@example.com">
+    </div>
+  </div>
+
+  <div id="stab-notifications" class="settings-subtab-panel">
+    <div class="settings-grid">
+      <div class="settings-card" style="max-width:560px">
+        <h3>Notifications</h3>
+        <div class="setting-row">
+          <label>Default alert threshold</label>
+          <p>Applied to any newly discovered device.</p>
+          <select id="setting-threshold" style="max-width:180px">
+            <option value="5">5%</option>
+            <option value="10">10%</option>
+            <option value="15">15%</option>
+            <option value="20">20%</option>
+            <option value="25">25%</option>
+            <option value="30">30%</option>
+            <option value="35">35%</option>
+            <option value="40">40%</option>
+            <option value="45">45%</option>
+            <option value="50">50%</option>
+            <option value="55">55%</option>
+            <option value="60">60%</option>
+            <option value="-1">Ignore</option>
+          </select>
+        </div>
+        <div class="notify-row">
+          <input type="checkbox" id="setting-notify-persistent">
+          <label for="setting-notify-persistent">UI notification (HA persistent) for low batteries</label>
+        </div>
+        <div class="setting-row" style="margin-top:.5rem;margin-bottom:.5rem">
+          <label>Default mobile service</label>
+          <p>Used when a device has Mobile enabled but no specific service set.</p>
+          <select id="setting-mobile-default">
+            <option value="">-- None --</option>
+          </select>
+        </div>
+        <div class="setting-row" style="margin-bottom:.5rem">
+          <label>Global script trigger</label>
+          <p>Script to run when any device crosses its threshold. Per-device script overrides this.</p>
+          <select id="setting-notify-script">
+            <option value="">-- None --</option>
+          </select>
+        </div>
+        <div class="notify-row" style="margin-bottom:.85rem">
+          <input type="checkbox" id="setting-notify-new-device">
+          <label for="setting-notify-new-device">Alert when a new battery device is discovered</label>
+        </div>
+        <div class="notify-row" style="margin-bottom:.5rem">
+          <input type="checkbox" id="setting-notify-unavailable">
+          <label for="setting-notify-unavailable">Alert when a battery device goes unavailable or unknown</label>
+        </div>
+        <div class="setting-row" style="margin-bottom:.5rem;padding-left:1.6rem">
+          <label style="font-size:.85rem;color:var(--bs-text-muted)">Alert delay</label>
+          <p style="font-size:.8rem">Wait this many minutes before sending any unavailable, dead-node, or offline alert. Devices that recover before the delay expires are silently ignored. A recovery alert is sent when the device comes back.</p>
+          <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
+            <input type="number" id="setting-unavailable-delay" min="0" max="60" step="1"
+              style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
+            <span style="color:var(--bs-text-muted);font-size:.9rem">minutes (0 = immediate)</span>
+          </div>
+        </div>
+        <div class="notify-row" style="margin-bottom:.85rem;padding-left:1.6rem">
+          <input type="checkbox" id="setting-suppress-unavailable-monitored">
+          <label for="setting-suppress-unavailable-monitored">Skip unavailable alerts for devices already covered by Z-Wave or Zigbee monitoring</label>
+        </div>
+        <div class="setting-row">
+          <label>Email notify service</label>
+          <p>Which HA notify service sends email alerts. Select a Gmail, SMTP, or similar email-capable service.</p>
+          <select id="setting-notify-service">
+            <option value="">-- None --</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>Default To address</label>
+          <input type="email" id="setting-notify-to" placeholder="you@example.com">
+        </div>
+        <div class="setting-row">
+          <label>CC addresses</label>
+          <p>Separate multiple addresses with commas.</p>
+          <input type="text" id="setting-notify-cc" placeholder="person@example.com, other@example.com">
+        </div>
       </div>
     </div>
+  </div>
 
-    <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 1rem; min-width: 0;">
+  <div id="stab-report" class="settings-subtab-panel">
+    <div class="settings-grid">
       <div class="settings-card" style="flex: none;">
         <h3>Daily Email Report</h3>
         <div class="notify-row">
@@ -397,70 +436,63 @@
           <span class="scan-status" id="report-status"></span>
         </div>
       </div>
-      <div class="settings-card" style="flex: none;">
-        <h3>Columns</h3>
-        <p class="muted" style="font-size:.82rem;margin-bottom:.85rem">Choose which columns appear in the device list. Device name is always shown.</p>
-        <div class="notify-row"><input type="checkbox" id="col-level"  onchange="toggleCol('level',  this.checked)"><label for="col-level">Level</label></div>
-        <div class="notify-row"><input type="checkbox" id="col-btype"  onchange="toggleCol('btype',  this.checked)"><label for="col-btype">Battery Type</label></div>
-        <div class="notify-row"><input type="checkbox" id="col-alert"  onchange="toggleCol('alert',  this.checked)"><label for="col-alert">Alert Threshold</label></div>
-        <div class="notify-row"><input type="checkbox" id="col-notify" onchange="toggleCol('notify', this.checked)"><label for="col-notify">Notifications (UI / Email / Mobile)</label></div>
-        <div class="notify-row"><input type="checkbox" id="col-script" onchange="toggleCol('script', this.checked)"><label for="col-script">Script</label></div>
-        <div class="notify-row"><input type="checkbox" id="col-area"   onchange="toggleCol('area',   this.checked)"><label for="col-area">Room</label></div>
-      </div>
     </div>
-
-    <div class="settings-card">
-      <h3>Device Monitoring</h3>
-      <div style="margin-bottom:1rem">
-        <div style="font-size:.78rem;font-weight:600;color:var(--bs-text-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em">Z-Wave</div>
-        <div class="notify-row" style="margin-bottom:.35rem">
-          <input type="checkbox" id="setting-zwave-enabled">
-          <label for="setting-zwave-enabled">Alert when a Z-Wave node goes dead</label>
-        </div>
-        <p style="font-size:.8rem;color:var(--bs-text-muted)">Monitors all <code>sensor.*_node_status</code> entities. Fires an alert when a node is reported dead by Z-Wave JS, and a recovery alert when it comes back online. Notification channels and mute periods are configured per-node in the Z-Wave tab.</p>
-        <div class="notify-row" style="margin-bottom:.35rem;margin-top:.5rem">
-          <input type="checkbox" id="setting-zwave-ping-enabled">
-          <label for="setting-zwave-ping-enabled">Periodically ping Z-Wave nodes</label>
-        </div>
-        <div style="font-size:.8rem;color:var(--bs-text-muted);padding-left:1.5rem">
-          Every <input type="number" id="setting-zwave-ping-interval" min="10" max="120" style="width:3.5rem;background:var(--bs-input-bg);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.15rem .35rem;font-size:.8rem"> minutes. Pings alive nodes so Z-Wave JS detects failures faster. Sleeping (battery-powered) nodes are skipped.
-        </div>
-      </div>
-      <div style="border-top:1px solid var(--bs-border);padding-top:1rem">
-        <div style="font-size:.78rem;font-weight:600;color:var(--bs-text-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em">Zigbee</div>
-        <div class="notify-row" style="margin-bottom:.35rem">
-          <input type="checkbox" id="setting-zigbee-enabled">
-          <label for="setting-zigbee-enabled">Alert when a Zigbee device goes offline</label>
-        </div>
-        <p style="font-size:.8rem;color:var(--bs-text-muted);margin-bottom:.75rem">Monitors all <code>sensor.*_last_seen</code> entities created by Zigbee2MQTT. Requires last_seen to be enabled in Z2M and the Last Seen entities to be enabled in HA. Notification channels and mute periods are configured per-device in the Zigbee tab.</p>
-        <div class="setting-row">
-          <label style="font-size:.85rem;color:var(--bs-text-muted)">Offline threshold</label>
-          <p style="font-size:.8rem">How many hours without a check-in before a device is considered offline. Set this higher than your Z2M availability timeout.</p>
-          <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
-            <input type="number" id="setting-zigbee-threshold" min="1" max="168" step="1"
-              style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
-            <span style="color:var(--bs-text-muted);font-size:.9rem">hours</span>
-          </div>
-        </div>
-        <div class="setting-row">
-          <label style="font-size:.85rem;color:var(--bs-text-muted)">Scan interval</label>
-          <p style="font-size:.8rem">How often Battery Sentinel Plus checks Zigbee last_seen timestamps. Independent from the battery check interval.</p>
-          <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
-            <input type="number" id="setting-zigbee-interval" min="1" max="1440" step="1"
-              style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
-            <span style="color:var(--bs-text-muted);font-size:.9rem">minutes</span>
-          </div>
-        </div>
-        <div style="margin-top:.85rem">
-          <p style="font-size:.8rem;color:var(--bs-text-muted);margin-bottom:.5rem">Triggers an immediate Zigbee Last Seen check without waiting for the next scan interval. Does not affect the battery or Z-Wave check cycles.</p>
-          <button class="btn btn-secondary" onclick="scanZigbeeFromSettings()" id="zigbee-settings-scan-btn">Scan Now</button>
-          <span id="zigbee-settings-scan-status" style="font-size:.85rem;color:var(--bs-text-muted);margin-left:.75rem"></span>
-        </div>
-      </div>
-    </div>
-
-
   </div>
+
+  <div id="stab-monitoring" class="settings-subtab-panel">
+    <div class="settings-grid">
+      <div class="settings-card" style="max-width:560px">
+        <h3>Device Monitoring</h3>
+        <div style="margin-bottom:1rem">
+          <div style="font-size:.78rem;font-weight:600;color:var(--bs-text-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em">Z-Wave</div>
+          <div class="notify-row" style="margin-bottom:.35rem">
+            <input type="checkbox" id="setting-zwave-enabled">
+            <label for="setting-zwave-enabled">Alert when a Z-Wave node goes dead</label>
+          </div>
+          <p style="font-size:.8rem;color:var(--bs-text-muted)">Monitors all <code>sensor.*_node_status</code> entities. Fires an alert when a node is reported dead by Z-Wave JS, and a recovery alert when it comes back online. Notification channels and mute periods are configured per-node in the Z-Wave tab.</p>
+          <div class="notify-row" style="margin-bottom:.35rem;margin-top:.5rem">
+            <input type="checkbox" id="setting-zwave-ping-enabled">
+            <label for="setting-zwave-ping-enabled">Periodically ping Z-Wave nodes</label>
+          </div>
+          <div style="font-size:.8rem;color:var(--bs-text-muted);padding-left:1.5rem">
+            Every <input type="number" id="setting-zwave-ping-interval" min="10" max="120" style="width:3.5rem;background:var(--bs-input-bg);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.15rem .35rem;font-size:.8rem"> minutes. Pings alive nodes so Z-Wave JS detects failures faster. Sleeping (battery-powered) nodes are skipped.
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--bs-border);padding-top:1rem">
+          <div style="font-size:.78rem;font-weight:600;color:var(--bs-text-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em">Zigbee</div>
+          <div class="notify-row" style="margin-bottom:.35rem">
+            <input type="checkbox" id="setting-zigbee-enabled">
+            <label for="setting-zigbee-enabled">Alert when a Zigbee device goes offline</label>
+          </div>
+          <p style="font-size:.8rem;color:var(--bs-text-muted);margin-bottom:.75rem">Monitors all <code>sensor.*_last_seen</code> entities created by Zigbee2MQTT. Requires last_seen to be enabled in Z2M and the Last Seen entities to be enabled in HA. Notification channels and mute periods are configured per-device in the Zigbee tab.</p>
+          <div class="setting-row">
+            <label style="font-size:.85rem;color:var(--bs-text-muted)">Offline threshold</label>
+            <p style="font-size:.8rem">How many hours without a check-in before a device is considered offline. Set this higher than your Z2M availability timeout.</p>
+            <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
+              <input type="number" id="setting-zigbee-threshold" min="1" max="168" step="1"
+                style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
+              <span style="color:var(--bs-text-muted);font-size:.9rem">hours</span>
+            </div>
+          </div>
+          <div class="setting-row">
+            <label style="font-size:.85rem;color:var(--bs-text-muted)">Scan interval</label>
+            <p style="font-size:.8rem">How often Battery Sentinel Plus checks Zigbee last_seen timestamps. Independent from the battery check interval.</p>
+            <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
+              <input type="number" id="setting-zigbee-interval" min="1" max="1440" step="1"
+                style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
+              <span style="color:var(--bs-text-muted);font-size:.9rem">minutes</span>
+            </div>
+          </div>
+          <div style="margin-top:.85rem">
+            <p style="font-size:.8rem;color:var(--bs-text-muted);margin-bottom:.5rem">Triggers an immediate Zigbee Last Seen check without waiting for the next scan interval. Does not affect the battery or Z-Wave check cycles.</p>
+            <button class="btn btn-secondary" onclick="scanZigbeeFromSettings()" id="zigbee-settings-scan-btn">Scan Now</button>
+            <span id="zigbee-settings-scan-status" style="font-size:.85rem;color:var(--bs-text-muted);margin-left:.75rem"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="settings-footer">
     <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
     <span class="save-status" id="settings-status"></span>
@@ -927,6 +959,15 @@ function stopZbResize() {
   document.removeEventListener("mouseup",   stopZbResize);
 }
 
+// ── Settings sub-tabs ─────────────────────────────────────────────────
+function showSettingsTab(name) {
+  document.querySelectorAll(".settings-subtab-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".settings-subtab").forEach(b => b.classList.remove("active"));
+  document.getElementById("stab-" + name).classList.add("active");
+  document.querySelector(`.settings-subtab[data-stab="${name}"]`).classList.add("active");
+  localStorage.setItem("bs_settings_tab", name);
+}
+
 // ── Tabs ──────────────────────────────────────────────────────────────
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -969,8 +1010,10 @@ function levelCell(d) {
             <span class="bar-wrap"><span class="bar" style="width:100%;background:${low?'var(--bs-crit)':'var(--bs-ok)'}"></span></span>`;
   }
   const pct = parseFloat(d.state);
-  const cls = pct < 10 ? "critical" : pct < 25 ? "warning" : "ok";
-  const col = pct < 10 ? "var(--bs-crit)" : pct < 25 ? "var(--bs-warn)" : "var(--bs-ok)";
+  const _red = _settings.color_threshold_red ?? 10;
+  const _yel = _settings.color_threshold_yellow ?? 25;
+  const cls = pct < _red ? "critical" : pct < _yel ? "warning" : "ok";
+  const col = pct < _red ? "var(--bs-crit)" : pct < _yel ? "var(--bs-warn)" : "var(--bs-ok)";
   return `<span class="pct ${cls}">${Math.round(pct)}%</span>
           <span class="bar-wrap"><span class="bar" style="width:${Math.min(pct,100)}%;background:${col}"></span></span>`;
 }
@@ -1749,6 +1792,8 @@ async function saveSettings() {
   _settings.daily_report_days      = [0,1,2,3,4,5,6].filter(d => document.getElementById("setting-daily-day-"+d).checked);
   _settings.daily_report_include_all    = document.getElementById("setting-daily-include").value === 'all';
   _settings.report_include_battery_type = document.getElementById("setting-include-battery-type").checked;
+  _settings.color_threshold_red    = Math.min(98, Math.max(1, parseInt(document.getElementById("setting-color-red").value,    10) || 10));
+  _settings.color_threshold_yellow = Math.min(99, Math.max(_settings.color_threshold_red + 1, parseInt(document.getElementById("setting-color-yellow").value, 10) || 25));
   try {
     const r = await fetch(BASE + "/api/settings", {
       method: "POST",
@@ -1809,6 +1854,8 @@ async function init() {
     document.getElementById("setting-zigbee-threshold").value   = _settings.zigbee_offline_threshold ?? 24;
     document.getElementById("setting-zigbee-interval").value    = _settings.zigbee_scan_interval ?? 30;
     document.getElementById("setting-check-interval").value     = _settings.check_interval || 10;
+    document.getElementById("setting-color-red").value          = _settings.color_threshold_red ?? 10;
+    document.getElementById("setting-color-yellow").value       = _settings.color_threshold_yellow ?? 25;
     document.getElementById("setting-notify-to").value         = _settings.notify_email_to || '';
     document.getElementById("setting-notify-cc").value         = _settings.notify_email_cc || '';
     document.getElementById("setting-daily-enabled").checked    = !!_settings.daily_report_enabled;
@@ -1855,6 +1902,7 @@ async function init() {
       const cb = document.getElementById("col-" + col);
       if (cb) cb.checked = _colVisible[col] !== false;
     });
+    showSettingsTab(localStorage.getItem("bs_settings_tab") || "general");
     await loadHiddenDevices();
     updateZwaveTabVisibility();
     updateZigbeeTabVisibility();

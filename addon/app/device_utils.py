@@ -32,15 +32,15 @@ def level_str(device: dict) -> str:
         return f"{device['state']}%"
 
 
-def level_color(device: dict) -> str:
+def level_color(device: dict, red: int = 10, yellow: int = 25) -> str:
     """CSS colour for the battery level -- used in HTML email templates."""
     if device["entity_id"].startswith("binary_sensor."):
         return "#cc3333" if device["state"] == "on" else "#4c4"
     try:
         pct = float(device["state"])
-        if pct < 10: return "#cc3333"   # red
-        if pct < 25: return "#cc8800"   # amber
-        return "#4c4"                   # green
+        if pct < red:    return "#cc3333"
+        if pct < yellow: return "#cc8800"
+        return "#4c4"
     except (ValueError, TypeError):
         return "#888"
 

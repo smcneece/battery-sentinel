@@ -23,7 +23,7 @@ from device_utils import device_is_low, level_str, format_line
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.06.1"
+VERSION = "2026.07.1"
 
 _cache: list = []
 _startup_logged = False
