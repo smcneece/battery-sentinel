@@ -93,7 +93,7 @@ async def get_hidden_entity_ids() -> set:
     try:
         async with aiohttp.ClientSession() as session:
             async with session.ws_connect(
-                _HA_WS_URL, timeout=aiohttp.ClientTimeout(total=15)
+                _HA_WS_URL, timeout=aiohttp.ClientTimeout(total=15), max_msg_size=0
             ) as ws:
                 msg = await ws.receive_json()
                 if msg.get("type") != "auth_required":
@@ -155,7 +155,7 @@ async def get_zigbee_last_seen_entities() -> list:
         mqtt_entity_ids: set = set()
         async with aiohttp.ClientSession() as session:
             async with session.ws_connect(
-                _HA_WS_URL, timeout=aiohttp.ClientTimeout(total=15)
+                _HA_WS_URL, timeout=aiohttp.ClientTimeout(total=15), max_msg_size=0
             ) as ws:
                 msg = await ws.receive_json()
                 if msg.get("type") == "auth_required":
@@ -347,7 +347,7 @@ async def get_device_registry() -> dict:
     token = _token()
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.ws_connect(_HA_WS_URL) as ws:
+            async with session.ws_connect(_HA_WS_URL, max_msg_size=0) as ws:
                 msg = await asyncio.wait_for(ws.receive_json(), timeout=5)
                 if msg.get("type") != "auth_required":
                     return {}

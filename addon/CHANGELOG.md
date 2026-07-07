@@ -2,6 +2,9 @@
 
 For full release notes and details on each version, see the [GitHub Releases page](https://github.com/smcneece/battery-sentinel/releases).
 
+## 2026.07.2
+- Fixed: Zigbee tab showed no devices on large HA installs (500+ entities); the aiohttp WebSocket client has a default 4 MB message size cap and the HA entity registry response on large installs exceeded it, causing a MESSAGE_TOO_BIG disconnect before any data was read; the cap is now removed on the three WebSocket calls that fetch full registry lists (entity registry, device registry); hidden entity filtering on the Devices tab was also silently broken by the same limit for affected users
+
 ## 2026.07.1
 - Settings page reorganized into four sub-tabs (General, Notifications, Daily Report, Device Monitoring) to reduce scrolling and make it easier to find specific settings; the active sub-tab is remembered across page loads
 - Columns card renamed to Display and now includes the battery level color settings; column visibility and color thresholds are grouped together as display preferences

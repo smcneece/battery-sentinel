@@ -512,6 +512,12 @@
             "battery_quantity": 2
         },
         {
+            "manufacturer": "_TZ3290_j37rooaxrcdcqo5n",
+            "model": "TS1201",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "_TZ3290_ot6ewjvmejq5ekhl",
             "model": "TS1201",
             "battery_type": "AAA",
@@ -750,6 +756,11 @@
             "battery_quantity": 2
         },
         {
+            "manufacturer": "_TZE204_upagmta9",
+            "model": "TS0601",
+            "battery_type": "CR2032"
+        },
+        {
             "manufacturer": "_TZE204_yjjdcqsq",
             "model": "TS0601",
             "battery_type": "AAA",
@@ -775,6 +786,12 @@
         },
         {
             "manufacturer": "_TZE284_nhgdf6qr",
+            "model": "TS0601",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "_TZE284_nt4pquef",
             "model": "TS0601",
             "battery_type": "AAA",
             "battery_quantity": 2
@@ -5036,6 +5053,12 @@
         },
         {
             "manufacturer": "HOBEIAN",
+            "model": "Motion sensor",
+            "model_id": "ZG-204Z",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "HOBEIAN",
             "model": "Rainwater detection sensor",
             "model_id": "ZG-223Z",
             "hw_version": "1",
@@ -5435,6 +5458,12 @@
             "hw_version": "P2.0",
             "battery_type": "AAA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "IKEA",
+            "model": "BILRESA remote control with buttons",
+            "model_id": "09B9",
+            "battery_type": "CR2032"
         },
         {
             "manufacturer": "IKEA",
@@ -6524,6 +6553,12 @@
             "manufacturer": "Mammotion",
             "model": "LubaVAWD5000",
             "model_id": "Luba2AWD10000H",
+            "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "Mammotion",
+            "model": "YUKA mini 2 1000",
+            "model_id": "YUKA mini 2 1000",
             "battery_type": "Rechargeable"
         },
         {
@@ -10242,6 +10277,12 @@
         },
         {
             "manufacturer": "Tuya",
+            "model": "Door Sensor",
+            "model_id": "vhrcfp2v",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Tuya",
             "model": "Door sensor",
             "model_id": "ZD08",
             "hw_version": "1",
@@ -10289,6 +10330,13 @@
             "manufacturer": "Tuya",
             "model": "Fingerbot Plus (6jcvqwh0)",
             "battery_type": "CR2"
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "Human presence detector",
+            "model_id": "debczeci",
+            "battery_type": "AAA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "TuYa",
@@ -10384,6 +10432,12 @@
         },
         {
             "manufacturer": "Tuya",
+            "model": "Motion Sensor",
+            "model_id": "gjldowol",
+            "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Tuya",
             "model": "Motion sensor",
             "model_id": "IH012-RT01",
             "hw_version": "1",
@@ -10396,6 +10450,12 @@
             "hw_version": "1",
             "battery_type": "AAA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "Motion Sensor",
+            "model_id": "mcxw5ehu",
+            "battery_type": "CR2450"
         },
         {
             "manufacturer": "Tuya",
@@ -10480,6 +10540,12 @@
         },
         {
             "manufacturer": "Tuya",
+            "model": "PIR",
+            "model_id": "53o41joc",
+            "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Tuya",
             "model": "PIR (b5g40alm)",
             "battery_type": "CR2450"
         },
@@ -10528,10 +10594,23 @@
         },
         {
             "manufacturer": "Tuya",
+            "model": "Powerful button",
+            "model_id": "fa9mlvja",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Tuya",
             "model": "Pressure pad sensor",
             "model_id": "C3007",
             "hw_version": "1",
             "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "Pressure Sensing Strap/Bed Occupancy Sensor",
+            "model_id": "TS0601_bed_presence_sensor",
+            "battery_type": "AAA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Tuya",
@@ -10563,6 +10642,12 @@
         {
             "manufacturer": "TuYa",
             "model": "RSH-HS06_1",
+            "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "Sber \u0423\u043c\u043d\u044b\u0439 \u0434\u0430\u0442\u0447\u0438\u043a \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u044f (ZigBee)",
+            "model_id": "bhxcjvlv",
             "battery_type": "CR2450"
         },
         {
@@ -10617,6 +10702,13 @@
             "model_id": "xaw628wk93zqlr80",
             "battery_type": "AA",
             "battery_quantity": 4
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "Smart Radiator Thermostat",
+            "model_id": "bvu2wnxz",
+            "battery_type": "AA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Tuya",
@@ -10733,6 +10825,12 @@
             "model": "Solar Rain sensor",
             "model_id": "RB-SRAIN01",
             "battery_type": "Solar"
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "Switch of scene",
+            "model_id": "mh9px7cq",
+            "battery_type": "23A"
         },
         {
             "manufacturer": "Tuya",
@@ -10974,6 +11072,27 @@
         },
         {
             "manufacturer": "Tuya",
+            "model": "Temperature Humidity Sensor",
+            "model_id": "bguser20",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "Temperature Humidity Sensor",
+            "model_id": "bguser20",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "Temperature Humidity Sensor",
+            "model_id": "fllyghyj",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Tuya",
             "model": "TH01Z",
             "battery_type": "AAA",
             "battery_quantity": 2
@@ -11122,6 +11241,13 @@
             "battery_type": "CR2032"
         },
         {
+            "manufacturer": "Tuya",
+            "model": "TV01-ZG",
+            "model_id": "e9ba97vf",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "TuYa",
             "model": "TV02-Zigbee",
             "battery_type": "AA",
@@ -11130,6 +11256,13 @@
         {
             "manufacturer": "Tuya",
             "model": "T\u00fcr/ Fenstersensor",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "Vibration Sensor",
+            "model_id": "3zv6oleo",
             "battery_type": "AAA",
             "battery_quantity": 2
         },
@@ -11151,6 +11284,12 @@
             "model": "Vibration sensor (TS0210)",
             "battery_type": "AAA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "Water Leak Detector",
+            "model_id": "sqmd19i1",
+            "battery_type": "CR2032"
         },
         {
             "manufacturer": "Tuya",
@@ -11318,6 +11457,25 @@
         },
         {
             "manufacturer": "Tuya",
+            "model": "ZIGBEE Smart Button",
+            "model_id": "ja5osu5g",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "Zigbee Temperature & Humidity Sensor",
+            "model_id": "locansqn",
+            "battery_type": "AAA",
+            "battery_quantity": 3
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "Zigbee Temperature Humidity Sensor",
+            "model_id": "ywagc4rj",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Tuya",
             "model": "Zigbee water flood sensor + 1m probe cable",
             "model_id": "TS0207_water_leak_detector_1",
             "hw_version": "1",
@@ -11346,6 +11504,18 @@
             "model": "ZTH08-E",
             "battery_type": "AAA",
             "battery_quantity": 3
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "\u56db\u952e\u65e0\u7ebf\u60c5\u666f\u5f00\u5173(Zigbee)",
+            "model_id": "aaabrnhr",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "\u65cb\u94ae\u5f00\u5173",
+            "model_id": "abrsvsou",
+            "battery_type": "CR2032"
         },
         {
             "manufacturer": "TUYATEC-1wzznw9a",
@@ -11461,6 +11631,12 @@
             "manufacturer": "unk_manufacturer",
             "model": "lumi.remote.b28ac1",
             "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "upagmta9",
+            "model": "Temp & Humidity Sensor",
+            "model_id": "upagmta9",
+            "battery_type": "CR2032"
         },
         {
             "manufacturer": "uya",
@@ -11794,6 +11970,12 @@
         },
         {
             "manufacturer": "X-Sense",
+            "model": "SW50A",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "X-Sense",
             "model": "Waterleak sensor",
             "model_id": "SWS51",
             "battery_type": "AAA",
@@ -11822,6 +12004,11 @@
         {
             "manufacturer": "X-SENSE",
             "model": "XS0B-MR",
+            "battery_type": "CR123A"
+        },
+        {
+            "manufacturer": "X-Sense",
+            "model": "XS0D-MR",
             "battery_type": "CR123A"
         },
         {
@@ -12383,6 +12570,11 @@
         },
         {
             "manufacturer": "Xiaomi Aqara",
+            "model": "remote.b1acn01",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Xiaomi Aqara",
             "model": "sensor_magnet.aq2",
             "battery_type": "CR1632"
         },
@@ -12394,6 +12586,11 @@
         {
             "manufacturer": "Xiaomi Aqara",
             "model": "sensor_wleak.aq1",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Xiaomi Aqara",
+            "model": "weather.v1",
             "battery_type": "CR2032"
         },
         {
