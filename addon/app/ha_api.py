@@ -86,8 +86,9 @@ async def get_battery_entities():
         return []
 
 
-async def get_hidden_entity_ids() -> set:
-    """Returns entity_ids marked not-visible in the HA entity registry.
+async def get_entity_registry_sets() -> tuple[set, set]:
+    """Fetches the full HA entity registry in one WebSocket call and returns two sets:
+    (hidden_entity_ids, battery_notes_entity_ids).
     Uses WebSocket because the REST entity registry endpoint is not exposed through the Supervisor proxy."""
     token = _token()
     try:
@@ -97,21 +98,22 @@ async def get_hidden_entity_ids() -> set:
             ) as ws:
                 msg = await ws.receive_json()
                 if msg.get("type") != "auth_required":
-                    return set()
+                    return set(), set()
                 await ws.send_json({"type": "auth", "access_token": token})
                 msg = await ws.receive_json()
                 if msg.get("type") != "auth_ok":
                     _LOGGER.warning("WebSocket auth failed for entity registry fetch")
-                    return set()
+                    return set(), set()
                 await ws.send_json({"id": 1, "type": "config/entity_registry/list"})
                 msg = await ws.receive_json()
                 entries = msg.get("result", []) or []
         hidden = {e["entity_id"] for e in entries if e.get("hidden_by")}
-        _LOGGER.debug("Entity registry: %d hidden entities", len(hidden))
-        return hidden
+        battery_notes = {e["entity_id"] for e in entries if e.get("platform") == "battery_notes"}
+        _LOGGER.debug("Entity registry: %d hidden, %d battery_notes", len(hidden), len(battery_notes))
+        return hidden, battery_notes
     except Exception:
         _LOGGER.exception("Failed to fetch entity registry via WebSocket")
-        return set()
+        return set(), set()
 
 
 async def get_entity_metadata():

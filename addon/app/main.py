@@ -23,7 +23,7 @@ from device_utils import device_is_low, level_str, format_line
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.07.2"
+VERSION = "2026.07.3"
 
 _cache: list = []
 _startup_logged = False
@@ -50,13 +50,19 @@ async def do_refresh():
             except Exception:
                 _LOGGER.warning("Unknown timezone '%s', falling back to system time", tz_name)
     live = await ha_api.get_battery_entities()
-    hidden_eids = await ha_api.get_hidden_entity_ids()
+    hidden_eids, battery_notes_eids = await ha_api.get_entity_registry_sets()
     if hidden_eids:
         before = len(live)
         live = [e for e in live if e["entity_id"] not in hidden_eids]
         skipped = before - len(live)
         if skipped:
             _LOGGER.info("Skipped %d entity/entities hidden in HA entity registry", skipped)
+    if battery_notes_eids and storage.get_settings().get("exclude_battery_notes", True):
+        before = len(live)
+        live = [e for e in live if e["entity_id"] not in battery_notes_eids]
+        skipped = before - len(live)
+        if skipped:
+            _LOGGER.info("Skipped %d Battery Notes sensor(s)", skipped)
     metadata = await ha_api.get_entity_metadata()
     registry = await ha_api.get_device_registry()
     for entity in live:

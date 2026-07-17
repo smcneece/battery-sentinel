@@ -46,6 +46,7 @@ DEFAULT_SETTINGS = {
     "report_include_battery_type": False,
     "color_threshold_red": 10,
     "color_threshold_yellow": 25,
+    "exclude_battery_notes": True,
 }
 
 
@@ -92,6 +93,7 @@ def save_settings(updates: dict) -> dict:
         "zwave_monitor_enabled", "zwave_ping_enabled", "zwave_ping_interval",
         "zigbee_monitor_enabled", "zigbee_offline_threshold", "zigbee_scan_interval",
         "color_threshold_red", "color_threshold_yellow",
+        "exclude_battery_notes",
     )
     for key in allowed:
         if key in updates:

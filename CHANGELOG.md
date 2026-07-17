@@ -2,6 +2,9 @@
 
 For full release notes and details on each version, see the [GitHub Releases page](https://github.com/smcneece/battery-sentinel/releases).
 
+## 2026.07.3
+- New setting in Settings > General: "Exclude Battery Notes sensors" (on by default); when the Battery Notes integration is also installed, its virtual battery sensors share device_class: battery and appear as duplicates in the device list; enabling this setting filters them out automatically using the entity registry platform field
+
 ## 2026.07.2
 - Fixed: Zigbee tab showed no devices on large HA installs (500+ entities); the aiohttp WebSocket client has a default 4 MB message size cap and the HA entity registry response on large installs exceeded it, causing a MESSAGE_TOO_BIG disconnect before any data was read; the cap is now removed on the three WebSocket calls that fetch full registry lists (entity registry, device registry); hidden entity filtering on the Devices tab was also silently broken by the same limit for affected users
 

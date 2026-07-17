@@ -274,6 +274,14 @@
           <input type="number" id="setting-check-interval" min="1" max="120" style="max-width:80px" value="10">
         </div>
         <div class="setting-row">
+          <label>Integrations</label>
+          <div class="notify-row" style="margin-top:.35rem">
+            <input type="checkbox" id="setting-exclude-battery-notes">
+            <label for="setting-exclude-battery-notes">Exclude Battery Notes sensors</label>
+          </div>
+          <p class="muted" style="font-size:.82rem;margin-top:.35rem">When the Battery Notes integration is also installed, its virtual battery sensors appear as duplicates in the device list. Enable this to hide them automatically.</p>
+        </div>
+        <div class="setting-row">
           <label>Battery Types</label>
           <p>Available in the per-device battery type dropdown. Add or remove as needed.</p>
         </div>
@@ -1794,6 +1802,7 @@ async function saveSettings() {
   _settings.report_include_battery_type = document.getElementById("setting-include-battery-type").checked;
   _settings.color_threshold_red    = Math.min(98, Math.max(1, parseInt(document.getElementById("setting-color-red").value,    10) || 10));
   _settings.color_threshold_yellow = Math.min(99, Math.max(_settings.color_threshold_red + 1, parseInt(document.getElementById("setting-color-yellow").value, 10) || 25));
+  _settings.exclude_battery_notes  = document.getElementById("setting-exclude-battery-notes").checked;
   try {
     const r = await fetch(BASE + "/api/settings", {
       method: "POST",
@@ -1856,6 +1865,7 @@ async function init() {
     document.getElementById("setting-check-interval").value     = _settings.check_interval || 10;
     document.getElementById("setting-color-red").value          = _settings.color_threshold_red ?? 10;
     document.getElementById("setting-color-yellow").value       = _settings.color_threshold_yellow ?? 25;
+    document.getElementById("setting-exclude-battery-notes").checked = _settings.exclude_battery_notes ?? true;
     document.getElementById("setting-notify-to").value         = _settings.notify_email_to || '';
     document.getElementById("setting-notify-cc").value         = _settings.notify_email_cc || '';
     document.getElementById("setting-daily-enabled").checked    = !!_settings.daily_report_enabled;
