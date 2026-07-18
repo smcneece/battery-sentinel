@@ -6,7 +6,7 @@ labels: bug
 assignees: ''
 ---
 
-> Before submitting, please check the [Troubleshooting guide](../../TROUBLESHOOTING.md) -- your issue may already be documented there.
+> Before submitting, please check the [Troubleshooting guide](https://github.com/smcneece/battery-sentinel/blob/main/TROUBLESHOOTING.md) -- your issue may already be documented there.
 
 **What happened?**
 A clear description of the bug.
