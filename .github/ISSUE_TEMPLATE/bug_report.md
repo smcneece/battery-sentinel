@@ -18,11 +18,16 @@ A clear description of the bug.
 2. 
 3. 
 
-**Version** *(optional — shown in the Battery Sentinel Plus UI header)*
+**Troubleshooting already tried**
+- [ ] Restarted the Battery Sentinel Plus add-on
+- [ ] Restarted Home Assistant
+- [ ] Checked the add-on log (HA sidebar > Settings > Add-ons > Battery Sentinel Plus > Log tab)
 
-**HA version** *(optional)*
+**Version** *(shown in the Battery Sentinel Plus UI header — please include)*
 
-**Installation type** *(optional)*
+**HA version**
+
+**Installation type**
 - [ ] Home Assistant OS
 - [ ] Home Assistant Supervised
 - [ ] Standalone Docker
