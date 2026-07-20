@@ -31,6 +31,19 @@ To identify the culprit, go to **Settings > Devices & Services** and disable int
 
 ---
 
+## Zigbee tab shows Z-Wave devices, or shows no devices
+
+The Zigbee tab requires **Zigbee2MQTT** and will not work with ZHA or other Zigbee integrations. It relies on the Last Seen timestamp sensors that Z2M publishes for each device (`sensor.*_last_seen` with `platform: mqtt`). ZHA does not expose equivalent sensors.
+
+If you enabled Zigbee monitoring but are not using Z2M, the tab may show unrelated entities or appear empty. Go to **Settings > Device Monitoring** and uncheck "Enable Zigbee monitoring" to hide the tab.
+
+If you are using Z2M and the tab is still empty or showing wrong devices, make sure:
+- Last Seen is enabled in your Z2M settings
+- The Last Seen sensor entities are enabled (not hidden) in HA
+- The Battery Sentinel Plus add-on has been restarted after enabling Zigbee monitoring
+
+---
+
 ## HA Supervised install fails: "manifest for docker:X.Y.Z-cli not found"
 
 The HA Supervisor builds add-ons by pulling a `docker:X.Y.Z-cli` image from Docker Hub that matches your installed Docker version. If that exact tag does not exist on Docker Hub (which can happen with short-lived Docker patch releases), the build fails before our Dockerfile even runs.

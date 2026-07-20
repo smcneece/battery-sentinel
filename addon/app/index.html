@@ -236,6 +236,13 @@
       <option value="50">50%</option>
       <option value="55">55%</option>
       <option value="60">60%</option>
+      <option value="65">65%</option>
+      <option value="70">70%</option>
+      <option value="75">75%</option>
+      <option value="80">80%</option>
+      <option value="85">85%</option>
+      <option value="90">90%</option>
+      <option value="95">95%</option>
       <option value="-1">Ignore</option>
     </select>
     <button id="apply-threshold-btn" class="btn btn-secondary toolbar-apply" style="display:none" onclick="applyThresholdToVisible()"></button>
@@ -325,21 +332,9 @@
         <div class="setting-row">
           <label>Default alert threshold</label>
           <p>Applied to any newly discovered device.</p>
-          <select id="setting-threshold" style="max-width:180px">
-            <option value="5">5%</option>
-            <option value="10">10%</option>
-            <option value="15">15%</option>
-            <option value="20">20%</option>
-            <option value="25">25%</option>
-            <option value="30">30%</option>
-            <option value="35">35%</option>
-            <option value="40">40%</option>
-            <option value="45">45%</option>
-            <option value="50">50%</option>
-            <option value="55">55%</option>
-            <option value="60">60%</option>
-            <option value="-1">Ignore</option>
-          </select>
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <input type="number" id="setting-threshold" min="1" max="99" style="max-width:80px"> %
+          </div>
         </div>
         <div class="notify-row">
           <input type="checkbox" id="setting-notify-persistent">
@@ -621,19 +616,16 @@
         </div>
         <div class="field">
           <label>Alert Threshold</label>
-          <select id="modal-threshold">
-            <option value="5">5%</option>
-            <option value="10">10%</option>
-            <option value="15">15%</option>
-            <option value="20">20%</option>
-            <option value="25">25%</option>
-            <option value="30">30%</option>
-            <option value="35">35%</option>
-            <option value="40">40%</option>
-            <option value="45">45%</option>
-            <option value="50">50%</option>
-            <option value="55">55%</option>
-            <option value="60">60%</option>
+          <div id="modal-threshold-numeric" style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+            <input type="number" id="modal-threshold" min="1" max="99" style="max-width:80px"> %
+            <label style="font-size:.9rem;display:flex;align-items:center;gap:.3rem">
+              <input type="checkbox" id="modal-threshold-ignore"
+                onchange="const n=document.getElementById('modal-threshold');n.disabled=this.checked;n.style.opacity=this.checked?'0.4':'1'">
+              Ignore
+            </label>
+          </div>
+          <select id="modal-threshold-binary" style="display:none">
+            <option value="15">Monitor</option>
             <option value="-1">Ignore</option>
           </select>
         </div>
@@ -1073,7 +1065,7 @@ function renderTable() {
   const v = _colVisible;
   const types = _settings.battery_types || [];
 
-  const thrOptions = val => [5,10,15,20,25,30,35,40,45,50,55,60].map(n =>
+  const thrOptions = val => [5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95].map(n =>
     `<option value="${n}"${val===n?' selected':''}>${n}%</option>`
   ).join('') + `<option value="-1"${val===-1?' selected':''}>Ignore</option>`;
 
@@ -1325,15 +1317,22 @@ function openModal(eid, tab = 'details') {
   }
 
   const thr = d.alert_threshold !== undefined ? d.alert_threshold : (_settings.default_threshold || 20);
-  const thrEl = document.getElementById("modal-threshold");
+  const numWrap = document.getElementById("modal-threshold-numeric");
+  const numEl   = document.getElementById("modal-threshold");
+  const ignEl   = document.getElementById("modal-threshold-ignore");
+  const binEl   = document.getElementById("modal-threshold-binary");
   if (eid.startsWith("binary_sensor.")) {
-    thrEl.innerHTML =
-      `<option value="15"${thr !== -1 ? ' selected' : ''}>Monitor</option>` +
-      `<option value="-1"${thr === -1  ? ' selected' : ''}>Ignore</option>`;
+    numWrap.style.display = "none";
+    binEl.style.display   = "";
+    binEl.value = thr === -1 ? "-1" : "15";
   } else {
-    thrEl.innerHTML =
-      [5,10,15,20,25,30,35,40,45,50,55,60].map(n => `<option value="${n}"${thr===n?' selected':''}>${n}%</option>`).join('') +
-      `<option value="-1"${thr===-1?' selected':''}>Ignore</option>`;
+    numWrap.style.display = "flex";
+    binEl.style.display   = "none";
+    const isIgnore = thr === -1;
+    ignEl.checked     = isIgnore;
+    numEl.value       = isIgnore ? (_settings.default_threshold || 20) : thr;
+    numEl.disabled    = isIgnore;
+    numEl.style.opacity = isIgnore ? "0.4" : "1";
   }
 
   const types = _settings.battery_types || [];
@@ -1640,7 +1639,11 @@ async function saveDevice() {
   const payload = {
     notes:                 document.getElementById("modal-notes").value,
     battery_type:          document.getElementById("modal-type").value,
-    alert_threshold:       parseInt(document.getElementById("modal-threshold").value, 10),
+    alert_threshold:       _activeEntity && _activeEntity.startsWith("binary_sensor.")
+                             ? parseInt(document.getElementById("modal-threshold-binary").value, 10)
+                             : document.getElementById("modal-threshold-ignore").checked
+                               ? -1
+                               : Math.min(99, Math.max(1, parseInt(document.getElementById("modal-threshold").value, 10) || 20)),
     last_replaced:         document.getElementById("modal-replaced").value || null,
     notify_bell:                document.getElementById("modal-notify-bell").checked,
     notify_email:               document.getElementById("modal-notify-email").checked,

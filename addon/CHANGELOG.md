@@ -2,6 +2,9 @@
 
 For full release notes and details on each version, see the [GitHub Releases page](https://github.com/smcneece/battery-sentinel/releases).
 
+## 2026.07.4
+- Alert threshold in the device modal is now a free-entry number field (1 to 99%) instead of a fixed dropdown; the Ignore option is a separate checkbox; the inline device list dropdown and bulk threshold setter have been extended from 60% to 95% in 5% increments; the default threshold setting in Settings is also now a free-entry number field
+
 ## 2026.07.3
 - New setting in Settings > General: "Exclude Battery Notes sensors" (on by default); when the Battery Notes integration is also installed, its virtual battery sensors share device_class: battery and appear as duplicates in the device list; enabling this setting filters them out automatically using the entity registry platform field
 
