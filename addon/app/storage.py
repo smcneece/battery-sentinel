@@ -123,6 +123,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
                 "name": entity["name"],
                 "notes": "",
                 "battery_type": "",
+                "battery_quantity": 1,
                 "alert_threshold": default_threshold,
                 "alert_sent": False,
                 "alert_cooldown_until": None,
@@ -142,6 +143,7 @@ def merge_entities(live_entities: list) -> tuple[list, list]:
             }
         else:
             devices[eid]["name"] = entity["name"]
+            devices[eid].setdefault("battery_quantity", 1)
             devices[eid].setdefault("alert_threshold", default_threshold)
             devices[eid].setdefault("alert_sent", False)
             devices[eid].setdefault("alert_cooldown_until", None)
@@ -189,7 +191,7 @@ def save_device(entity_id: str, fields: dict) -> dict:
     if entity_id not in devices:
         raise KeyError(f"Device {entity_id} not found")
     allowed = {
-        "notes", "battery_type", "alert_threshold", "last_replaced",
+        "notes", "battery_type", "battery_quantity", "alert_threshold", "last_replaced",
         "notify_bell", "notify_email", "notify_mobile", "notify_unavailable_device",
         "notify_email_address", "notify_mobile_service", "notify_script",
         "muted_until",

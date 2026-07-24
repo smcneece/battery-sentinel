@@ -184,6 +184,11 @@ Battery Sentinel Plus can automatically identify battery types for your devices 
 - Bulk **Keep All Mine** / **Use All Database** buttons in the modal footer resolve everything at once
 - Any new battery types discovered are added to your managed battery type list automatically
 
+### Interface Language
+Battery Sentinel Plus detects your browser's language automatically on first load and displays the interface in that language if a translation is available. You can also override the language manually in Settings > General. The preference is saved per browser, so different users on the same Home Assistant instance can use different languages independently.
+
+English is bundled. Additional languages appear in the selector automatically once community translations are contributed -- there is no code change required. Translations are simple flat JSON files; see [Contributing a translation](#contributing-a-translation) below.
+
 ### Settings
 - All configuration through the built-in Settings tab; no YAML to edit
 - Battery type list is fully manageable: add or remove types
@@ -408,7 +413,20 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ## Contributing
 
-Pull requests are welcome. A few things to keep in mind before opening one:
+### Contributing a translation
+
+Translations are the easiest way to contribute. Any language is welcome, not just the major European ones. To add a new language:
+
+1. Copy `addon/app/locales/en.json` and rename it to the two-letter [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) code for your language (e.g. `fr.json`, `de.json`).
+2. Translate the values on the right side of each key. Do not change the keys.
+3. For strings with `{variable}` placeholders, keep them in place -- the app fills in the real value at runtime.
+4. Open a pull request with your file.
+
+Missing keys fall back to English automatically, so a partial translation is perfectly fine to submit. Once merged, your language will appear in the Settings dropdown for all users immediately on the next release. See `addon/app/locales/TRANSLATING.md` for the full contributor guide.
+
+### Code contributions
+
+A few things to keep in mind before opening one:
 
 **Test your changes against a real Home Assistant instance.** PRs that have not been run will be closed. If the app does not start, that will be caught immediately.
 

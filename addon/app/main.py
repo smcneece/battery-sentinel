@@ -23,7 +23,7 @@ from device_utils import device_is_low, level_str, format_line
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.07.4"
+VERSION = "2026.07.5"
 
 _cache: list = []
 _startup_logged = False
@@ -332,6 +332,27 @@ async def handle_icon(request):
     return web.FileResponse("/app/icon.png")
 
 
+async def handle_locale(request):
+    lang = request.match_info["lang"]
+    if not lang.isalpha() or len(lang) > 8:
+        return web.Response(status=404)
+    path = f"/app/locales/{lang}.json"
+    if not os.path.exists(path):
+        return web.Response(status=404)
+    return web.FileResponse(path)
+
+
+async def handle_locales_available(request):
+    import glob as _glob
+    files = _glob.glob("/app/locales/*.json")
+    codes = sorted(
+        os.path.basename(f).replace(".json", "")
+        for f in files
+        if os.path.basename(f) != "en.json"
+    )
+    return web.json_response(["en"] + codes)
+
+
 async def handle_api_batteries(request):
     return web.Response(text=json.dumps(_cache), content_type="application/json")
 
@@ -635,6 +656,8 @@ def main():
     app.on_startup.append(on_startup)
     app.router.add_get("/",                          handle_index)
     app.router.add_get("/icon.png",                  handle_icon)
+    app.router.add_get("/locales/available",           handle_locales_available)
+    app.router.add_get("/locales/{lang}.json",        handle_locale)
     app.router.add_get("/api/batteries",             handle_api_batteries)
     app.router.add_get("/api/settings",              handle_api_settings_get)
     app.router.add_post("/api/settings",             handle_api_settings_post)

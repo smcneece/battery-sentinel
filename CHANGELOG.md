@@ -2,6 +2,10 @@
 
 For full release notes and details on each version, see the [GitHub Releases page](https://github.com/smcneece/battery-sentinel/releases).
 
+## 2026.07.5
+- Battery quantity per device: a number input in the device panel lets you record how many batteries a device uses; shown as a "2×" prefix in the Battery Type column when quantity is greater than 1; defaults to 1 for all existing devices
+- Interface translations (i18n): the UI language is auto-detected from the browser on first load and can be overridden in Settings > General; preference is saved per-browser; the language selector only shows languages with an actual translation file so users never see a no-op option; translations are flat JSON files in `addon/app/locales/`, any language is welcome via PR; missing keys fall back to English automatically; contributor guide in `addon/app/locales/TRANSLATING.md`
+
 ## 2026.07.4
 - Alert threshold in the device modal is now a free-entry number field (1 to 99%) instead of a fixed dropdown; the Ignore option is a separate checkbox; the inline device list dropdown and bulk threshold setter have been extended from 60% to 95% in 5% increments; the default threshold setting in Settings is also now a free-entry number field
 

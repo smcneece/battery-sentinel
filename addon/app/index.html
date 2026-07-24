@@ -200,30 +200,30 @@
 <div class="header">
   <img src="{{BASE}}/icon.png" alt="Battery Sentinel Plus">
   <h1>Battery Sentinel Plus</h1>
-  <button class="about-btn" onclick="openAbout()">ⓘ Help / About</button>
+  <button class="about-btn" onclick="openAbout()" data-i18n="header.about_btn">ⓘ Help / About</button>
 </div>
 
 <nav class="tabs">
-  <button class="tab-btn active" data-tab="devices">Devices</button>
-  <button class="tab-btn" id="tab-zwave-btn" data-tab="zwave" style="display:none">Z-Wave</button>
-  <button class="tab-btn" id="tab-zigbee-btn" data-tab="zigbee" style="display:none">Zigbee</button>
-  <button class="tab-btn" data-tab="settings">Settings</button>
+  <button class="tab-btn active" data-tab="devices" data-i18n="tab.devices">Devices</button>
+  <button class="tab-btn" id="tab-zwave-btn" data-tab="zwave" style="display:none" data-i18n="tab.zwave">Z-Wave</button>
+  <button class="tab-btn" id="tab-zigbee-btn" data-tab="zigbee" style="display:none" data-i18n="tab.zigbee">Zigbee</button>
+  <button class="tab-btn" data-tab="settings" data-i18n="tab.settings">Settings</button>
 </nav>
 
 <div id="tab-devices" class="tab-content active">
   <div class="device-toolbar">
     <div style="position:relative;display:inline-flex;align-items:center">
-      <input type="text" id="device-search" placeholder="Filter devices..." autocomplete="off" style="padding-right:1.6rem">
+      <input type="text" id="device-search" placeholder="Filter devices..." data-i18n-placeholder="toolbar.filter_placeholder" autocomplete="off" style="padding-right:1.6rem">
       <button id="search-clear" onclick="clearSearch()" title="Clear" style="display:none;position:absolute;right:5px;background:none;border:none;color:var(--bs-text-dim);cursor:pointer;font-size:1.1rem;line-height:1;padding:0">&#x2715;</button>
     </div>
-    <span class="toolbar-label">Battery Type:</span>
+    <span class="toolbar-label" data-i18n="toolbar.battery_type_label">Battery Type:</span>
     <select id="type-filter" class="toolbar-sel">
-      <option value="">-- Apply Type --</option>
+      <option value="" data-i18n-value="toolbar.apply_type_option">-- Apply Type --</option>
     </select>
     <button id="apply-type-btn" class="btn btn-secondary toolbar-apply" style="display:none" onclick="applyTypeToVisible()"></button>
-    <span class="toolbar-label">Alert Threshold:</span>
+    <span class="toolbar-label" data-i18n="toolbar.threshold_label">Alert Threshold:</span>
     <select id="threshold-filter" class="toolbar-sel">
-      <option value="">-- Set Threshold --</option>
+      <option value="" data-i18n-value="toolbar.set_threshold_option">-- Set Threshold --</option>
       <option value="5">5%</option>
       <option value="10">10%</option>
       <option value="15">15%</option>
@@ -260,65 +260,70 @@
 
 <div id="tab-settings" class="tab-content">
   <div class="settings-subtab-bar">
-    <button class="settings-subtab active" data-stab="general"       onclick="showSettingsTab('general')">General</button>
-    <button class="settings-subtab"        data-stab="notifications"  onclick="showSettingsTab('notifications')">Notifications</button>
-    <button class="settings-subtab"        data-stab="report"         onclick="showSettingsTab('report')">Daily Report</button>
-    <button class="settings-subtab"        data-stab="monitoring"     onclick="showSettingsTab('monitoring')">Device Monitoring</button>
+    <button class="settings-subtab active" data-stab="general"       onclick="showSettingsTab('general')"       data-i18n="settings.subtab.general">General</button>
+    <button class="settings-subtab"        data-stab="notifications"  onclick="showSettingsTab('notifications')" data-i18n="settings.subtab.notifications">Notifications</button>
+    <button class="settings-subtab"        data-stab="report"         onclick="showSettingsTab('report')"        data-i18n="settings.subtab.report">Daily Report</button>
+    <button class="settings-subtab"        data-stab="monitoring"     onclick="showSettingsTab('monitoring')"    data-i18n="settings.subtab.monitoring">Device Monitoring</button>
   </div>
 
   <div id="stab-general" class="settings-subtab-panel active">
     <div class="settings-grid">
       <div class="settings-card">
-        <h3>General</h3>
+        <h3 data-i18n="settings.general.title">General</h3>
         <div class="scan-bar" style="margin-bottom:.6rem">
-          <button class="btn btn-secondary" onclick="scanNow()">Scan Now</button>
+          <button class="btn btn-secondary" onclick="scanNow()" data-i18n="settings.general.scan_btn">Scan Now</button>
           <span class="scan-status" id="scan-status"></span>
         </div>
-        <p class="muted" style="font-size:.82rem;margin-bottom:1.25rem">Refreshes battery levels and discovers new devices. Notifications only fire if a device newly crosses its threshold.</p>
+        <p class="muted" style="font-size:.82rem;margin-bottom:1.25rem" data-i18n="settings.general.scan_desc">Refreshes battery levels and discovers new devices. Notifications only fire if a device newly crosses its threshold.</p>
         <div class="setting-row">
-          <label>Check interval (minutes)</label>
-          <p>How often Battery Sentinel Plus polls HA for new devices and current battery levels. Range: 1 to 120 minutes.</p>
+          <label data-i18n="settings.general.interval_label">Check interval (minutes)</label>
+          <p data-i18n="settings.general.interval_desc">How often Battery Sentinel Plus polls HA for new devices and current battery levels. Range: 1 to 120 minutes.</p>
           <input type="number" id="setting-check-interval" min="1" max="120" style="max-width:80px" value="10">
         </div>
         <div class="setting-row">
-          <label>Integrations</label>
-          <div class="notify-row" style="margin-top:.35rem">
-            <input type="checkbox" id="setting-exclude-battery-notes">
-            <label for="setting-exclude-battery-notes">Exclude Battery Notes sensors</label>
-          </div>
-          <p class="muted" style="font-size:.82rem;margin-top:.35rem">When the Battery Notes integration is also installed, its virtual battery sensors appear as duplicates in the device list. Enable this to hide them automatically.</p>
+          <label data-i18n="settings.general.language_label">Language</label>
+          <select id="setting-language" style="max-width:200px" onchange="changeLanguage(this.value)"></select>
+          <p style="font-size:.82rem;color:var(--bs-text-dim);margin-top:.25rem" data-i18n="settings.general.language_desc">Interface language. Changing this reloads the page.</p>
         </div>
         <div class="setting-row">
-          <label>Battery Types</label>
-          <p>Available in the per-device battery type dropdown. Add or remove as needed.</p>
+          <label data-i18n="settings.general.integrations_label">Integrations</label>
+          <div class="notify-row" style="margin-top:.35rem">
+            <input type="checkbox" id="setting-exclude-battery-notes">
+            <label for="setting-exclude-battery-notes" data-i18n="settings.general.exclude_bn_label">Exclude Battery Notes sensors</label>
+          </div>
+          <p class="muted" style="font-size:.82rem;margin-top:.35rem" data-i18n="settings.general.exclude_bn_desc">When the Battery Notes integration is also installed, its virtual battery sensors appear as duplicates in the device list. Enable this to hide them automatically.</p>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="settings.general.types_label">Battery Types</label>
+          <p data-i18n="settings.general.types_desc">Available in the per-device battery type dropdown. Add or remove as needed.</p>
         </div>
         <ul class="type-list" id="type-list"></ul>
         <div class="type-add">
-          <input type="text" id="type-input" placeholder="Add type, e.g. CR2477">
-          <button class="btn btn-secondary" onclick="addType()">Add</button>
+          <input type="text" id="type-input" placeholder="Add type, e.g. CR2477" data-i18n-placeholder="settings.general.types_placeholder">
+          <button class="btn btn-secondary" onclick="addType()" data-i18n="settings.general.types_add_btn">Add</button>
         </div>
         <div class="scan-bar" style="margin-top:.85rem">
-          <button id="lookup-btn" class="btn btn-secondary" onclick="lookupBatteryTypes()">Look Up Battery Types</button>
+          <button id="lookup-btn" class="btn btn-secondary" onclick="lookupBatteryTypes()" data-i18n="settings.general.lookup_btn">Look Up Battery Types</button>
           <span class="scan-status" id="lookup-status"></span>
         </div>
-        <p class="muted" style="font-size:.82rem;margin-top:.35rem">Uses a locally bundled copy of the Battery Notes community database to auto-fill missing battery types. No external network calls are made.</p>
+        <p class="muted" style="font-size:.82rem;margin-top:.35rem" data-i18n="settings.general.lookup_desc">Uses a locally bundled copy of the Battery Notes community database to auto-fill missing battery types. No external network calls are made.</p>
       </div>
       <div class="settings-card" style="flex: none;">
-        <h3>Display</h3>
-        <p class="muted" style="font-size:.82rem;margin-bottom:.85rem">Choose which columns appear in the device list. Device name is always shown.</p>
-        <div class="notify-row"><input type="checkbox" id="col-level"  onchange="toggleCol('level',  this.checked)"><label for="col-level">Level</label></div>
-        <div class="notify-row"><input type="checkbox" id="col-btype"  onchange="toggleCol('btype',  this.checked)"><label for="col-btype">Battery Type</label></div>
-        <div class="notify-row"><input type="checkbox" id="col-alert"  onchange="toggleCol('alert',  this.checked)"><label for="col-alert">Alert Threshold</label></div>
-        <div class="notify-row"><input type="checkbox" id="col-notify" onchange="toggleCol('notify', this.checked)"><label for="col-notify">Notifications (UI / Email / Mobile)</label></div>
-        <div class="notify-row"><input type="checkbox" id="col-script" onchange="toggleCol('script', this.checked)"><label for="col-script">Script</label></div>
-        <div class="notify-row"><input type="checkbox" id="col-area"   onchange="toggleCol('area',   this.checked)"><label for="col-area">Room</label></div>
+        <h3 data-i18n="settings.display.title">Display</h3>
+        <p class="muted" style="font-size:.82rem;margin-bottom:.85rem" data-i18n="settings.display.col_desc">Choose which columns appear in the device list. Device name is always shown.</p>
+        <div class="notify-row"><input type="checkbox" id="col-level"  onchange="toggleCol('level',  this.checked)"><label for="col-level"  data-i18n="settings.display.col.level">Level</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-btype"  onchange="toggleCol('btype',  this.checked)"><label for="col-btype"  data-i18n="settings.display.col.battery_type">Battery Type</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-alert"  onchange="toggleCol('alert',  this.checked)"><label for="col-alert"  data-i18n="settings.display.col.alert">Alert Threshold</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-notify" onchange="toggleCol('notify', this.checked)"><label for="col-notify" data-i18n="settings.display.col.notify">Notifications (UI / Email / Mobile)</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-script" onchange="toggleCol('script', this.checked)"><label for="col-script" data-i18n="settings.display.col.script">Script</label></div>
+        <div class="notify-row"><input type="checkbox" id="col-area"   onchange="toggleCol('area',   this.checked)"><label for="col-area"   data-i18n="settings.display.col.room">Room</label></div>
         <div class="setting-row" style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--bs-border)">
-          <label>Battery level colors</label>
-          <p>Set the percentage thresholds where the level display changes color. Binary sensors (Low/OK) are always red or green.</p>
+          <label data-i18n="settings.display.colors_label">Battery level colors</label>
+          <p data-i18n="settings.display.colors_desc">Set the percentage thresholds where the level display changes color. Binary sensors (Low/OK) are always red or green.</p>
           <div style="display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-top:.35rem">
-            <label style="font-size:.88rem">Red below <input type="number" id="setting-color-red" min="1" max="99" style="width:3.5rem;background:var(--bs-input-bg);border:1px solid var(--bs-border);border-radius:4px;color:#cc3333;font-weight:bold;padding:.15rem .35rem;font-size:.88rem;text-align:center"> %</label>
-            <label style="font-size:.88rem">Yellow below <input type="number" id="setting-color-yellow" min="1" max="99" style="width:3.5rem;background:var(--bs-input-bg);border:1px solid var(--bs-border);border-radius:4px;color:#cc8800;font-weight:bold;padding:.15rem .35rem;font-size:.88rem;text-align:center"> %</label>
-            <span style="font-size:.88rem;color:var(--bs-text-muted)">Green: everything above yellow</span>
+            <label style="font-size:.88rem"><span data-i18n="settings.display.red_below">Red below</span> <input type="number" id="setting-color-red" min="1" max="99" style="width:3.5rem;background:var(--bs-input-bg);border:1px solid var(--bs-border);border-radius:4px;color:#cc3333;font-weight:bold;padding:.15rem .35rem;font-size:.88rem;text-align:center"> %</label>
+            <label style="font-size:.88rem"><span data-i18n="settings.display.yellow_below">Yellow below</span> <input type="number" id="setting-color-yellow" min="1" max="99" style="width:3.5rem;background:var(--bs-input-bg);border:1px solid var(--bs-border);border-radius:4px;color:#cc8800;font-weight:bold;padding:.15rem .35rem;font-size:.88rem;text-align:center"> %</label>
+            <span style="font-size:.88rem;color:var(--bs-text-muted)" data-i18n="settings.display.green_above">Green: everything above yellow</span>
           </div>
         </div>
       </div>
@@ -328,68 +333,68 @@
   <div id="stab-notifications" class="settings-subtab-panel">
     <div class="settings-grid">
       <div class="settings-card" style="max-width:560px">
-        <h3>Notifications</h3>
+        <h3 data-i18n="settings.notifications.title">Notifications</h3>
         <div class="setting-row">
-          <label>Default alert threshold</label>
-          <p>Applied to any newly discovered device.</p>
+          <label data-i18n="settings.notifications.threshold_label">Default alert threshold</label>
+          <p data-i18n="settings.notifications.threshold_desc">Applied to any newly discovered device.</p>
           <div style="display:flex;align-items:center;gap:.5rem">
             <input type="number" id="setting-threshold" min="1" max="99" style="max-width:80px"> %
           </div>
         </div>
         <div class="notify-row">
           <input type="checkbox" id="setting-notify-persistent">
-          <label for="setting-notify-persistent">UI notification (HA persistent) for low batteries</label>
+          <label for="setting-notify-persistent" data-i18n="settings.notifications.persistent_label">UI notification (HA persistent) for low batteries</label>
         </div>
         <div class="setting-row" style="margin-top:.5rem;margin-bottom:.5rem">
-          <label>Default mobile service</label>
-          <p>Used when a device has Mobile enabled but no specific service set.</p>
+          <label data-i18n="settings.notifications.mobile_label">Default mobile service</label>
+          <p data-i18n="settings.notifications.mobile_desc">Used when a device has Mobile enabled but no specific service set.</p>
           <select id="setting-mobile-default">
-            <option value="">-- None --</option>
+            <option value="" data-i18n-value="settings.notifications.none_option">-- None --</option>
           </select>
         </div>
         <div class="setting-row" style="margin-bottom:.5rem">
-          <label>Global script trigger</label>
-          <p>Script to run when any device crosses its threshold. Per-device script overrides this.</p>
+          <label data-i18n="settings.notifications.script_label">Global script trigger</label>
+          <p data-i18n="settings.notifications.script_desc">Script to run when any device crosses its threshold. Per-device script overrides this.</p>
           <select id="setting-notify-script">
-            <option value="">-- None --</option>
+            <option value="" data-i18n-value="settings.notifications.none_option">-- None --</option>
           </select>
         </div>
         <div class="notify-row" style="margin-bottom:.85rem">
           <input type="checkbox" id="setting-notify-new-device">
-          <label for="setting-notify-new-device">Alert when a new battery device is discovered</label>
+          <label for="setting-notify-new-device" data-i18n="settings.notifications.new_device_label">Alert when a new battery device is discovered</label>
         </div>
         <div class="notify-row" style="margin-bottom:.5rem">
           <input type="checkbox" id="setting-notify-unavailable">
-          <label for="setting-notify-unavailable">Alert when a battery device goes unavailable or unknown</label>
+          <label for="setting-notify-unavailable" data-i18n="settings.notifications.unavailable_label">Alert when a battery device goes unavailable or unknown</label>
         </div>
         <div class="setting-row" style="margin-bottom:.5rem;padding-left:1.6rem">
-          <label style="font-size:.85rem;color:var(--bs-text-muted)">Alert delay</label>
-          <p style="font-size:.8rem">Wait this many minutes before sending any unavailable, dead-node, or offline alert. Devices that recover before the delay expires are silently ignored. A recovery alert is sent when the device comes back.</p>
+          <label style="font-size:.85rem;color:var(--bs-text-muted)" data-i18n="settings.notifications.delay_label">Alert delay</label>
+          <p style="font-size:.8rem" data-i18n="settings.notifications.delay_desc">Wait this many minutes before sending any unavailable, dead-node, or offline alert. Devices that recover before the delay expires are silently ignored. A recovery alert is sent when the device comes back.</p>
           <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
             <input type="number" id="setting-unavailable-delay" min="0" max="60" step="1"
               style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
-            <span style="color:var(--bs-text-muted);font-size:.9rem">minutes (0 = immediate)</span>
+            <span style="color:var(--bs-text-muted);font-size:.9rem" data-i18n="settings.notifications.delay_unit">minutes (0 = immediate)</span>
           </div>
         </div>
         <div class="notify-row" style="margin-bottom:.85rem;padding-left:1.6rem">
           <input type="checkbox" id="setting-suppress-unavailable-monitored">
-          <label for="setting-suppress-unavailable-monitored">Skip unavailable alerts for devices already covered by Z-Wave or Zigbee monitoring</label>
+          <label for="setting-suppress-unavailable-monitored" data-i18n="settings.notifications.suppress_label">Skip unavailable alerts for devices already covered by Z-Wave or Zigbee monitoring</label>
         </div>
         <div class="setting-row">
-          <label>Email notify service</label>
-          <p>Which HA notify service sends email alerts. Select a Gmail, SMTP, or similar email-capable service.</p>
+          <label data-i18n="settings.notifications.email_service_label">Email notify service</label>
+          <p data-i18n="settings.notifications.email_service_desc">Which HA notify service sends email alerts. Select a Gmail, SMTP, or similar email-capable service.</p>
           <select id="setting-notify-service">
-            <option value="">-- None --</option>
+            <option value="" data-i18n-value="settings.notifications.none_option">-- None --</option>
           </select>
         </div>
         <div class="setting-row">
-          <label>Default To address</label>
-          <input type="email" id="setting-notify-to" placeholder="you@example.com">
+          <label data-i18n="settings.notifications.email_to_label">Default To address</label>
+          <input type="email" id="setting-notify-to" placeholder="you@example.com" data-i18n-placeholder="settings.notifications.email_to_placeholder">
         </div>
         <div class="setting-row">
-          <label>CC addresses</label>
-          <p>Separate multiple addresses with commas.</p>
-          <input type="text" id="setting-notify-cc" placeholder="person@example.com, other@example.com">
+          <label data-i18n="settings.notifications.email_cc_label">CC addresses</label>
+          <p data-i18n="settings.notifications.email_cc_desc">Separate multiple addresses with commas.</p>
+          <input type="text" id="setting-notify-cc" placeholder="person@example.com, other@example.com" data-i18n-placeholder="settings.notifications.email_cc_placeholder">
         </div>
       </div>
     </div>
@@ -398,44 +403,44 @@
   <div id="stab-report" class="settings-subtab-panel">
     <div class="settings-grid">
       <div class="settings-card" style="flex: none;">
-        <h3>Daily Email Report</h3>
+        <h3 data-i18n="settings.report.title">Daily Email Report</h3>
         <div class="notify-row">
           <input type="checkbox" id="setting-daily-enabled">
-          <label for="setting-daily-enabled">Send daily battery report email</label>
+          <label for="setting-daily-enabled" data-i18n="settings.report.enabled_label">Send daily battery report email</label>
         </div>
         <div class="notify-row" style="margin-top:.25rem">
           <input type="checkbox" id="setting-daily-send-if-ok">
-          <label for="setting-daily-send-if-ok">Send report even when all batteries are OK</label>
+          <label for="setting-daily-send-if-ok" data-i18n="settings.report.send_if_ok_label">Send report even when all batteries are OK</label>
         </div>
         <div class="setting-row" style="margin-top:.85rem">
-          <label>Send time</label>
+          <label data-i18n="settings.report.time_label">Send time</label>
           <input type="time" id="setting-daily-time" style="max-width:130px" value="08:00">
         </div>
         <div class="setting-row">
-          <label>Send on</label>
+          <label data-i18n="settings.report.days_label">Send on</label>
           <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.25rem">
-            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-0"> Mon</label>
-            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-1"> Tue</label>
-            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-2"> Wed</label>
-            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-3"> Thu</label>
-            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-4"> Fri</label>
-            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-5"> Sat</label>
-            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-6"> Sun</label>
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-0"> <span data-i18n="settings.report.day.mon">Mon</span></label>
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-1"> <span data-i18n="settings.report.day.tue">Tue</span></label>
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-2"> <span data-i18n="settings.report.day.wed">Wed</span></label>
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-3"> <span data-i18n="settings.report.day.thu">Thu</span></label>
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-4"> <span data-i18n="settings.report.day.fri">Fri</span></label>
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-5"> <span data-i18n="settings.report.day.sat">Sat</span></label>
+            <label style="display:flex;align-items:center;gap:.25rem;font-size:.85rem"><input type="checkbox" id="setting-daily-day-6"> <span data-i18n="settings.report.day.sun">Sun</span></label>
           </div>
         </div>
         <div class="setting-row">
-          <label>Include in report</label>
+          <label data-i18n="settings.report.include_label">Include in report</label>
           <select id="setting-daily-include">
-            <option value="low">Low batteries only</option>
-            <option value="all">All batteries (full status)</option>
+            <option value="low" data-i18n-value="settings.report.include.low">Low batteries only</option>
+            <option value="all" data-i18n-value="settings.report.include.all">All batteries (full status)</option>
           </select>
         </div>
         <div class="notify-row" style="margin-top:.5rem">
           <input type="checkbox" id="setting-include-battery-type">
-          <label for="setting-include-battery-type">Include battery type in reports and notifications</label>
+          <label for="setting-include-battery-type" data-i18n="settings.report.include_type_label">Include battery type in reports and notifications</label>
         </div>
         <div class="scan-bar" style="margin-top:1rem">
-          <button class="btn btn-secondary" onclick="sendReportNow()">Send Email Report Now</button>
+          <button class="btn btn-secondary" onclick="sendReportNow()" data-i18n="settings.report.send_btn">Send Email Report Now</button>
           <span class="scan-status" id="report-status"></span>
         </div>
       </div>
@@ -445,50 +450,50 @@
   <div id="stab-monitoring" class="settings-subtab-panel">
     <div class="settings-grid">
       <div class="settings-card" style="max-width:560px">
-        <h3>Device Monitoring</h3>
+        <h3 data-i18n="settings.monitoring.title">Device Monitoring</h3>
         <div style="margin-bottom:1rem">
-          <div style="font-size:.78rem;font-weight:600;color:var(--bs-text-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em">Z-Wave</div>
+          <div style="font-size:.78rem;font-weight:600;color:var(--bs-text-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em" data-i18n="settings.monitoring.zwave_section">Z-Wave</div>
           <div class="notify-row" style="margin-bottom:.35rem">
             <input type="checkbox" id="setting-zwave-enabled">
-            <label for="setting-zwave-enabled">Alert when a Z-Wave node goes dead</label>
+            <label for="setting-zwave-enabled" data-i18n="settings.monitoring.zwave_alert_label">Alert when a Z-Wave node goes dead</label>
           </div>
-          <p style="font-size:.8rem;color:var(--bs-text-muted)">Monitors all <code>sensor.*_node_status</code> entities. Fires an alert when a node is reported dead by Z-Wave JS, and a recovery alert when it comes back online. Notification channels and mute periods are configured per-node in the Z-Wave tab.</p>
+          <p style="font-size:.8rem;color:var(--bs-text-muted)" data-i18n="settings.monitoring.zwave_alert_desc">Monitors all sensor.*_node_status entities. Fires an alert when a node is reported dead by Z-Wave JS, and a recovery alert when it comes back online. Notification channels and mute periods are configured per-node in the Z-Wave tab.</p>
           <div class="notify-row" style="margin-bottom:.35rem;margin-top:.5rem">
             <input type="checkbox" id="setting-zwave-ping-enabled">
-            <label for="setting-zwave-ping-enabled">Periodically ping Z-Wave nodes</label>
+            <label for="setting-zwave-ping-enabled" data-i18n="settings.monitoring.zwave_ping_label">Periodically ping Z-Wave nodes</label>
           </div>
-          <div style="font-size:.8rem;color:var(--bs-text-muted);padding-left:1.5rem">
+          <div style="font-size:.8rem;color:var(--bs-text-muted);padding-left:1.5rem" id="zwave-ping-interval-row">
             Every <input type="number" id="setting-zwave-ping-interval" min="10" max="120" style="width:3.5rem;background:var(--bs-input-bg);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.15rem .35rem;font-size:.8rem"> minutes. Pings alive nodes so Z-Wave JS detects failures faster. Sleeping (battery-powered) nodes are skipped.
           </div>
         </div>
         <div style="border-top:1px solid var(--bs-border);padding-top:1rem">
-          <div style="font-size:.78rem;font-weight:600;color:var(--bs-text-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em">Zigbee</div>
+          <div style="font-size:.78rem;font-weight:600;color:var(--bs-text-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em" data-i18n="settings.monitoring.zigbee_section">Zigbee</div>
           <div class="notify-row" style="margin-bottom:.35rem">
             <input type="checkbox" id="setting-zigbee-enabled">
-            <label for="setting-zigbee-enabled">Alert when a Zigbee device goes offline</label>
+            <label for="setting-zigbee-enabled" data-i18n="settings.monitoring.zigbee_alert_label">Alert when a Zigbee device goes offline</label>
           </div>
-          <p style="font-size:.8rem;color:var(--bs-text-muted);margin-bottom:.75rem">Monitors all <code>sensor.*_last_seen</code> entities created by Zigbee2MQTT. Requires last_seen to be enabled in Z2M and the Last Seen entities to be enabled in HA. Notification channels and mute periods are configured per-device in the Zigbee tab.</p>
+          <p style="font-size:.8rem;color:var(--bs-text-muted);margin-bottom:.75rem" data-i18n="settings.monitoring.zigbee_alert_desc">Monitors all sensor.*_last_seen entities created by Zigbee2MQTT. Requires last_seen to be enabled in Z2M and the Last Seen entities to be enabled in HA. Notification channels and mute periods are configured per-device in the Zigbee tab.</p>
           <div class="setting-row">
-            <label style="font-size:.85rem;color:var(--bs-text-muted)">Offline threshold</label>
-            <p style="font-size:.8rem">How many hours without a check-in before a device is considered offline. Set this higher than your Z2M availability timeout.</p>
+            <label style="font-size:.85rem;color:var(--bs-text-muted)" data-i18n="settings.monitoring.zigbee_threshold_label">Offline threshold</label>
+            <p style="font-size:.8rem" data-i18n="settings.monitoring.zigbee_threshold_desc">How many hours without a check-in before a device is considered offline. Set this higher than your Z2M availability timeout.</p>
             <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
               <input type="number" id="setting-zigbee-threshold" min="1" max="168" step="1"
                 style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
-              <span style="color:var(--bs-text-muted);font-size:.9rem">hours</span>
+              <span style="color:var(--bs-text-muted);font-size:.9rem" data-i18n="settings.monitoring.zigbee_threshold_unit">hours</span>
             </div>
           </div>
           <div class="setting-row">
-            <label style="font-size:.85rem;color:var(--bs-text-muted)">Scan interval</label>
-            <p style="font-size:.8rem">How often Battery Sentinel Plus checks Zigbee last_seen timestamps. Independent from the battery check interval.</p>
+            <label style="font-size:.85rem;color:var(--bs-text-muted)" data-i18n="settings.monitoring.zigbee_interval_label">Scan interval</label>
+            <p style="font-size:.8rem" data-i18n="settings.monitoring.zigbee_interval_desc">How often Battery Sentinel Plus checks Zigbee last_seen timestamps. Independent from the battery check interval.</p>
             <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
               <input type="number" id="setting-zigbee-interval" min="1" max="1440" step="1"
                 style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
-              <span style="color:var(--bs-text-muted);font-size:.9rem">minutes</span>
+              <span style="color:var(--bs-text-muted);font-size:.9rem" data-i18n="settings.monitoring.zigbee_interval_unit">minutes</span>
             </div>
           </div>
           <div style="margin-top:.85rem">
-            <p style="font-size:.8rem;color:var(--bs-text-muted);margin-bottom:.5rem">Triggers an immediate Zigbee Last Seen check without waiting for the next scan interval. Does not affect the battery or Z-Wave check cycles.</p>
-            <button class="btn btn-secondary" onclick="scanZigbeeFromSettings()" id="zigbee-settings-scan-btn">Scan Now</button>
+            <p style="font-size:.8rem;color:var(--bs-text-muted);margin-bottom:.5rem" data-i18n="settings.monitoring.zigbee_scan_desc">Triggers an immediate Zigbee Last Seen check without waiting for the next scan interval. Does not affect the battery or Z-Wave check cycles.</p>
+            <button class="btn btn-secondary" onclick="scanZigbeeFromSettings()" id="zigbee-settings-scan-btn" data-i18n="settings.monitoring.zigbee_scan_btn">Scan Now</button>
             <span id="zigbee-settings-scan-status" style="font-size:.85rem;color:var(--bs-text-muted);margin-left:.75rem"></span>
           </div>
         </div>
@@ -497,38 +502,38 @@
   </div>
 
   <div class="settings-footer">
-    <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+    <button class="btn btn-primary" onclick="saveSettings()" data-i18n="settings.save_btn">Save Settings</button>
     <span class="save-status" id="settings-status"></span>
   </div>
 </div>
 
 <div id="tab-zwave" class="tab-content">
-  <div id="zwave-content"><p class="loading">Loading Z-Wave nodes...</p></div>
+  <div id="zwave-content"><p class="loading" data-i18n="zwave.loading">Loading Z-Wave nodes...</p></div>
 </div>
 
 <div id="tab-zigbee" class="tab-content">
-  <div id="zigbee-content"><p class="loading">Loading Zigbee devices...</p></div>
+  <div id="zigbee-content"><p class="loading" data-i18n="zigbee.loading">Loading Zigbee devices...</p></div>
 </div>
 
 <div class="modal-overlay" id="about-modal">
   <div class="modal-box" style="max-width:420px">
     <div class="modal-header">
-      <h2>Help / About</h2>
+      <h2 data-i18n="about.title">Help / About</h2>
       <button class="modal-close" onclick="closeAbout()">×</button>
     </div>
     <div class="modal-body">
       <dl class="about-info" id="about-info">
-        <dt>Version</dt><dd id="about-version">...</dd>
-        <dt>HA Version</dt><dd id="about-ha-version">...</dd>
-        <dt>Mode</dt><dd id="about-mode">...</dd>
+        <dt data-i18n="about.version">Version</dt><dd id="about-version">...</dd>
+        <dt data-i18n="about.ha_version">HA Version</dt><dd id="about-ha-version">...</dd>
+        <dt data-i18n="about.mode">Mode</dt><dd id="about-mode">...</dd>
       </dl>
       <div class="about-links">
-        <a href="https://github.com/smcneece/battery-sentinel" target="_blank">GitHub Repository</a>
-        <a href="https://github.com/smcneece/battery-sentinel/blob/main/README.md" target="_blank">README / Documentation</a>
-        <a href="https://github.com/smcneece/battery-sentinel/blob/main/CHANGELOG.md" target="_blank">Changelog</a>
-        <a href="https://github.com/smcneece/battery-sentinel/issues/new?template=bug_report.md" target="_blank">Report an Issue</a>
-        <a href="https://github.com/smcneece/battery-sentinel/issues/new?template=feature_request.md" target="_blank">Request a Feature</a>
-        <a href="https://github.com/sponsors/smcneece" target="_blank" style="color:#db61a2">♥ Sponsor this project</a>
+        <a href="https://github.com/smcneece/battery-sentinel" target="_blank" data-i18n="about.link.repo">GitHub Repository</a>
+        <a href="https://github.com/smcneece/battery-sentinel/blob/main/README.md" target="_blank" data-i18n="about.link.readme">README / Documentation</a>
+        <a href="https://github.com/smcneece/battery-sentinel/blob/main/CHANGELOG.md" target="_blank" data-i18n="about.link.changelog">Changelog</a>
+        <a href="https://github.com/smcneece/battery-sentinel/issues/new?template=bug_report.md" target="_blank" data-i18n="about.link.report">Report an Issue</a>
+        <a href="https://github.com/smcneece/battery-sentinel/issues/new?template=feature_request.md" target="_blank" data-i18n="about.link.feature">Request a Feature</a>
+        <a href="https://github.com/sponsors/smcneece" target="_blank" style="color:#db61a2" data-i18n="about.link.sponsor">♥ Sponsor this project</a>
       </div>
     </div>
   </div>
@@ -546,49 +551,49 @@
     <div class="modal-body">
       <div class="field-row">
         <div class="field">
-          <label>Status</label>
+          <label data-i18n="zigbee.modal.status_label">Status</label>
           <div id="zigbee-modal-status" style="font-size:.9rem;padding:.25rem 0"></div>
         </div>
         <div class="field">
-          <label>Last Seen</label>
+          <label data-i18n="zigbee.modal.lastseen_label">Last Seen</label>
           <div id="zigbee-modal-lastseen" style="color:var(--bs-text-muted);font-size:.9rem;padding:.25rem 0"></div>
         </div>
         <div class="field">
-          <label>Room</label>
+          <label data-i18n="zigbee.modal.room_label">Room</label>
           <div id="zigbee-modal-area" style="color:var(--bs-text-muted);font-size:.9rem;padding:.25rem 0"></div>
         </div>
       </div>
       <div class="field">
-        <label>Mute notifications</label>
+        <label data-i18n="zigbee.modal.mute_label">Mute notifications</label>
         <select id="zigbee-modal-mute"></select>
       </div>
       <div class="field">
-        <label>Notes</label>
-        <textarea id="zigbee-modal-notes" placeholder="Optional notes about this device..."></textarea>
+        <label data-i18n="zigbee.modal.notes_label">Notes</label>
+        <textarea id="zigbee-modal-notes" placeholder="Optional notes about this device..." data-i18n-placeholder="zigbee.modal.notes_placeholder"></textarea>
       </div>
       <div class="field">
-        <label>Notifications</label>
+        <label data-i18n="zigbee.modal.notify_label">Notifications</label>
         <div style="display:flex;gap:1.25rem;margin-top:.25rem">
-          <label class="notify-check"><input type="checkbox" id="zigbee-modal-notify-bell"> UI (HA)</label>
-          <label class="notify-check"><input type="checkbox" id="zigbee-modal-notify-email"> Email</label>
-          <label class="notify-check"><input type="checkbox" id="zigbee-modal-notify-mobile"> Mobile</label>
+          <label class="notify-check"><input type="checkbox" id="zigbee-modal-notify-bell"> <span data-i18n="modal.notify.ui">UI (HA)</span></label>
+          <label class="notify-check"><input type="checkbox" id="zigbee-modal-notify-email"> <span data-i18n="modal.notify.email">Email</span></label>
+          <label class="notify-check"><input type="checkbox" id="zigbee-modal-notify-mobile"> <span data-i18n="modal.notify.mobile">Mobile</span></label>
         </div>
       </div>
       <div class="field">
-        <label>Email address override</label>
-        <input type="email" id="zigbee-modal-notify-addr" placeholder="Leave blank to use global default">
+        <label data-i18n="zigbee.modal.email_label">Email address override</label>
+        <input type="email" id="zigbee-modal-notify-addr" placeholder="Leave blank to use global default" data-i18n-placeholder="modal.email_override_placeholder">
       </div>
       <div class="field">
-        <label>Script trigger</label>
+        <label data-i18n="zigbee.modal.script_label">Script trigger</label>
         <select id="zigbee-modal-script">
-          <option value="">-- Use global default --</option>
-          <option value="__disabled__">-- Disabled for this device --</option>
+          <option value="" data-i18n-value="zigbee.modal.script_global">-- Use global default --</option>
+          <option value="__disabled__" data-i18n-value="zigbee.modal.script_disabled">-- Disabled for this device --</option>
         </select>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeZigbeeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveZigbeeNode()">Save</button>
+      <button class="btn btn-secondary" onclick="closeZigbeeModal()" data-i18n="zigbee.modal.cancel_btn">Cancel</button>
+      <button class="btn btn-primary" onclick="saveZigbeeNode()" data-i18n="zigbee.modal.save_btn">Save</button>
     </div>
   </div>
 </div>
@@ -604,98 +609,102 @@
       <button class="modal-close" onclick="closeModal()" title="Close">&times;</button>
     </div>
     <div class="modal-itabs">
-      <button class="modal-itab active" data-tab="details" onclick="switchModalTab('details')">Details</button>
-      <button class="modal-itab" data-tab="history" onclick="switchModalTab('history')">History</button>
+      <button class="modal-itab active" data-tab="details" onclick="switchModalTab('details')" data-i18n="modal.tab.details">Details</button>
+      <button class="modal-itab" data-tab="history" onclick="switchModalTab('history')" data-i18n="modal.tab.history">History</button>
     </div>
     <div id="modal-pane-details">
     <div class="modal-body">
       <div class="field-row">
         <div class="field">
-          <label>Battery Type</label>
-          <select id="modal-type"></select>
+          <label data-i18n="modal.battery_type_label">Battery Type</label>
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <input type="number" id="modal-quantity" min="1" max="99" style="max-width:55px" title="Number of batteries">
+            <span style="color:var(--bs-text-muted)">×</span>
+            <select id="modal-type" style="flex:1"></select>
+          </div>
         </div>
         <div class="field">
-          <label>Alert Threshold</label>
+          <label data-i18n="modal.threshold_label">Alert Threshold</label>
           <div id="modal-threshold-numeric" style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
             <input type="number" id="modal-threshold" min="1" max="99" style="max-width:80px"> %
             <label style="font-size:.9rem;display:flex;align-items:center;gap:.3rem">
               <input type="checkbox" id="modal-threshold-ignore"
                 onchange="const n=document.getElementById('modal-threshold');n.disabled=this.checked;n.style.opacity=this.checked?'0.4':'1'">
-              Ignore
+              <span data-i18n="modal.threshold_ignore">Ignore</span>
             </label>
           </div>
           <select id="modal-threshold-binary" style="display:none">
-            <option value="15">Monitor</option>
-            <option value="-1">Ignore</option>
+            <option value="15" data-i18n-value="modal.threshold_monitor">Monitor</option>
+            <option value="-1" data-i18n-value="modal.threshold_ignore">Ignore</option>
           </select>
         </div>
       </div>
       <div class="field">
-        <label>Notes</label>
-        <textarea id="modal-notes" placeholder="Optional notes about this device or its battery..."></textarea>
+        <label data-i18n="modal.notes_label">Notes</label>
+        <textarea id="modal-notes" placeholder="Optional notes about this device or its battery..." data-i18n-placeholder="modal.notes_placeholder"></textarea>
       </div>
       <div class="field">
-        <label>Mute battery level notifications</label>
+        <label data-i18n="modal.mute_label">Mute battery level notifications</label>
         <select id="modal-mute-select">
-          <option value="">Not muted</option>
-          <option value="1h">1 hour</option>
-          <option value="3h">3 hours</option>
-          <option value="8h">8 hours</option>
-          <option value="1d">1 day</option>
-          <option value="3d">3 days</option>
-          <option value="7d">1 week</option>
+          <option value="" data-i18n-value="modal.mute.not_muted">Not muted</option>
+          <option value="1h" data-i18n-value="modal.mute.1h">1 hour</option>
+          <option value="3h" data-i18n-value="modal.mute.3h">3 hours</option>
+          <option value="8h" data-i18n-value="modal.mute.8h">8 hours</option>
+          <option value="1d" data-i18n-value="modal.mute.1d">1 day</option>
+          <option value="3d" data-i18n-value="modal.mute.3d">3 days</option>
+          <option value="7d" data-i18n-value="modal.mute.7d">1 week</option>
         </select>
       </div>
       <div class="field">
-        <label>Battery level notifications</label>
+        <label data-i18n="modal.notify_label">Battery level notifications</label>
         <div style="display:flex;gap:1.25rem;margin-top:.25rem">
-          <label class="notify-check"><input type="checkbox" id="modal-notify-bell"> UI (HA)</label>
-          <label class="notify-check"><input type="checkbox" id="modal-notify-email"> Email</label>
-          <label class="notify-check"><input type="checkbox" id="modal-notify-mobile"> Mobile</label>
+          <label class="notify-check"><input type="checkbox" id="modal-notify-bell"> <span data-i18n="modal.notify.ui">UI (HA)</span></label>
+          <label class="notify-check"><input type="checkbox" id="modal-notify-email"> <span data-i18n="modal.notify.email">Email</span></label>
+          <label class="notify-check"><input type="checkbox" id="modal-notify-mobile"> <span data-i18n="modal.notify.mobile">Mobile</span></label>
         </div>
       </div>
       <div class="field">
         <div class="notify-row">
           <input type="checkbox" id="modal-notify-unavailable">
-          <label for="modal-notify-unavailable" style="font-size:.85rem">Send unavailable notifications</label>
+          <label for="modal-notify-unavailable" style="font-size:.85rem" data-i18n="modal.notify_unavailable_label">Send unavailable notifications</label>
         </div>
       </div>
       <div class="field">
-        <label>Email address override</label>
-        <input type="email" id="modal-notify-addr" placeholder="Leave blank to use global default">
+        <label data-i18n="modal.email_override_label">Email address override</label>
+        <input type="email" id="modal-notify-addr" placeholder="Leave blank to use global default" data-i18n-placeholder="modal.email_override_placeholder">
       </div>
       <div class="field">
-        <label>Mobile app notification</label>
+        <label data-i18n="modal.mobile_label">Mobile app notification</label>
         <select id="modal-mobile-service">
-          <option value="">-- Disabled --</option>
+          <option value="" data-i18n-value="modal.mobile_disabled">-- Disabled --</option>
         </select>
       </div>
       <div class="field">
-        <label>Script trigger</label>
+        <label data-i18n="modal.script_label">Script trigger</label>
         <select id="modal-notify-script">
-          <option value="">-- Use global default --</option>
-          <option value="__disabled__">-- Disabled for this device --</option>
+          <option value="" data-i18n-value="modal.script_global">-- Use global default --</option>
+          <option value="__disabled__" data-i18n-value="modal.script_disabled">-- Disabled for this device --</option>
         </select>
       </div>
       <div class="field">
-        <label>Last Replaced</label>
+        <label data-i18n="modal.last_replaced_label">Last Replaced</label>
         <input type="date" id="modal-replaced">
       </div>
-      <button class="btn btn-replaced" onclick="markReplacedToday()">Replaced / Recharged Today</button>
+      <button class="btn btn-replaced" onclick="markReplacedToday()" data-i18n="modal.replaced_btn">Replaced / Recharged Today</button>
     </div>
     <div class="modal-footer" style="display:block;padding:.85rem 1.25rem">
       <div id="modal-footer-normal" style="display:flex;justify-content:space-between;align-items:center">
-        <button class="btn btn-danger" onclick="confirmDelete()">Hide</button>
+        <button class="btn btn-danger" onclick="confirmDelete()" data-i18n="modal.hide_btn">Hide</button>
         <div style="display:flex;gap:.5rem">
-          <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-          <button class="btn btn-primary" onclick="saveDevice()">Save</button>
+          <button class="btn btn-secondary" onclick="closeModal()" data-i18n="modal.cancel_btn">Cancel</button>
+          <button class="btn btn-primary" onclick="saveDevice()" data-i18n="modal.save_btn">Save</button>
         </div>
       </div>
       <div id="modal-footer-confirm" style="display:none;justify-content:space-between;align-items:center">
-        <span style="color:var(--bs-crit);font-size:.85rem">Hide this device?</span>
+        <span style="color:var(--bs-crit);font-size:.85rem" data-i18n="modal.confirm_hide">Hide this device?</span>
         <div style="display:flex;gap:.5rem">
-          <button class="btn btn-secondary" onclick="cancelDelete()">Keep</button>
-          <button class="btn btn-danger" onclick="deleteDevice()">Yes, Hide</button>
+          <button class="btn btn-secondary" onclick="cancelDelete()" data-i18n="modal.confirm_keep">Keep</button>
+          <button class="btn btn-danger" onclick="deleteDevice()" data-i18n="modal.confirm_yes_hide">Yes, Hide</button>
         </div>
       </div>
     </div>
@@ -708,16 +717,16 @@
           <button class="btn btn-secondary history-range" data-days="90"  onclick="loadHistory(90)">90d</button>
           <button class="btn btn-secondary history-range" data-days="180" onclick="loadHistory(180)">6m</button>
           <button class="btn btn-secondary history-range" data-days="365" onclick="loadHistory(365)">1y</button>
-          <button class="btn btn-secondary history-range" id="history-custom-btn" data-days="" onclick="toggleCustomRange()">Custom</button>
+          <button class="btn btn-secondary history-range" id="history-custom-btn" data-days="" onclick="toggleCustomRange()" data-i18n="history.custom_btn">Custom</button>
         </div>
         <div id="history-custom-row" style="display:none;gap:.5rem;align-items:center;justify-content:flex-end;margin-bottom:.75rem">
           <input type="date" id="history-start" class="history-date">
-          <span style="color:var(--bs-text-muted);font-size:.85rem">to</span>
+          <span style="color:var(--bs-text-muted);font-size:.85rem" data-i18n="history.custom_to">to</span>
           <input type="date" id="history-end" class="history-date">
-          <button class="btn btn-primary" style="padding:.25rem .65rem;font-size:.8rem;white-space:nowrap" onclick="applyCustomRange()">Apply</button>
+          <button class="btn btn-primary" style="padding:.25rem .65rem;font-size:.8rem;white-space:nowrap" onclick="applyCustomRange()" data-i18n="history.custom_apply">Apply</button>
         </div>
-        <div id="history-loading" style="text-align:center;color:var(--bs-text-muted);padding:2.5rem 0;display:none">Loading history...</div>
-        <div id="history-empty"   style="text-align:center;color:var(--bs-text-muted);padding:2.5rem 0;display:none">No history data available.</div>
+        <div id="history-loading" style="text-align:center;color:var(--bs-text-muted);padding:2.5rem 0;display:none" data-i18n="history.loading">Loading history...</div>
+        <div id="history-empty"   style="text-align:center;color:var(--bs-text-muted);padding:2.5rem 0;display:none" data-i18n="history.empty">No history data available.</div>
         <canvas id="history-chart" style="display:none"></canvas>
       </div>
     </div><!-- end modal-pane-history -->
@@ -727,17 +736,17 @@
 <div class="modal-overlay" id="conflict-modal">
   <div class="modal-box" style="width:600px;max-width:95vw">
     <div class="modal-header">
-      <h2>Battery Type Conflicts</h2>
+      <h2 data-i18n="conflict.title">Battery Type Conflicts</h2>
       <button class="modal-close" onclick="closeConflictModal()">&times;</button>
     </div>
     <div class="modal-body" style="padding:0;gap:0">
-      <p style="padding:1rem 1.25rem .5rem;color:var(--bs-text-muted);font-size:.85rem">These devices already have a battery type set that differs from the database. Choose which to keep for each one.</p>
+      <p style="padding:1rem 1.25rem .5rem;color:var(--bs-text-muted);font-size:.85rem" data-i18n="conflict.desc">These devices already have a battery type set that differs from the database. Choose which to keep for each one.</p>
       <div id="conflict-list"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="keepAllConflicts()">Keep All Mine</button>
-      <button class="btn btn-primary" onclick="useAllConflicts()">Use All Database</button>
-      <button class="btn btn-secondary" onclick="closeConflictModal()">Close</button>
+      <button class="btn btn-secondary" onclick="keepAllConflicts()" data-i18n="conflict.keep_all">Keep All Mine</button>
+      <button class="btn btn-primary" onclick="useAllConflicts()" data-i18n="conflict.use_all">Use All Database</button>
+      <button class="btn btn-secondary" onclick="closeConflictModal()" data-i18n="conflict.close">Close</button>
     </div>
   </div>
 </div>
@@ -754,45 +763,45 @@
     <div class="modal-body">
       <div class="field-row">
         <div class="field">
-          <label>Status</label>
+          <label data-i18n="zwave.modal.status_label">Status</label>
           <div id="zwave-modal-status" style="font-size:.9rem;padding:.25rem 0"></div>
         </div>
         <div class="field">
-          <label>Room</label>
+          <label data-i18n="zwave.modal.room_label">Room</label>
           <div id="zwave-modal-area" style="color:var(--bs-text-muted);font-size:.9rem;padding:.25rem 0"></div>
         </div>
       </div>
       <div class="field">
-        <label>Mute notifications</label>
+        <label data-i18n="zwave.modal.mute_label">Mute notifications</label>
         <select id="zwave-modal-mute"></select>
       </div>
       <div class="field">
-        <label>Notes</label>
-        <textarea id="zwave-modal-notes" placeholder="Optional notes about this node..."></textarea>
+        <label data-i18n="zwave.modal.notes_label">Notes</label>
+        <textarea id="zwave-modal-notes" placeholder="Optional notes about this node..." data-i18n-placeholder="zwave.modal.notes_placeholder"></textarea>
       </div>
       <div class="field">
-        <label>Notifications</label>
+        <label data-i18n="zwave.modal.notify_label">Notifications</label>
         <div style="display:flex;gap:1.25rem;margin-top:.25rem">
-          <label class="notify-check"><input type="checkbox" id="zwave-modal-notify-bell"> UI (HA)</label>
-          <label class="notify-check"><input type="checkbox" id="zwave-modal-notify-email"> Email</label>
-          <label class="notify-check"><input type="checkbox" id="zwave-modal-notify-mobile"> Mobile</label>
+          <label class="notify-check"><input type="checkbox" id="zwave-modal-notify-bell"> <span data-i18n="modal.notify.ui">UI (HA)</span></label>
+          <label class="notify-check"><input type="checkbox" id="zwave-modal-notify-email"> <span data-i18n="modal.notify.email">Email</span></label>
+          <label class="notify-check"><input type="checkbox" id="zwave-modal-notify-mobile"> <span data-i18n="modal.notify.mobile">Mobile</span></label>
         </div>
       </div>
       <div class="field">
-        <label>Email address override</label>
-        <input type="email" id="zwave-modal-notify-addr" placeholder="Leave blank to use global default">
+        <label data-i18n="zwave.modal.email_label">Email address override</label>
+        <input type="email" id="zwave-modal-notify-addr" placeholder="Leave blank to use global default" data-i18n-placeholder="modal.email_override_placeholder">
       </div>
       <div class="field">
-        <label>Script trigger</label>
+        <label data-i18n="zwave.modal.script_label">Script trigger</label>
         <select id="zwave-modal-script">
-          <option value="">-- Use global default --</option>
-          <option value="__disabled__">-- Disabled for this node --</option>
+          <option value="" data-i18n-value="zwave.modal.script_global">-- Use global default --</option>
+          <option value="__disabled__" data-i18n-value="zwave.modal.script_disabled">-- Disabled for this node --</option>
         </select>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeZwaveModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveZwaveNode()">Save</button>
+      <button class="btn btn-secondary" onclick="closeZwaveModal()" data-i18n="zwave.modal.cancel_btn">Cancel</button>
+      <button class="btn btn-primary" onclick="saveZwaveNode()" data-i18n="zwave.modal.save_btn">Save</button>
     </div>
   </div>
 </div>
@@ -801,18 +810,69 @@
 const BASE = "{{BASE}}";
 function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
 
+// ── i18n ──────────────────────────────────────────────────────────────
+let _locale = {};
+let _enLocale = {};
+const _i18nLang = localStorage.getItem('bs_language') || (navigator.language || 'en').split('-')[0];
+
+async function loadLocale() {
+  try {
+    const r = await fetch(`${BASE}/locales/${_i18nLang}.json`);
+    if (r.ok) _locale = await r.json();
+  } catch {}
+  if (_i18nLang !== 'en') {
+    try {
+      const r = await fetch(`${BASE}/locales/en.json`);
+      if (r.ok) _enLocale = await r.json();
+    } catch {}
+  } else {
+    _enLocale = _locale;
+  }
+}
+
+function t(key, vars = {}) {
+  let str = _locale[key] ?? _enLocale[key] ?? key;
+  for (const [k, v] of Object.entries(vars)) str = str.replaceAll(`{${k}}`, v);
+  return str;
+}
+
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
+  document.querySelectorAll('[data-i18n-value]').forEach(el => { el.value = t(el.dataset.i18nValue); });
+}
+
+const _availableLanguages = [
+  { code: 'en', label: 'English' },
+  { code: 'de', label: 'Deutsch' },
+  { code: 'es', label: 'Español' },
+  { code: 'fr', label: 'Français' },
+  { code: 'it', label: 'Italiano' },
+  { code: 'nl', label: 'Nederlands' },
+  { code: 'pl', label: 'Polski' },
+  { code: 'pt', label: 'Português' },
+  { code: 'sv', label: 'Svenska' },
+  { code: 'zh', label: '中文' },
+];
+
+function changeLanguage(lang) {
+  localStorage.setItem('bs_language', lang);
+  location.reload();
+}
+
 async function openAbout() {
   document.getElementById('about-modal').classList.add('open');
   try {
     const r = await fetch(BASE + '/api/about');
     const d = await r.json();
-    document.getElementById('about-version').textContent    = d.version    || 'Unknown';
-    document.getElementById('about-ha-version').textContent = d.ha_version || 'Unknown';
-    document.getElementById('about-mode').textContent       = d.mode       || 'Unknown';
+    document.getElementById('about-version').textContent    = d.version    || t('about.unknown');
+    document.getElementById('about-ha-version').textContent = d.ha_version || t('about.unknown');
+    document.getElementById('about-mode').textContent       = d.mode       || t('about.unknown');
   } catch(e) {
-    document.getElementById('about-version').textContent    = 'Unavailable';
-    document.getElementById('about-ha-version').textContent = 'Unavailable';
-    document.getElementById('about-mode').textContent       = 'Unavailable';
+    document.getElementById('about-version').textContent    = t('about.unavailable');
+    document.getElementById('about-ha-version').textContent = t('about.unavailable');
+    document.getElementById('about-mode').textContent       = t('about.unavailable');
   }
 }
 function closeAbout() { document.getElementById('about-modal').classList.remove('open'); }
@@ -1001,12 +1061,12 @@ function sortKey(d, col) {
 
 function levelCell(d) {
   if (d.state === "unavailable" || d.state === "unknown") {
-    return `<span class="pct muted">N/A</span>
+    return `<span class="pct muted">${t('device.level.na')}</span>
             <span class="bar-wrap"><span class="bar" style="width:0%;background:var(--bs-text-dim)"></span></span>`;
   }
   if (d.entity_id.startsWith("binary_sensor.")) {
     const low = d.state === "on";
-    return `<span class="pct ${low ? 'critical' : 'ok'}">${low ? 'Low' : 'OK  '}</span>
+    return `<span class="pct ${low ? 'critical' : 'ok'}">${low ? t('device.level.low') : t('device.level.ok')}</span>
             <span class="bar-wrap"><span class="bar" style="width:100%;background:${low?'var(--bs-crit)':'var(--bs-ok)'}"></span></span>`;
   }
   const pct = parseFloat(d.state);
@@ -1037,7 +1097,7 @@ function renderTable() {
   if (applyBtn) {
     if (typeF) {
       const cnt = textFiltered.length;
-      applyBtn.textContent = `Apply "${typeF}" to ${cnt} device${cnt !== 1 ? 's' : ''}`;
+      applyBtn.textContent = t('toolbar.apply_type_btn', {type: typeF, count: cnt});
       applyBtn.style.display = '';
     } else {
       applyBtn.style.display = 'none';
@@ -1047,8 +1107,8 @@ function renderTable() {
   if (thrApplyBtn) {
     if (_thresholdApply) {
       const cnt = textFiltered.length;
-      const label = _thresholdApply === '-1' ? 'Ignore' : `${_thresholdApply}%`;
-      thrApplyBtn.textContent = `Set ${label} for ${cnt} device${cnt !== 1 ? 's' : ''}`;
+      const label = _thresholdApply === '-1' ? t('toolbar.threshold_ignore') : `${_thresholdApply}%`;
+      thrApplyBtn.textContent = t('toolbar.apply_threshold_btn', {label, count: cnt});
       thrApplyBtn.style.display = '';
     } else {
       thrApplyBtn.style.display = 'none';
@@ -1067,10 +1127,10 @@ function renderTable() {
 
   const thrOptions = val => [5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95].map(n =>
     `<option value="${n}"${val===n?' selected':''}>${n}%</option>`
-  ).join('') + `<option value="-1"${val===-1?' selected':''}>Ignore</option>`;
+  ).join('') + `<option value="-1"${val===-1?' selected':''}>${t('device.threshold.ignore')}</option>`;
 
   const typeOptions = val => '<option value="">—</option>' +
-    types.map(t => `<option value="${t}"${val===t?' selected':''}>${t}</option>`).join('') +
+    types.map(tp => `<option value="${tp}"${val===tp?' selected':''}>${tp}</option>`).join('') +
     (val && !types.includes(val) ? `<option value="${val}" selected>${val}</option>` : '');
 
   const rows = sorted.map(d => {
@@ -1078,12 +1138,12 @@ function renderTable() {
     const dim      = ignored ? ' style="opacity:.4"' : '';
     const isBinary = d.entity_id.startsWith("binary_sensor.");
     const thrCell  = isBinary
-      ? `<option value="15"${d.alert_threshold !== -1 ? ' selected' : ''}>Monitor</option>
-         <option value="-1"${d.alert_threshold === -1 ? ' selected' : ''}>Ignore</option>`
+      ? `<option value="15"${d.alert_threshold !== -1 ? ' selected' : ''}>${t('device.threshold.monitor')}</option>
+         <option value="-1"${d.alert_threshold === -1 ? ' selected' : ''}>${t('device.threshold.ignore')}</option>`
       : thrOptions(d.alert_threshold);
     const scriptLabel = (() => {
       const ds = d.notify_script || '';
-      if (ds === '__disabled__') return '<span class="muted">Off</span>';
+      if (ds === '__disabled__') return `<span class="muted">${t('device.script.off')}</span>`;
       if (ds) { const s = _scripts.find(x => x.entity_id === ds); return `<span style="color:var(--bs-text-muted);font-size:.8rem">${esc(s ? s.name : ds)}</span>`; }
       const gs = _settings.notify_script || '';
       if (gs) { const s = _scripts.find(x => x.entity_id === gs); return `<span class="muted" style="font-size:.8rem">${esc(s ? s.name : gs)}</span>`; }
@@ -1091,9 +1151,9 @@ function renderTable() {
     })();
     const isMuted = d.muted_until && new Date(d.muted_until) > new Date();
     return `<tr class="device-row" data-eid="${d.entity_id}"${dim}>
-      <td data-col="name">${esc(d.name)}${isMuted ? ` <span title="Notifications muted" style="color:var(--bs-text-dim);font-size:.8rem">&#x1F515; <span style="color:var(--bs-text-dim)">(${muteRemaining(d.muted_until)})</span></span>` : ''}</td>
+      <td data-col="name">${esc(d.name)}${isMuted ? ` <span title="${t('device.muted_title')}" style="color:var(--bs-text-dim);font-size:.8rem">&#x1F515; <span style="color:var(--bs-text-dim)">(${muteRemaining(d.muted_until)})</span></span>` : ''}</td>
       ${v.level  ? `<td data-col="level" title="View history" onclick="event.stopPropagation();openModal('${d.entity_id}','history')">${levelCell(d)}</td>` : ''}
-      ${v.btype  ? `<td data-col="btype" onclick="event.stopPropagation()"><select class="inline-select" data-eid="${d.entity_id}" data-field="battery_type">${typeOptions(d.battery_type||'')}</select></td>` : ''}
+      ${v.btype  ? `<td data-col="btype" onclick="event.stopPropagation()" style="white-space:nowrap">${(d.battery_quantity||1)>1?`<span style="color:var(--bs-text-muted);font-size:.82rem;margin-right:.3rem">${d.battery_quantity}×</span>`:''}<select class="inline-select" data-eid="${d.entity_id}" data-field="battery_type">${typeOptions(d.battery_type||'')}</select></td>` : ''}
       ${v.alert  ? `<td data-col="alert" onclick="event.stopPropagation()"><select class="inline-select" data-eid="${d.entity_id}">${thrCell}</select></td>` : ''}
       ${v.notify ? `<td data-col="notify" onclick="event.stopPropagation()">
         <label class="notify-check"><input type="checkbox" data-eid="${d.entity_id}" data-field="notify_bell" ${d.notify_bell !== false ? 'checked' : ''}> UI</label>
@@ -1125,19 +1185,19 @@ function renderTable() {
   document.getElementById("content").innerHTML = `<table>
     <colgroup>${cg}</colgroup>
     <thead><tr>
-      <th data-col="name" class="${thCls('name')}">Device <span style="color:var(--bs-text-dim);font-weight:normal;font-size:.8rem">(${_devices.length})</span>${arrow('name')}<span class="resize-handle" data-col="name"></span></th>
-      ${v.level  ? `<th data-col="level" class="${thCls('level')}">Level${arrow('level')}<span class="resize-handle" data-col="level"></span></th>` : ''}
-      ${v.btype  ? `<th data-col="btype" onclick="event.stopPropagation()">Battery Type
+      <th data-col="name" class="${thCls('name')}">${t('device.col.device')} <span style="color:var(--bs-text-dim);font-weight:normal;font-size:.8rem">(${_devices.length})</span>${arrow('name')}<span class="resize-handle" data-col="name"></span></th>
+      ${v.level  ? `<th data-col="level" class="${thCls('level')}">${t('device.col.level')}${arrow('level')}<span class="resize-handle" data-col="level"></span></th>` : ''}
+      ${v.btype  ? `<th data-col="btype" onclick="event.stopPropagation()">${t('device.col.battery_type')}
         <select class="inline-select" style="margin-left:.4rem;font-size:.75rem" onchange="setBtypeFilter(this.value)" onclick="event.stopPropagation()">
-          <option value="">All</option>
-          <option value="__unassigned__"${_btypeFilter==='__unassigned__'?' selected':''}>Unassigned</option>
-          ${types.map(t=>`<option value="${t}"${_btypeFilter===t?' selected':''}>${t}</option>`).join('')}
+          <option value="">${t('device.col.battery_type_all')}</option>
+          <option value="__unassigned__"${_btypeFilter==='__unassigned__'?' selected':''}>${t('device.col.battery_type_unassigned')}</option>
+          ${types.map(tp=>`<option value="${tp}"${_btypeFilter===tp?' selected':''}>${tp}</option>`).join('')}
         </select>
         <span class="resize-handle" data-col="btype"></span></th>` : ''}
-      ${v.alert  ? `<th data-col="alert">Alert Threshold<span class="resize-handle" data-col="alert"></span></th>` : ''}
+      ${v.alert  ? `<th data-col="alert">${t('device.col.alert')}<span class="resize-handle" data-col="alert"></span></th>` : ''}
       ${notifyHdr}
-      ${v.script ? `<th data-col="script">Script<span class="resize-handle" data-col="script"></span></th>` : ''}
-      ${v.area   ? `<th data-col="area" class="${thCls('area')}">Room${arrow('area')}<span class="resize-handle" data-col="area"></span></th>` : ''}
+      ${v.script ? `<th data-col="script">${t('device.col.script')}<span class="resize-handle" data-col="script"></span></th>` : ''}
+      ${v.area   ? `<th data-col="area" class="${thCls('area')}">${t('device.col.room')}${arrow('area')}<span class="resize-handle" data-col="area"></span></th>` : ''}
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
@@ -1217,8 +1277,8 @@ function renderTypeFilter() {
   if (!sel) return;
   const cur = sel.value;
   const types = _settings.battery_types || [];
-  sel.innerHTML = '<option value="">-- Apply Type --</option>' +
-    types.map(t => `<option value="${t}"${cur===t?' selected':''}>${t}</option>`).join('');
+  sel.innerHTML = `<option value="">${t('toolbar.apply_type_option')}</option>` +
+    types.map(tp => `<option value="${tp}"${cur===tp?' selected':''}>${tp}</option>`).join('');
   _typeFilter = sel.value;
 }
 
@@ -1239,7 +1299,7 @@ async function applyTypeToVisible() {
   const targets = query ? _devices.filter(d => d.name.toLowerCase().includes(query)) : _devices;
   const type = _typeFilter;
   if (!type || !targets.length) return;
-  if (!confirm(`Set battery type to "${type}" for ${targets.length} device${targets.length !== 1 ? 's' : ''}?\n\nThis will overwrite any existing type.`)) return;
+  if (!confirm(t('confirm.apply_type', {type, count: targets.length}))) return;
   await Promise.allSettled(targets.map(async d => {
     const idx = _devices.findIndex(x => x.entity_id === d.entity_id);
     if (idx !== -1) _devices[idx].battery_type = type;
@@ -1258,8 +1318,8 @@ async function applyThresholdToVisible() {
   const targets = query ? _devices.filter(d => d.name.toLowerCase().includes(query)) : _devices;
   const thr = _thresholdApply;
   if (!thr || !targets.length) return;
-  const label = thr === '-1' ? 'Ignore' : `${thr}%`;
-  if (!confirm(`Set alert threshold to "${label}" for ${targets.length} device${targets.length !== 1 ? 's' : ''}?\n\nThis will overwrite any existing threshold.`)) return;
+  const label = thr === '-1' ? t('device.threshold.ignore') : `${thr}%`;
+  if (!confirm(t('confirm.apply_threshold', {label, count: targets.length}))) return;
   const thrInt = parseInt(thr, 10);
   await Promise.allSettled(targets.map(async d => {
     const idx = _devices.findIndex(x => x.entity_id === d.entity_id);
@@ -1297,23 +1357,23 @@ function openModal(eid, tab = 'details') {
   const mu = d.muted_until ? new Date(d.muted_until) : null;
   if (mu && mu > new Date()) {
     muteEl.innerHTML =
-      `<option value="current" selected>Muted until ${mu.toLocaleString()}</option>` +
-      `<option value="">Unmute</option>` +
-      `<option value="1h">Extend: 1 hour from now</option>` +
-      `<option value="3h">Extend: 3 hours from now</option>` +
-      `<option value="8h">Extend: 8 hours from now</option>` +
-      `<option value="1d">Extend: 1 day from now</option>` +
-      `<option value="3d">Extend: 3 days from now</option>` +
-      `<option value="7d">Extend: 1 week from now</option>`;
+      `<option value="current" selected>${t('modal.mute.current', {time: mu.toLocaleString()})}</option>` +
+      `<option value="">${t('modal.mute.unmute')}</option>` +
+      `<option value="1h">${t('modal.mute.extend.1h')}</option>` +
+      `<option value="3h">${t('modal.mute.extend.3h')}</option>` +
+      `<option value="8h">${t('modal.mute.extend.8h')}</option>` +
+      `<option value="1d">${t('modal.mute.extend.1d')}</option>` +
+      `<option value="3d">${t('modal.mute.extend.3d')}</option>` +
+      `<option value="7d">${t('modal.mute.extend.7d')}</option>`;
   } else {
     muteEl.innerHTML =
-      `<option value="">Not muted</option>` +
-      `<option value="1h">1 hour</option>` +
-      `<option value="3h">3 hours</option>` +
-      `<option value="8h">8 hours</option>` +
-      `<option value="1d">1 day</option>` +
-      `<option value="3d">3 days</option>` +
-      `<option value="7d">1 week</option>`;
+      `<option value="">${t('modal.mute.not_muted')}</option>` +
+      `<option value="1h">${t('modal.mute.1h')}</option>` +
+      `<option value="3h">${t('modal.mute.3h')}</option>` +
+      `<option value="8h">${t('modal.mute.8h')}</option>` +
+      `<option value="1d">${t('modal.mute.1d')}</option>` +
+      `<option value="3d">${t('modal.mute.3d')}</option>` +
+      `<option value="7d">${t('modal.mute.7d')}</option>`;
   }
 
   const thr = d.alert_threshold !== undefined ? d.alert_threshold : (_settings.default_threshold || 20);
@@ -1337,11 +1397,12 @@ function openModal(eid, tab = 'details') {
 
   const types = _settings.battery_types || [];
   const typeEl = document.getElementById("modal-type");
-  typeEl.innerHTML = '<option value="">-- Not set --</option>' +
-    types.map(t => `<option value="${t}"${d.battery_type === t ? ' selected' : ''}>${t}</option>`).join('');
+  typeEl.innerHTML = `<option value="">${t('modal.battery_type_not_set')}</option>` +
+    types.map(tp => `<option value="${tp}"${d.battery_type === tp ? ' selected' : ''}>${tp}</option>`).join('');
   if (d.battery_type && !types.includes(d.battery_type)) {
-    typeEl.innerHTML += `<option value="${d.battery_type}" selected>${d.battery_type} (custom)</option>`;
+    typeEl.innerHTML += `<option value="${d.battery_type}" selected>${t('modal.battery_type_custom', {type: d.battery_type})}</option>`;
   }
+  document.getElementById("modal-quantity").value = d.battery_quantity || 1;
 
   document.getElementById("modal-notify-bell").checked        = d.notify_bell  !== false;
   document.getElementById("modal-notify-email").checked       = d.notify_email !== false;
@@ -1351,16 +1412,16 @@ function openModal(eid, tab = 'details') {
 
   const mobileEl  = document.getElementById("modal-mobile-service");
   const mobileSvcs = _notifyServices.filter(s => s.startsWith("mobile_app_"));
-  mobileEl.innerHTML = '<option value="">-- Disabled --</option>' +
+  mobileEl.innerHTML = `<option value="">${t('modal.mobile_disabled')}</option>` +
     mobileSvcs.map(s => `<option value="${s}"${d.notify_mobile_service === s ? ' selected' : ''}>${s.replace('mobile_app_', '')}</option>`).join('');
   if (d.notify_mobile_service && !mobileSvcs.includes(d.notify_mobile_service)) {
-    mobileEl.innerHTML += `<option value="${d.notify_mobile_service}" selected>${d.notify_mobile_service} (not found)</option>`;
+    mobileEl.innerHTML += `<option value="${d.notify_mobile_service}" selected>${t('modal.mobile_not_found', {service: d.notify_mobile_service})}</option>`;
   }
 
   const scriptEl = document.getElementById("modal-notify-script");
   scriptEl.innerHTML =
-    '<option value="">-- Use global default --</option>' +
-    '<option value="__disabled__">-- Disabled for this device --</option>' +
+    `<option value="">${t('modal.script_global')}</option>` +
+    `<option value="__disabled__">${t('modal.script_disabled')}</option>` +
     _scripts.map(s => `<option value="${s.entity_id}"${d.notify_script === s.entity_id ? ' selected' : ''}>${s.name}</option>`).join('');
   if (d.notify_script === '__disabled__') scriptEl.value = '__disabled__';
   else if (!d.notify_script) scriptEl.value = '';
@@ -1434,7 +1495,7 @@ async function _renderHistory(url) {
     loadingEl.style.display = 'none';
 
     if (!d.points || d.points.length === 0) {
-      emptyEl.textContent = 'No history data available for this device.';
+      emptyEl.textContent = t('history.empty_device');
       emptyEl.style.display = 'block';
       return;
     }
@@ -1457,7 +1518,7 @@ async function _renderHistory(url) {
     const lineColor = lastVal <= 10 ? '#db4437' : lastVal <= 25 ? '#ffa600' : '#43a047';
 
     const datasets = [{
-      label: 'Battery',
+      label: t('history.dataset.battery'),
       data: values,
       borderColor: lineColor,
       backgroundColor: lineColor + '22',
@@ -1470,7 +1531,7 @@ async function _renderHistory(url) {
     }];
     if (threshold !== -1 && !isBinary) {
       datasets.push({
-        label: 'Threshold',
+        label: t('history.dataset.threshold'),
         data: new Array(d.points.length).fill(threshold),
         borderColor: '#db4437',
         borderWidth: 1.5,
@@ -1505,7 +1566,7 @@ async function _renderHistory(url) {
             max: isBinary ? 100 : 100,
             ticks: {
               color: tickColor,
-              callback: isBinary ? v => (v === 100 ? 'OK' : v === 0 ? 'Low' : '') : v => v + '%',
+              callback: isBinary ? v => (v === 100 ? t('device.level.ok') : v === 0 ? t('device.level.low') : '') : v => v + '%',
             },
             grid: { color: gridColor },
           },
@@ -1521,8 +1582,8 @@ async function _renderHistory(url) {
             callbacks: {
               label: ctx => {
                 const v = ctx.parsed.y;
-                if (ctx.dataset.label === 'Threshold') return `Threshold: ${v}%`;
-                return isBinary ? (v === 0 ? 'Low' : 'OK') : `${v}%`;
+                if (ctx.dataset.label === t('history.dataset.threshold')) return t('history.tooltip.threshold', {v});
+                return isBinary ? (v === 0 ? t('device.level.low') : t('device.level.ok')) : `${v}%`;
               },
             },
           },
@@ -1531,7 +1592,7 @@ async function _renderHistory(url) {
     });
   } catch(e) {
     loadingEl.style.display = 'none';
-    emptyEl.textContent = 'Failed to load history.';
+    emptyEl.textContent = t('history.load_error');
     emptyEl.style.display = 'block';
   }
 }
@@ -1563,10 +1624,10 @@ async function deleteDevice() {
     _devices = _devices.filter(d => d.entity_id !== _activeEntity);
     closeModal();
     if (_devices.length) renderTable();
-    else document.getElementById("content").innerHTML = '<p class="loading">No battery devices found.</p>';
+    else document.getElementById("content").innerHTML = `<p class="loading">${t('device.none')}</p>`;
     await loadHiddenDevices();
   } catch {
-    alert("Failed to hide device.");
+    alert(t('modal.hide_failed'));
   }
 }
 
@@ -1583,8 +1644,8 @@ async function loadHiddenDevices() {
           <span style="color:var(--bs-text-dim);font-size:.75rem;margin-left:.5rem;font-family:monospace">${esc(d.entity_id)}</span>
         </div>
         <div style="display:flex;gap:.4rem">
-          <button class="btn btn-secondary" style="font-size:.8rem;padding:.25rem .6rem" onclick="restoreDevice('${d.entity_id}')">Restore</button>
-          <button class="btn btn-danger" style="font-size:.8rem;padding:.25rem .6rem" onclick="purgeDevice('${d.entity_id}')">Delete</button>
+          <button class="btn btn-secondary" style="font-size:.8rem;padding:.25rem .6rem" onclick="restoreDevice('${d.entity_id}')">${t('hidden.restore')}</button>
+          <button class="btn btn-danger" style="font-size:.8rem;padding:.25rem .6rem" onclick="purgeDevice('${d.entity_id}')">${t('hidden.delete')}</button>
         </div>
       </div>`
     ).join("");
@@ -1608,18 +1669,18 @@ async function restoreDevice(entityId) {
     renderTable();
     await loadHiddenDevices();
   } catch {
-    alert("Failed to restore device.");
+    alert(t('modal.restore_failed'));
   }
 }
 
 async function purgeDevice(entityId) {
-  if (!confirm("Permanently delete this device from Battery Sentinel Plus?\n\nIf the entity still exists in Home Assistant, it will be re-added automatically on the next scan.")) return;
+  if (!confirm(t('modal.purge_confirm'))) return;
   try {
     const r = await fetch(BASE + "/api/device/" + encodeURIComponent(entityId) + "/purge", { method: "DELETE" });
     if (!r.ok) throw new Error();
     await loadHiddenDevices();
   } catch {
-    alert("Failed to delete device.");
+    alert(t('modal.purge_failed'));
   }
 }
 
@@ -1639,6 +1700,7 @@ async function saveDevice() {
   const payload = {
     notes:                 document.getElementById("modal-notes").value,
     battery_type:          document.getElementById("modal-type").value,
+    battery_quantity:      Math.max(1, parseInt(document.getElementById("modal-quantity").value, 10) || 1),
     alert_threshold:       _activeEntity && _activeEntity.startsWith("binary_sensor.")
                              ? parseInt(document.getElementById("modal-threshold-binary").value, 10)
                              : document.getElementById("modal-threshold-ignore").checked
@@ -1680,14 +1742,14 @@ async function saveDevice() {
         const idx2 = _devices.findIndex(x => x.entity_id === _activeEntity);
         if (idx2 !== -1) _devices[idx2].name = newName;
       } else {
-        alert("Device settings saved, but renaming in Home Assistant failed.");
+        alert(t('modal.rename_failed'));
       }
     }
 
     closeModal();
     renderTable();
   } catch {
-    alert("Failed to save device settings.");
+    alert(t('modal.save_failed'));
   }
 }
 
@@ -1721,28 +1783,28 @@ async function toggleAll(field, checked) {
 // ── Scan ──────────────────────────────────────────────────────────────
 async function scanNow() {
   const status = document.getElementById("scan-status");
-  status.textContent = "Scanning...";
+  status.textContent = t('status.scanning');
   try {
     await fetch(BASE + "/api/scan", { method: "POST" });
     await new Promise(r => setTimeout(r, 1500));
     const r = await fetch(BASE + "/api/batteries");
     _devices = await r.json();
     renderTable();
-    status.textContent = "Done.";
+    status.textContent = t('status.scan_done');
   } catch {
-    status.textContent = "Scan failed.";
+    status.textContent = t('status.scan_failed');
   }
   setTimeout(() => status.textContent = '', 3000);
 }
 
 async function sendReportNow() {
   const status = document.getElementById("report-status");
-  status.textContent = "Sending...";
+  status.textContent = t('status.sending');
   try {
     const r = await fetch(BASE + "/api/report-now", { method: "POST" });
-    status.textContent = r.ok ? "Report sent." : "Failed, check email settings.";
+    status.textContent = r.ok ? t('status.report_sent') : t('status.report_failed');
   } catch {
-    status.textContent = "Error sending report.";
+    status.textContent = t('status.report_error');
   }
   setTimeout(() => status.textContent = '', 4000);
 }
@@ -1814,7 +1876,7 @@ async function saveSettings() {
     });
     if (!r.ok) throw new Error();
     const status = document.getElementById("settings-status");
-    status.textContent = "Saved.";
+    status.textContent = t('settings.saved');
     setTimeout(() => status.textContent = '', 2500);
     renderTable();
     renderTypeFilter();
@@ -1822,19 +1884,21 @@ async function saveSettings() {
     updateZigbeeTabVisibility();
     if (!wasZwave && _settings.zwave_monitor_enabled) {
       fetch(BASE + "/api/scan", { method: "POST" });
-      showToast("Z-Wave monitoring enabled. Scanning devices...", 4000);
+      showToast(t('status.zwave_enabled'), 4000);
     }
     if (!wasZigbee && _settings.zigbee_monitor_enabled) {
       fetch(BASE + "/api/zigbee-scan", { method: "POST" });
-      showToast("Zigbee monitoring enabled. Scanning devices...", 4000);
+      showToast(t('status.zigbee_enabled'), 4000);
     }
   } catch {
-    alert("Failed to save settings.");
+    alert(t('settings.save_failed'));
   }
 }
 
 // ── Init ──────────────────────────────────────────────────────────────
 async function init() {
+  await loadLocale();
+  applyI18n();
   try {
     const [devRes, setRes, svcRes, scriptRes] = await Promise.all([
       fetch(BASE + "/api/batteries"),
@@ -1848,11 +1912,26 @@ async function init() {
     _scripts        = await scriptRes.json();
 
     if (!_devices.length) {
-      document.getElementById("content").innerHTML = '<p class="loading">No battery devices found.</p>';
+      document.getElementById("content").innerHTML = `<p class="loading">${t('device.none')}</p>`;
     } else {
       renderTable();
     }
 
+    const langEl = document.getElementById("setting-language");
+    if (langEl) {
+      try {
+        const r = await fetch(`${BASE}/locales/available`);
+        const available = r.ok ? await r.json() : ['en'];
+        langEl.innerHTML = available.map(code => {
+          const meta = _availableLanguages.find(l => l.code === code);
+          const label = meta ? meta.label : code;
+          return `<option value="${code}"${_i18nLang === code ? ' selected' : ''}>${label}</option>`;
+        }).join('');
+      } catch {
+        langEl.innerHTML = `<option value="en">English</option>`;
+      }
+      langEl.value = _i18nLang;
+    }
     document.getElementById("setting-threshold").value         = _settings.default_threshold || 20;
     document.getElementById("setting-notify-persistent").checked = _settings.notify_persistent !== false;
     document.getElementById("setting-notify-new-device").checked = _settings.notify_new_device !== false;
@@ -1884,17 +1963,17 @@ async function init() {
     const emailSvcs = _notifyServices.filter(s => !_emailExclude.includes(s) && !_emailExcludePrefix.some(p => s.startsWith(p)));
     const svcEl = document.getElementById("setting-notify-service");
     const savedSvc = _settings.notify_email_service || '';
-    svcEl.innerHTML = '<option value="">-- None --</option>' +
+    svcEl.innerHTML = `<option value="">${t('settings.notifications.none_option')}</option>` +
       emailSvcs.map(s => `<option value="${s}"${savedSvc === s ? ' selected' : ''}>${s}</option>`).join('') +
       (savedSvc && !emailSvcs.includes(savedSvc) ? `<option value="${savedSvc}" selected>${savedSvc}</option>` : '');
 
     const mobileSvcs = _notifyServices.filter(s => s.startsWith("mobile_app_"));
     const mobEl = document.getElementById("setting-mobile-default");
-    mobEl.innerHTML = '<option value="">-- None --</option>' +
+    mobEl.innerHTML = `<option value="">${t('settings.notifications.none_option')}</option>` +
       mobileSvcs.map(s => `<option value="${s}"${_settings.notify_mobile_default_service === s ? ' selected' : ''}>${s.replace('mobile_app_', '')}</option>`).join('');
 
     const scriptSettingEl = document.getElementById("setting-notify-script");
-    scriptSettingEl.innerHTML = '<option value="">-- None --</option>' +
+    scriptSettingEl.innerHTML = `<option value="">${t('settings.notifications.none_option')}</option>` +
       _scripts.map(s => `<option value="${s.entity_id}"${_settings.notify_script === s.entity_id ? ' selected' : ''}>${s.name}</option>`).join('');
 
     renderTypeList();
@@ -1920,7 +1999,7 @@ async function init() {
     updateZwaveTabVisibility();
     updateZigbeeTabVisibility();
   } catch(e) {
-    document.getElementById("content").innerHTML = '<p class="error">Failed to load battery data.</p>';
+    document.getElementById("content").innerHTML = `<p class="error">${t('device.load_error')}</p>`;
   }
 }
 
@@ -1943,7 +2022,7 @@ async function loadZwaveNodes() {
     _zwaveNodes = await r.json();
     renderZwaveTable();
   } catch {
-    document.getElementById("zwave-content").innerHTML = '<p class="error">Failed to load Z-Wave nodes.</p>';
+    document.getElementById("zwave-content").innerHTML = `<p class="error">${t('zwave.load_error')}</p>`;
   }
 }
 
@@ -1965,14 +2044,14 @@ function renderZwaveTable() {
     const isMuted = n.muted_until && new Date(n.muted_until) > new Date();
     const scriptLabel = (() => {
       const ns = n.notify_script || '';
-      if (ns === '__disabled__') return '<span class="muted">Off</span>';
+      if (ns === '__disabled__') return `<span class="muted">${t('device.script.off')}</span>`;
       if (ns) { const s = _scripts.find(x => x.entity_id === ns); return `<span style="color:var(--bs-text-muted);font-size:.8rem">${esc(s ? s.name : ns)}</span>`; }
       const gs = _settings.notify_script || '';
       if (gs) { const s = _scripts.find(x => x.entity_id === gs); return `<span class="muted" style="font-size:.8rem">${esc(s ? s.name : gs)}</span>`; }
       return '';
     })();
     return `<tr class="device-row" data-eid="${n.entity_id}">
-      <td data-zcol="name">${esc(n.name)}${isMuted ? ` <span title="Notifications muted" style="color:var(--bs-text-dim);font-size:.8rem">&#x1F515; <span style="color:var(--bs-text-dim)">(${muteRemaining(n.muted_until)})</span></span>` : ''}</td>
+      <td data-zcol="name">${esc(n.name)}${isMuted ? ` <span title="${t('device.muted_title')}" style="color:var(--bs-text-dim);font-size:.8rem">&#x1F515; <span style="color:var(--bs-text-dim)">(${muteRemaining(n.muted_until)})</span></span>` : ''}</td>
       <td data-zcol="status">${zwaveStatusBadge(n.state)}</td>
       ${v.notify !== false ? `<td data-zcol="notify" onclick="event.stopPropagation()">
         <label class="notify-check"><input type="checkbox" data-zeid="${n.entity_id}" data-field="notify_bell"   ${n.notify_bell  !== false ? 'checked' : ''}> UI</label>
@@ -1996,19 +2075,19 @@ function renderZwaveTable() {
     ? `<table style="width:100%;border-collapse:collapse;font-size:.9rem;table-layout:fixed">
         <colgroup>${cg}</colgroup>
         <thead><tr>
-          <th data-zcol="name"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Node <span style="color:var(--bs-text-dim);font-weight:normal;font-size:.8rem">(${_zwaveNodes.length})</span>${arrow('name')}<span class="resize-handle zw-resize-handle" data-zcol="name"></span></th>
-          <th data-zcol="status" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Status${arrow('status')}<span class="resize-handle zw-resize-handle" data-zcol="status"></span></th>
+          <th data-zcol="name"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">${t('zwave.col.node')} <span style="color:var(--bs-text-dim);font-weight:normal;font-size:.8rem">(${_zwaveNodes.length})</span>${arrow('name')}<span class="resize-handle zw-resize-handle" data-zcol="name"></span></th>
+          <th data-zcol="status" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">${t('zwave.col.status')}${arrow('status')}<span class="resize-handle zw-resize-handle" data-zcol="status"></span></th>
           ${v.notify !== false ? `<th data-zcol="notify" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap" onclick="event.stopPropagation()">
             <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_bell"> UI</label>
             <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_email"> Email</label>
             <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_mobile"> Mobile</label>
             <span class="resize-handle zw-resize-handle" data-zcol="notify"></span></th>` : ''}
-          ${v.script !== false ? `<th data-zcol="script" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap">Script<span class="resize-handle zw-resize-handle" data-zcol="script"></span></th>` : ''}
-          ${v.area   !== false ? `<th data-zcol="area"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Room${arrow('area')}<span class="resize-handle zw-resize-handle" data-zcol="area"></span></th>` : ''}
+          ${v.script !== false ? `<th data-zcol="script" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap">${t('device.col.script')}<span class="resize-handle zw-resize-handle" data-zcol="script"></span></th>` : ''}
+          ${v.area   !== false ? `<th data-zcol="area"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">${t('zwave.col.room')}${arrow('area')}<span class="resize-handle zw-resize-handle" data-zcol="area"></span></th>` : ''}
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>`
-    : '<p class="loading">No Z-Wave nodes found. Enable Z-Wave monitoring in Settings and run a scan.</p>';
+    : `<p class="loading">${t('zwave.no_nodes')}</p>`;
 
   document.querySelectorAll("th[data-zcol]").forEach(th => {
     th.addEventListener("click", e => {
@@ -2067,29 +2146,29 @@ function openZwaveModal(eid) {
   const mu = n.muted_until ? new Date(n.muted_until) : null;
   if (mu && mu > new Date()) {
     muteEl.innerHTML =
-      `<option value="current" selected>Muted until ${mu.toLocaleString()}</option>` +
-      `<option value="">Unmute</option>` +
-      `<option value="1h">Extend: 1 hour from now</option>` +
-      `<option value="3h">Extend: 3 hours from now</option>` +
-      `<option value="8h">Extend: 8 hours from now</option>` +
-      `<option value="1d">Extend: 1 day from now</option>` +
-      `<option value="3d">Extend: 3 days from now</option>` +
-      `<option value="7d">Extend: 1 week from now</option>`;
+      `<option value="current" selected>${t('modal.mute.current', {time: mu.toLocaleString()})}</option>` +
+      `<option value="">${t('modal.mute.unmute')}</option>` +
+      `<option value="1h">${t('modal.mute.extend.1h')}</option>` +
+      `<option value="3h">${t('modal.mute.extend.3h')}</option>` +
+      `<option value="8h">${t('modal.mute.extend.8h')}</option>` +
+      `<option value="1d">${t('modal.mute.extend.1d')}</option>` +
+      `<option value="3d">${t('modal.mute.extend.3d')}</option>` +
+      `<option value="7d">${t('modal.mute.extend.7d')}</option>`;
   } else {
     muteEl.innerHTML =
-      `<option value="">Not muted</option>` +
-      `<option value="1h">1 hour</option>` +
-      `<option value="3h">3 hours</option>` +
-      `<option value="8h">8 hours</option>` +
-      `<option value="1d">1 day</option>` +
-      `<option value="3d">3 days</option>` +
-      `<option value="7d">1 week</option>`;
+      `<option value="">${t('modal.mute.not_muted')}</option>` +
+      `<option value="1h">${t('modal.mute.1h')}</option>` +
+      `<option value="3h">${t('modal.mute.3h')}</option>` +
+      `<option value="8h">${t('modal.mute.8h')}</option>` +
+      `<option value="1d">${t('modal.mute.1d')}</option>` +
+      `<option value="3d">${t('modal.mute.3d')}</option>` +
+      `<option value="7d">${t('modal.mute.7d')}</option>`;
   }
 
   const scriptEl = document.getElementById("zwave-modal-script");
   scriptEl.innerHTML =
-    '<option value="">-- Use global default --</option>' +
-    '<option value="__disabled__">-- Disabled for this node --</option>' +
+    `<option value="">${t('zwave.modal.script_global')}</option>` +
+    `<option value="__disabled__">${t('zwave.modal.script_disabled')}</option>` +
     _scripts.map(s => `<option value="${s.entity_id}"${n.notify_script === s.entity_id ? ' selected' : ''}>${s.name}</option>`).join('');
   if (n.notify_script === '__disabled__') scriptEl.value = '__disabled__';
   else if (!n.notify_script) scriptEl.value = '';
@@ -2129,7 +2208,7 @@ async function saveZwaveNode() {
     closeZwaveModal();
     renderZwaveTable();
   } catch {
-    alert("Failed to save Z-Wave node settings.");
+    alert(t('zwave.modal.save_failed'));
   }
 }
 
@@ -2170,27 +2249,27 @@ let _zigbeeSortDir   = 1;
 let _activeZigbeeEid = null;
 
 function zigbeeLastSeenStr(state) {
-  if (!state || state === "unavailable" || state === "unknown") return "Unavailable";
+  if (!state || state === "unavailable" || state === "unknown") return t('zigbee.lastseen.unavailable');
   try {
     const diff = Math.floor((Date.now() - new Date(state).getTime()) / 1000);
-    if (diff <    60) return "Just now";
-    if (diff <  3600) return Math.floor(diff / 60) + "m ago";
-    if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
-    return Math.floor(diff / 86400) + "d ago";
+    if (diff <    60) return t('zigbee.lastseen.just_now');
+    if (diff <  3600) return t('zigbee.lastseen.minutes', {n: Math.floor(diff / 60)});
+    if (diff < 86400) return t('zigbee.lastseen.hours',   {n: Math.floor(diff / 3600)});
+    return t('zigbee.lastseen.days', {n: Math.floor(diff / 86400)});
   } catch { return state; }
 }
 
 function zigbeeStatusBadge(state) {
   if (!state || state === "unavailable" || state === "unknown")
-    return `<span style="color:var(--bs-text-dim);font-weight:500">Unavailable</span>`;
+    return `<span style="color:var(--bs-text-dim);font-weight:500">${t('zigbee.status.unavailable')}</span>`;
   const thresholdHours = _settings.zigbee_offline_threshold || 24;
   try {
     const ageHours = (Date.now() - new Date(state).getTime()) / 3600000;
     return ageHours > thresholdHours
-      ? `<span style="color:var(--bs-crit);font-weight:500">Offline</span>`
-      : `<span style="color:var(--bs-ok);font-weight:500">Online</span>`;
+      ? `<span style="color:var(--bs-crit);font-weight:500">${t('zigbee.status.offline')}</span>`
+      : `<span style="color:var(--bs-ok);font-weight:500">${t('zigbee.status.online')}</span>`;
   } catch {
-    return `<span style="color:var(--bs-text-dim);font-weight:500">Unknown</span>`;
+    return `<span style="color:var(--bs-text-dim);font-weight:500">${t('zigbee.status.unknown')}</span>`;
   }
 }
 
@@ -2200,7 +2279,7 @@ async function loadZigbeeNodes() {
     _zigbeeNodes = await r.json();
     renderZigbeeTable();
   } catch {
-    document.getElementById("zigbee-content").innerHTML = '<p class="error">Failed to load Zigbee devices.</p>';
+    document.getElementById("zigbee-content").innerHTML = `<p class="error">${t('zigbee.load_error')}</p>`;
   }
 }
 
@@ -2223,14 +2302,14 @@ function renderZigbeeTable() {
     const isMuted = n.muted_until && new Date(n.muted_until) > new Date();
     const scriptLabel = (() => {
       const ns = n.notify_script || '';
-      if (ns === '__disabled__') return '<span class="muted">Off</span>';
+      if (ns === '__disabled__') return `<span class="muted">${t('device.script.off')}</span>`;
       if (ns) { const s = _scripts.find(x => x.entity_id === ns); return `<span style="color:var(--bs-text-muted);font-size:.8rem">${esc(s ? s.name : ns)}</span>`; }
       const gs = _settings.notify_script || '';
       if (gs) { const s = _scripts.find(x => x.entity_id === gs); return `<span class="muted" style="font-size:.8rem">${esc(s ? s.name : gs)}</span>`; }
       return '';
     })();
     return `<tr class="device-row" data-eid="${n.entity_id}">
-      <td data-zbcol="name">${esc(n.name)}${isMuted ? ` <span title="Notifications muted" style="color:var(--bs-text-dim);font-size:.8rem">&#x1F515; <span style="color:var(--bs-text-dim)">(${muteRemaining(n.muted_until)})</span></span>` : ''}</td>
+      <td data-zbcol="name">${esc(n.name)}${isMuted ? ` <span title="${t('device.muted_title')}" style="color:var(--bs-text-dim);font-size:.8rem">&#x1F515; <span style="color:var(--bs-text-dim)">(${muteRemaining(n.muted_until)})</span></span>` : ''}</td>
       <td data-zbcol="status">${zigbeeStatusBadge(n.state)}</td>
       <td data-zbcol="lastseen" style="color:var(--bs-text-muted);font-size:.85rem">${zigbeeLastSeenStr(n.state)}</td>
       ${v.notify !== false ? `<td data-zbcol="notify" onclick="event.stopPropagation()">
@@ -2256,20 +2335,20 @@ function renderZigbeeTable() {
     ? `<table style="width:100%;border-collapse:collapse;font-size:.9rem;table-layout:fixed">
         <colgroup>${cg}</colgroup>
         <thead><tr>
-          <th data-zbcol="name"     style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Device <span style="color:var(--bs-text-dim);font-weight:normal;font-size:.8rem">(${_zigbeeNodes.length})</span>${arrow('name')}<span class="resize-handle zb-resize-handle" data-zbcol="name"></span></th>
-          <th data-zbcol="status"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Status${arrow('status')}<span class="resize-handle zb-resize-handle" data-zbcol="status"></span></th>
-          <th data-zbcol="lastseen" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Last Seen${arrow('lastseen')}<span class="resize-handle zb-resize-handle" data-zbcol="lastseen"></span></th>
+          <th data-zbcol="name"     style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">${t('zigbee.col.device')} <span style="color:var(--bs-text-dim);font-weight:normal;font-size:.8rem">(${_zigbeeNodes.length})</span>${arrow('name')}<span class="resize-handle zb-resize-handle" data-zbcol="name"></span></th>
+          <th data-zbcol="status"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">${t('zigbee.col.status')}${arrow('status')}<span class="resize-handle zb-resize-handle" data-zbcol="status"></span></th>
+          <th data-zbcol="lastseen" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">${t('zigbee.col.lastseen')}${arrow('lastseen')}<span class="resize-handle zb-resize-handle" data-zbcol="lastseen"></span></th>
           ${v.notify !== false ? `<th data-zbcol="notify" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap" onclick="event.stopPropagation()">
             <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_bell"> UI</label>
             <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_email"> Email</label>
             <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_mobile"> Mobile</label>
             <span class="resize-handle zb-resize-handle" data-zbcol="notify"></span></th>` : ''}
-          ${v.script !== false ? `<th data-zbcol="script" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap">Script<span class="resize-handle zb-resize-handle" data-zbcol="script"></span></th>` : ''}
-          ${v.area   !== false ? `<th data-zbcol="area"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">Room${arrow('area')}<span class="resize-handle zb-resize-handle" data-zbcol="area"></span></th>` : ''}
+          ${v.script !== false ? `<th data-zbcol="script" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap">${t('device.col.script')}<span class="resize-handle zb-resize-handle" data-zbcol="script"></span></th>` : ''}
+          ${v.area   !== false ? `<th data-zbcol="area"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">${t('zigbee.col.room')}${arrow('area')}<span class="resize-handle zb-resize-handle" data-zbcol="area"></span></th>` : ''}
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>`
-    : '<p class="loading">No Zigbee last_seen entities found. See the Zigbee monitoring setup guide in Settings.</p>';
+    : `<p class="loading">${t('zigbee.no_nodes')}</p>`;
 
   document.querySelectorAll("th[data-zbcol]").forEach(th => {
     th.addEventListener("click", e => {
@@ -2329,29 +2408,29 @@ function openZigbeeModal(eid) {
   const mu = n.muted_until ? new Date(n.muted_until) : null;
   if (mu && mu > new Date()) {
     muteEl.innerHTML =
-      `<option value="current" selected>Muted until ${mu.toLocaleString()}</option>` +
-      `<option value="">Unmute</option>` +
-      `<option value="1h">Extend: 1 hour from now</option>` +
-      `<option value="3h">Extend: 3 hours from now</option>` +
-      `<option value="8h">Extend: 8 hours from now</option>` +
-      `<option value="1d">Extend: 1 day from now</option>` +
-      `<option value="3d">Extend: 3 days from now</option>` +
-      `<option value="7d">Extend: 1 week from now</option>`;
+      `<option value="current" selected>${t('modal.mute.current', {time: mu.toLocaleString()})}</option>` +
+      `<option value="">${t('modal.mute.unmute')}</option>` +
+      `<option value="1h">${t('modal.mute.extend.1h')}</option>` +
+      `<option value="3h">${t('modal.mute.extend.3h')}</option>` +
+      `<option value="8h">${t('modal.mute.extend.8h')}</option>` +
+      `<option value="1d">${t('modal.mute.extend.1d')}</option>` +
+      `<option value="3d">${t('modal.mute.extend.3d')}</option>` +
+      `<option value="7d">${t('modal.mute.extend.7d')}</option>`;
   } else {
     muteEl.innerHTML =
-      `<option value="">Not muted</option>` +
-      `<option value="1h">1 hour</option>` +
-      `<option value="3h">3 hours</option>` +
-      `<option value="8h">8 hours</option>` +
-      `<option value="1d">1 day</option>` +
-      `<option value="3d">3 days</option>` +
-      `<option value="7d">1 week</option>`;
+      `<option value="">${t('modal.mute.not_muted')}</option>` +
+      `<option value="1h">${t('modal.mute.1h')}</option>` +
+      `<option value="3h">${t('modal.mute.3h')}</option>` +
+      `<option value="8h">${t('modal.mute.8h')}</option>` +
+      `<option value="1d">${t('modal.mute.1d')}</option>` +
+      `<option value="3d">${t('modal.mute.3d')}</option>` +
+      `<option value="7d">${t('modal.mute.7d')}</option>`;
   }
 
   const scriptEl = document.getElementById("zigbee-modal-script");
   scriptEl.innerHTML =
-    '<option value="">-- Use global default --</option>' +
-    '<option value="__disabled__">-- Disabled for this device --</option>' +
+    `<option value="">${t('zigbee.modal.script_global')}</option>` +
+    `<option value="__disabled__">${t('zigbee.modal.script_disabled')}</option>` +
     _scripts.map(s => `<option value="${s.entity_id}"${n.notify_script === s.entity_id ? ' selected' : ''}>${s.name}</option>`).join('');
   if (n.notify_script === '__disabled__') scriptEl.value = '__disabled__';
   else if (!n.notify_script) scriptEl.value = '';
@@ -2391,7 +2470,7 @@ async function saveZigbeeNode() {
     closeZigbeeModal();
     renderZigbeeTable();
   } catch {
-    alert("Failed to save Zigbee device settings.");
+    alert(t('zigbee.modal.save_failed'));
   }
 }
 
@@ -2430,13 +2509,13 @@ async function scanZigbeeFromSettings() {
   const btn = document.getElementById("zigbee-settings-scan-btn");
   const status = document.getElementById("zigbee-settings-scan-status");
   btn.disabled = true;
-  status.textContent = "Scanning...";
+  status.textContent = t('status.scanning');
   try {
     await fetch(BASE + "/api/zigbee-scan", { method: "POST" });
-    status.textContent = "Scan triggered.";
+    status.textContent = t('status.scan_triggered');
     setTimeout(() => status.textContent = '', 3000);
   } catch {
-    status.textContent = "Scan failed.";
+    status.textContent = t('status.zigbee_scan_failed');
   } finally {
     btn.disabled = false;
   }
@@ -2450,11 +2529,11 @@ async function lookupBatteryTypes() {
   const btn    = document.getElementById("lookup-btn");
   const status = document.getElementById("lookup-status");
   btn.disabled = true;
-  status.textContent = "Looking up...";
+  status.textContent = t('status.lookup_searching');
   try {
     const r = await fetch(BASE + "/api/battery-lookup", { method: "POST" });
     if (!r.ok) {
-      status.textContent = r.status === 502 ? "Could not reach Battery Notes database." : "Lookup failed.";
+      status.textContent = r.status === 502 ? t('status.lookup_no_reach') : t('status.lookup_failed');
       setTimeout(() => status.textContent = '', 4000);
       return;
     }
@@ -2470,9 +2549,9 @@ async function lookupBatteryTypes() {
     });
     if (data.auto_fill.length) { renderTable(); renderTypeFilter(); }
     const parts = [];
-    if (data.auto_fill.length) parts.push(`${data.auto_fill.length} type${data.auto_fill.length !== 1 ? 's' : ''} filled in`);
-    if (data.conflicts.length) parts.push(`${data.conflicts.length} conflict${data.conflicts.length !== 1 ? 's' : ''} to review`);
-    status.textContent = (parts.length ? parts.join(', ') : 'No matches found') + '.';
+    if (data.auto_fill.length) parts.push(t('status.lookup_filled', {count: data.auto_fill.length}));
+    if (data.conflicts.length) parts.push(t('status.lookup_conflicts', {count: data.conflicts.length}));
+    status.textContent = (parts.length ? parts.join(', ') : t('status.lookup_no_matches'));
     if (data.conflicts.length) {
       _conflictData = data.conflicts;
       renderConflictList();
@@ -2481,7 +2560,7 @@ async function lookupBatteryTypes() {
       setTimeout(() => status.textContent = '', 4000);
     }
   } catch {
-    status.textContent = "Lookup failed.";
+    status.textContent = t('status.lookup_failed');
     setTimeout(() => status.textContent = '', 4000);
   } finally {
     btn.disabled = false;
@@ -2494,14 +2573,14 @@ function renderConflictList() {
       <div style="flex:1;min-width:0">
         <div style="color:var(--bs-text);font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(item.name)}</div>
         <div style="font-size:.82rem;margin-top:.2rem;color:var(--bs-text-muted)">
-          Mine: <strong style="color:var(--bs-text)">${esc(item.current_type)}</strong>
+          ${t('conflict.mine_prefix')} <strong style="color:var(--bs-text)">${esc(item.current_type)}</strong>
           &nbsp;vs&nbsp;
-          DB: <strong style="color:var(--bs-accent)">${esc(item.suggested_type)}</strong>
+          ${t('conflict.db_prefix')} <strong style="color:var(--bs-accent)">${esc(item.suggested_type)}</strong>
         </div>
       </div>
       <div style="display:flex;gap:.35rem;flex-shrink:0">
-        <button class="btn btn-secondary" style="font-size:.78rem;padding:.25rem .6rem" onclick="resolveConflict(${i},false)">Keep Mine</button>
-        <button class="btn btn-primary"   style="font-size:.78rem;padding:.25rem .6rem" onclick="resolveConflict(${i},true)">Use DB</button>
+        <button class="btn btn-secondary" style="font-size:.78rem;padding:.25rem .6rem" onclick="resolveConflict(${i},false)">${t('conflict.keep_mine')}</button>
+        <button class="btn btn-primary"   style="font-size:.78rem;padding:.25rem .6rem" onclick="resolveConflict(${i},true)">${t('conflict.use_db')}</button>
       </div>
     </div>`
   ).join('');
@@ -2517,7 +2596,7 @@ async function resolveConflict(idx, useDb) {
   } else {
     closeConflictModal();
     const status = document.getElementById("lookup-status");
-    status.textContent = "All conflicts resolved.";
+    status.textContent = t('conflict.all_resolved');
     setTimeout(() => status.textContent = '', 3000);
   }
 }
@@ -2532,7 +2611,7 @@ async function useAllConflicts() {
   renderTable();
   renderTypeFilter();
   const status = document.getElementById("lookup-status");
-  status.textContent = "All conflicts updated.";
+  status.textContent = t('conflict.all_updated');
   setTimeout(() => status.textContent = '', 3000);
 }
 
