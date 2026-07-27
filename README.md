@@ -441,6 +441,7 @@ A few things to keep in mind before opening one:
 ## Contributors
 
 - [Marc Easen](https://github.com/Easen): responsive mobile/tablet layout and HTML extraction into a standalone file
+- [IsaTTeN](https://github.com/IsaTTeN): Spanish (Español) translation
 
 ## Acknowledgments
 
