@@ -19,6 +19,10 @@ Missing keys automatically fall back to English, so a partial translation is per
 2. Open Battery Sentinel Plus, go to Settings > General, and select your language.
 3. The page will reload in your chosen language.
 
+## Time unit abbreviations
+
+The `history.range.*` keys (`7d`, `30d`, `90d`, `6m`, `1y`) use English abbreviations by default. Translate these to match your language's conventions -- for example, German would use `7T` (Tag), `6M` (Monat), `1J` (Jahr).
+
 ## Notes
 
 - The `en.json` file is the source of truth. If a new feature adds strings to `en.json`, existing translations can be updated by PR.

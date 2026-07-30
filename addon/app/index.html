@@ -223,7 +223,7 @@
     <button id="apply-type-btn" class="btn btn-secondary toolbar-apply" style="display:none" onclick="applyTypeToVisible()"></button>
     <span class="toolbar-label" data-i18n="toolbar.threshold_label">Alert Threshold:</span>
     <select id="threshold-filter" class="toolbar-sel">
-      <option value="" data-i18n-value="toolbar.set_threshold_option">-- Set Threshold --</option>
+      <option value="" data-i18n="toolbar.set_threshold_option">-- Set Threshold --</option>
       <option value="5">5%</option>
       <option value="10">10%</option>
       <option value="15">15%</option>
@@ -463,7 +463,7 @@
             <label for="setting-zwave-ping-enabled" data-i18n="settings.monitoring.zwave_ping_label">Periodically ping Z-Wave nodes</label>
           </div>
           <div style="font-size:.8rem;color:var(--bs-text-muted);padding-left:1.5rem" id="zwave-ping-interval-row">
-            Every <input type="number" id="setting-zwave-ping-interval" min="10" max="120" style="width:3.5rem;background:var(--bs-input-bg);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.15rem .35rem;font-size:.8rem"> minutes. Pings alive nodes so Z-Wave JS detects failures faster. Sleeping (battery-powered) nodes are skipped.
+            <span data-i18n="settings.monitoring.zwave_ping_desc_pre">Every</span> <input type="number" id="setting-zwave-ping-interval" min="10" max="120" style="width:3.5rem;background:var(--bs-input-bg);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.15rem .35rem;font-size:.8rem"> <span data-i18n="settings.monitoring.zwave_ping_desc_post">minutes. Pings alive nodes so Z-Wave JS detects failures faster. Sleeping (battery-powered) nodes are skipped.</span>
           </div>
         </div>
         <div style="border-top:1px solid var(--bs-border);padding-top:1rem">
@@ -712,11 +712,11 @@
     <div id="modal-pane-history" style="display:none">
       <div style="padding:1rem 1.25rem 1.25rem">
         <div style="display:flex;gap:.4rem;justify-content:flex-end;margin-bottom:.5rem;flex-wrap:wrap">
-          <button class="btn btn-secondary history-range" data-days="7"   onclick="loadHistory(7)">7d</button>
-          <button class="btn btn-secondary history-range active" data-days="30"  onclick="loadHistory(30)">30d</button>
-          <button class="btn btn-secondary history-range" data-days="90"  onclick="loadHistory(90)">90d</button>
-          <button class="btn btn-secondary history-range" data-days="180" onclick="loadHistory(180)">6m</button>
-          <button class="btn btn-secondary history-range" data-days="365" onclick="loadHistory(365)">1y</button>
+          <button class="btn btn-secondary history-range" data-days="7"   onclick="loadHistory(7)"   data-i18n="history.range.7d">7d</button>
+          <button class="btn btn-secondary history-range active" data-days="30"  onclick="loadHistory(30)"  data-i18n="history.range.30d">30d</button>
+          <button class="btn btn-secondary history-range" data-days="90"  onclick="loadHistory(90)"  data-i18n="history.range.90d">90d</button>
+          <button class="btn btn-secondary history-range" data-days="180" onclick="loadHistory(180)" data-i18n="history.range.6m">6m</button>
+          <button class="btn btn-secondary history-range" data-days="365" onclick="loadHistory(365)" data-i18n="history.range.1y">1y</button>
           <button class="btn btn-secondary history-range" id="history-custom-btn" data-days="" onclick="toggleCustomRange()" data-i18n="history.custom_btn">Custom</button>
         </div>
         <div id="history-custom-row" style="display:none;gap:.5rem;align-items:center;justify-content:flex-end;margin-bottom:.75rem">
@@ -1156,9 +1156,9 @@ function renderTable() {
       ${v.btype  ? `<td data-col="btype" onclick="event.stopPropagation()" style="white-space:nowrap">${(d.battery_quantity||1)>1?`<span style="color:var(--bs-text-muted);font-size:.82rem;margin-right:.3rem">${d.battery_quantity}×</span>`:''}<select class="inline-select" data-eid="${d.entity_id}" data-field="battery_type">${typeOptions(d.battery_type||'')}</select></td>` : ''}
       ${v.alert  ? `<td data-col="alert" onclick="event.stopPropagation()"><select class="inline-select" data-eid="${d.entity_id}">${thrCell}</select></td>` : ''}
       ${v.notify ? `<td data-col="notify" onclick="event.stopPropagation()">
-        <label class="notify-check"><input type="checkbox" data-eid="${d.entity_id}" data-field="notify_bell" ${d.notify_bell !== false ? 'checked' : ''}> UI</label>
-        <label class="notify-check"><input type="checkbox" data-eid="${d.entity_id}" data-field="notify_email" ${d.notify_email !== false ? 'checked' : ''}> Email</label>
-        <label class="notify-check"><input type="checkbox" data-eid="${d.entity_id}" data-field="notify_mobile" ${d.notify_mobile ? 'checked' : ''}> Mobile</label>
+        <label class="notify-check"><input type="checkbox" data-eid="${d.entity_id}" data-field="notify_bell" ${d.notify_bell !== false ? 'checked' : ''}> ${t('modal.notify.ui')}</label>
+        <label class="notify-check"><input type="checkbox" data-eid="${d.entity_id}" data-field="notify_email" ${d.notify_email !== false ? 'checked' : ''}> ${t('modal.notify.email')}</label>
+        <label class="notify-check"><input type="checkbox" data-eid="${d.entity_id}" data-field="notify_mobile" ${d.notify_mobile ? 'checked' : ''}> ${t('modal.notify.mobile')}</label>
       </td>` : ''}
       ${v.script ? `<td data-col="script">${scriptLabel}</td>` : ''}
       ${v.area   ? `<td data-col="area" class="muted">${esc(d.area || '')}</td>` : ''}
@@ -1176,9 +1176,9 @@ function renderTable() {
   ].filter(Boolean).join('');
 
   const notifyHdr = v.notify ? `<th data-col="notify" onclick="event.stopPropagation()">
-      <label class="notify-check"><input type="checkbox" id="hdr-notify_bell"> UI</label>
-      <label class="notify-check"><input type="checkbox" id="hdr-notify_email"> Email</label>
-      <label class="notify-check"><input type="checkbox" id="hdr-notify_mobile"> Mobile</label>
+      <label class="notify-check"><input type="checkbox" id="hdr-notify_bell"> ${t('modal.notify.ui')}</label>
+      <label class="notify-check"><input type="checkbox" id="hdr-notify_email"> ${t('modal.notify.email')}</label>
+      <label class="notify-check"><input type="checkbox" id="hdr-notify_mobile"> ${t('modal.notify.mobile')}</label>
       <span class="resize-handle" data-col="notify"></span>
     </th>` : '';
 
@@ -2054,9 +2054,9 @@ function renderZwaveTable() {
       <td data-zcol="name">${esc(n.name)}${isMuted ? ` <span title="${t('device.muted_title')}" style="color:var(--bs-text-dim);font-size:.8rem">&#x1F515; <span style="color:var(--bs-text-dim)">(${muteRemaining(n.muted_until)})</span></span>` : ''}</td>
       <td data-zcol="status">${zwaveStatusBadge(n.state)}</td>
       ${v.notify !== false ? `<td data-zcol="notify" onclick="event.stopPropagation()">
-        <label class="notify-check"><input type="checkbox" data-zeid="${n.entity_id}" data-field="notify_bell"   ${n.notify_bell  !== false ? 'checked' : ''}> UI</label>
-        <label class="notify-check"><input type="checkbox" data-zeid="${n.entity_id}" data-field="notify_email"  ${n.notify_email !== false ? 'checked' : ''}> Email</label>
-        <label class="notify-check"><input type="checkbox" data-zeid="${n.entity_id}" data-field="notify_mobile" ${n.notify_mobile ? 'checked' : ''}> Mobile</label>
+        <label class="notify-check"><input type="checkbox" data-zeid="${n.entity_id}" data-field="notify_bell"   ${n.notify_bell  !== false ? 'checked' : ''}> ${t('modal.notify.ui')}</label>
+        <label class="notify-check"><input type="checkbox" data-zeid="${n.entity_id}" data-field="notify_email"  ${n.notify_email !== false ? 'checked' : ''}> ${t('modal.notify.email')}</label>
+        <label class="notify-check"><input type="checkbox" data-zeid="${n.entity_id}" data-field="notify_mobile" ${n.notify_mobile ? 'checked' : ''}> ${t('modal.notify.mobile')}</label>
       </td>` : ''}
       ${v.script !== false ? `<td data-zcol="script">${scriptLabel}</td>` : ''}
       ${v.area   !== false ? `<td data-zcol="area" class="muted">${esc(n.area || '')}</td>` : ''}
@@ -2078,9 +2078,9 @@ function renderZwaveTable() {
           <th data-zcol="name"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">${t('zwave.col.node')} <span style="color:var(--bs-text-dim);font-weight:normal;font-size:.8rem">(${_zwaveNodes.length})</span>${arrow('name')}<span class="resize-handle zw-resize-handle" data-zcol="name"></span></th>
           <th data-zcol="status" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">${t('zwave.col.status')}${arrow('status')}<span class="resize-handle zw-resize-handle" data-zcol="status"></span></th>
           ${v.notify !== false ? `<th data-zcol="notify" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap" onclick="event.stopPropagation()">
-            <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_bell"> UI</label>
-            <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_email"> Email</label>
-            <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_mobile"> Mobile</label>
+            <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_bell"> ${t('modal.notify.ui')}</label>
+            <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_email"> ${t('modal.notify.email')}</label>
+            <label class="notify-check"><input type="checkbox" id="zw-hdr-notify_mobile"> ${t('modal.notify.mobile')}</label>
             <span class="resize-handle zw-resize-handle" data-zcol="notify"></span></th>` : ''}
           ${v.script !== false ? `<th data-zcol="script" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap">${t('device.col.script')}<span class="resize-handle zw-resize-handle" data-zcol="script"></span></th>` : ''}
           ${v.area   !== false ? `<th data-zcol="area"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">${t('zwave.col.room')}${arrow('area')}<span class="resize-handle zw-resize-handle" data-zcol="area"></span></th>` : ''}
@@ -2313,9 +2313,9 @@ function renderZigbeeTable() {
       <td data-zbcol="status">${zigbeeStatusBadge(n.state)}</td>
       <td data-zbcol="lastseen" style="color:var(--bs-text-muted);font-size:.85rem">${zigbeeLastSeenStr(n.state)}</td>
       ${v.notify !== false ? `<td data-zbcol="notify" onclick="event.stopPropagation()">
-        <label class="notify-check"><input type="checkbox" data-zbeid="${n.entity_id}" data-field="notify_bell"   ${n.notify_bell  !== false ? 'checked' : ''}> UI</label>
-        <label class="notify-check"><input type="checkbox" data-zbeid="${n.entity_id}" data-field="notify_email"  ${n.notify_email !== false ? 'checked' : ''}> Email</label>
-        <label class="notify-check"><input type="checkbox" data-zbeid="${n.entity_id}" data-field="notify_mobile" ${n.notify_mobile ? 'checked' : ''}> Mobile</label>
+        <label class="notify-check"><input type="checkbox" data-zbeid="${n.entity_id}" data-field="notify_bell"   ${n.notify_bell  !== false ? 'checked' : ''}> ${t('modal.notify.ui')}</label>
+        <label class="notify-check"><input type="checkbox" data-zbeid="${n.entity_id}" data-field="notify_email"  ${n.notify_email !== false ? 'checked' : ''}> ${t('modal.notify.email')}</label>
+        <label class="notify-check"><input type="checkbox" data-zbeid="${n.entity_id}" data-field="notify_mobile" ${n.notify_mobile ? 'checked' : ''}> ${t('modal.notify.mobile')}</label>
       </td>` : ''}
       ${v.script !== false ? `<td data-zbcol="script">${scriptLabel}</td>` : ''}
       ${v.area   !== false ? `<td data-zbcol="area" class="muted">${esc(n.area || '')}</td>` : ''}
@@ -2339,9 +2339,9 @@ function renderZigbeeTable() {
           <th data-zbcol="status"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">${t('zigbee.col.status')}${arrow('status')}<span class="resize-handle zb-resize-handle" data-zbcol="status"></span></th>
           <th data-zbcol="lastseen" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">${t('zigbee.col.lastseen')}${arrow('lastseen')}<span class="resize-handle zb-resize-handle" data-zbcol="lastseen"></span></th>
           ${v.notify !== false ? `<th data-zbcol="notify" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap" onclick="event.stopPropagation()">
-            <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_bell"> UI</label>
-            <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_email"> Email</label>
-            <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_mobile"> Mobile</label>
+            <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_bell"> ${t('modal.notify.ui')}</label>
+            <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_email"> ${t('modal.notify.email')}</label>
+            <label class="notify-check"><input type="checkbox" id="zb-hdr-notify_mobile"> ${t('modal.notify.mobile')}</label>
             <span class="resize-handle zb-resize-handle" data-zbcol="notify"></span></th>` : ''}
           ${v.script !== false ? `<th data-zbcol="script" style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);white-space:nowrap">${t('device.col.script')}<span class="resize-handle zb-resize-handle" data-zbcol="script"></span></th>` : ''}
           ${v.area   !== false ? `<th data-zbcol="area"   style="position:relative;text-align:left;padding:.5rem .75rem;color:var(--bs-text-muted);border-bottom:1px solid var(--bs-border);cursor:pointer;user-select:none;white-space:nowrap">${t('zigbee.col.room')}${arrow('area')}<span class="resize-handle zb-resize-handle" data-zbcol="area"></span></th>` : ''}

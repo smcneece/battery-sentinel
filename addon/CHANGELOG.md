@@ -2,6 +2,10 @@
 
 For full release notes and details on each version, see the [GitHub Releases page](https://github.com/smcneece/battery-sentinel/releases).
 
+## 2026.07.7
+- Fixed: several strings in the device table (UI / Email / Mobile notify labels), the alert threshold toolbar dropdown, and the Z-Wave ping interval description were not being translated and always appeared in English regardless of the selected language
+- History range buttons (7d, 30d, 90d, 6m, 1y) are now translatable via locale keys; Spanish updated with correct abbreviations (1a for año); other languages can localize these to their own conventions (e.g. German: 7T/6M/1J)
+
 ## 2026.07.6
 - Spanish (Español) translation contributed by IsaTTeN
 - Interface translations (i18n): the UI language is auto-detected from the browser on first load and can be overridden in Settings > General; preference is saved per-browser; the language selector only shows languages with an actual translation file so users never see a no-op option; translations are flat JSON files in `addon/app/locales/`, any language is welcome via PR; missing keys fall back to English automatically; contributor guide in `addon/app/locales/TRANSLATING.md`
