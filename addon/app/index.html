@@ -886,6 +886,7 @@ function muteRemaining(isoStr) {
   const d = Math.floor(mins / 1440), h = Math.floor((mins % 1440) / 60); return h ? `${d}d ${h}h` : `${d}d`;
 }
 let _devices        = [];
+let _visibleDevices = [];
 let _settings       = {};
 let _historyChart   = null;
 let _historyDays    = 30;
@@ -1115,6 +1116,7 @@ function renderTable() {
     }
   }
 
+  _visibleDevices = visible;
   const sorted = [...visible].sort((a, b) => {
     const ka = sortKey(a, _sortCol), kb = sortKey(b, _sortCol);
     return ka < kb ? -_sortDir : ka > kb ? _sortDir : 0;
@@ -1760,18 +1762,19 @@ function updateHeaderCheckboxes() {
     notify_email:  d => d.notify_email !== false,
     notify_mobile: d => !!d.notify_mobile,
   };
+  const scope = _visibleDevices.length ? _visibleDevices : _devices;
   Object.entries(checks).forEach(([field, fn]) => {
     const hdr = document.getElementById('hdr-' + field);
-    if (!hdr || !_devices.length) return;
-    const n = _devices.filter(fn).length;
-    hdr.checked       = n === _devices.length;
-    hdr.indeterminate = n > 0 && n < _devices.length;
+    if (!hdr || !scope.length) return;
+    const n = scope.filter(fn).length;
+    hdr.checked       = n === scope.length;
+    hdr.indeterminate = n > 0 && n < scope.length;
   });
 }
 
 async function toggleAll(field, checked) {
-  _devices.forEach(d => d[field] = checked);
-  await Promise.allSettled(_devices.map(d =>
+  _visibleDevices.forEach(d => d[field] = checked);
+  await Promise.allSettled(_visibleDevices.map(d =>
     fetch(BASE + "/api/device/" + encodeURIComponent(d.entity_id), {
       method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({[field]: checked}),

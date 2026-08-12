@@ -2,6 +2,9 @@
 
 For full release notes and details on each version, see the [GitHub Releases page](https://github.com/smcneece/battery-sentinel/releases).
 
+## 2026.08.1
+- Fixed: header checkboxes (UI / Email / Mobile) in the Devices tab applied to all devices instead of only the currently filtered/visible ones; the checkbox state indicator (checked/indeterminate) now also reflects only the visible set
+
 ## 2026.07.7
 - Fixed: several strings in the device table (UI / Email / Mobile notify labels), the alert threshold toolbar dropdown, and the Z-Wave ping interval description were not being translated and always appeared in English regardless of the selected language
 - History range buttons (7d, 30d, 90d, 6m, 1y) are now translatable via locale keys; Spanish updated with correct abbreviations (1a for año); other languages can localize these to their own conventions (e.g. German: 7T/6M/1J)
