@@ -2429,6 +2429,13 @@
         },
         {
             "manufacturer": "Bosch",
+            "model": "Smart Home Room Thermostat II",
+            "model_id": "RTH2_BAT",
+            "battery_type": "AAA",
+            "battery_quantity": 4
+        },
+        {
+            "manufacturer": "Bosch",
             "model": "Smoke alarm detector (BSD-2)",
             "battery_type": "Irreplaceable"
         },
@@ -3380,6 +3387,12 @@
         },
         {
             "manufacturer": "eQ-3",
+            "model": "HM-Sec-SD-2",
+            "model_id": "Funk-Rauchmelder",
+            "battery_type": "Irreplaceable"
+        },
+        {
+            "manufacturer": "eQ-3",
             "model": "HM-Sec-Sir-WM",
             "battery_type": "LR14",
             "battery_quantity": 2
@@ -3639,6 +3652,13 @@
             "battery_quantity": 2
         },
         {
+            "manufacturer": "eQ-3",
+            "model": "HmIP-eTRV-F",
+            "model_id": "Homematic IP Heizk\u00f6rperthermostat mit Durchflussmessung",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "eq-3",
             "model": "HmIP-FCI1",
             "battery_type": "CR2032"
@@ -3760,6 +3780,12 @@
         {
             "manufacturer": "eQ-3",
             "model": "HmIP-SRH",
+            "battery_type": "AAA"
+        },
+        {
+            "manufacturer": "eQ-3",
+            "model": "HmIP-SRH",
+            "model_id": "Homematic IP Fenster-/ Drehgriffkontakt",
             "battery_type": "AAA"
         },
         {
@@ -3887,6 +3913,11 @@
             "model_id": "Homematic IP Rauchmelder",
             "battery_type": "FDK CR17450E-N (3V)",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
+            "model": "HmIP-SWSD-2",
+            "battery_type": "Irreplaceable"
         },
         {
             "manufacturer": "eQ-3",
@@ -4053,6 +4084,11 @@
         {
             "manufacturer": "Eufy Security",
             "model": "T8160",
+            "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "Eufy Security",
+            "model": "T8161",
             "battery_type": "Rechargeable"
         },
         {
@@ -6085,7 +6121,17 @@
         },
         {
             "manufacturer": "iRobot",
+            "model": "i755840",
+            "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "iRobot",
             "model": "j755020",
+            "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "iRobot",
+            "model": "m610840",
             "battery_type": "Rechargeable"
         },
         {
