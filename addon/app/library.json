@@ -2325,6 +2325,11 @@
             "battery_type": "Rechargeable"
         },
         {
+            "manufacturer": "Blueforcer",
+            "model": "AWTRIX NG",
+            "battery_type": "Rechargeable"
+        },
+        {
             "manufacturer": "BlueMaestro",
             "model": "Tempo Disc THD",
             "battery_type": "CR2032"
@@ -3210,6 +3215,13 @@
         },
         {
             "manufacturer": "eQ-3",
+            "model": "ELV-SH-WSM",
+            "model_id": "ELV Smart Home Bew\u00e4sserungsaktor",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
             "model": "eTRV-F",
             "model_id": "HmIP-eTRV-F",
             "battery_type": "AA",
@@ -3304,6 +3316,12 @@
         {
             "manufacturer": "eQ-3",
             "model": "HM-RC-4-2",
+            "battery_type": "AAA"
+        },
+        {
+            "manufacturer": "eQ-3",
+            "model": "HM-RC-4-3",
+            "model_id": "Funk-Fernbedienung 4 Tasten",
             "battery_type": "AAA"
         },
         {
@@ -3473,6 +3491,13 @@
             "model": "HM-WDS10-TH-O",
             "battery_type": "AA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
+            "model": "HM-WDS100-C6-O",
+            "model_id": "Funk-Kombisensor (OC3)",
+            "battery_type": "AA",
+            "battery_quantity": 3
         },
         {
             "manufacturer": "eQ-3",
@@ -6734,9 +6759,14 @@
         },
         {
             "manufacturer": "Meross",
+            "model": "Smart Presence Sensor",
+            "model_id": "16898",
+            "battery_type": "CR123A"
+        },
+        {
+            "manufacturer": "Meross",
             "model": "Smart Presence Sensor (16898)",
             "model_id": "16898",
-            "hw_version": "prerelease",
             "battery_type": "CR123A"
         },
         {
@@ -9331,6 +9361,12 @@
         },
         {
             "manufacturer": "SONOFF",
+            "model": "SNZB-02B",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "SONOFF",
             "model": "SNZB-02D",
             "battery_type": "CR2450"
         },
@@ -9401,6 +9437,12 @@
             "model_id": "SNZB-02",
             "hw_version": "1",
             "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "SONOFF",
+            "model": "Temperature and humidity sensor",
+            "model_id": "SNZB-02P",
+            "battery_type": "CR2477"
         },
         {
             "manufacturer": "Sonoff",
@@ -11315,6 +11357,12 @@
             "model": "TH08",
             "battery_type": "AAA",
             "battery_quantity": 3
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "TH09Z",
+            "battery_type": "AAA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Tuya",
