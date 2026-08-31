@@ -3670,6 +3670,19 @@
         },
         {
             "manufacturer": "eQ-3",
+            "model": "HmIP-eTRV-E",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
+            "model": "HmIP-eTRV-E",
+            "model_id": "Homematic IP Heizk\u00f6rperthermostat - Evo",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "eQ-3",
             "model": "HmIP-eTRV-E-S",
             "model_id": "HmIP-eTRV-E-S",
             "hw_version": "1.4.8",
@@ -9543,6 +9556,13 @@
         {
             "manufacturer": "SONOFF",
             "model": "Zigbee thermostatic radiator valve",
+            "model_id": "TRV-ZBT",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "SONOFF",
+            "model": "Zigbee thermostatic radiator valve",
             "model_id": "TRVZB",
             "battery_type": "AA",
             "battery_quantity": 3
@@ -11804,6 +11824,11 @@
             "manufacturer": "TUYATEC-riuj5xzs",
             "model": "RH3052",
             "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "TUYATEC-rwjlk9td",
+            "model": "RH3040",
+            "battery_type": "CR2450"
         },
         {
             "manufacturer": "TUYATEC-vhrcfp2v",
