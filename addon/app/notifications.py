@@ -9,7 +9,9 @@ Notification strategy:
 """
 
 import datetime
+import html as _html
 import logging
+import re
 
 import aiohttp
 
@@ -74,7 +76,7 @@ async def fire_low_battery_email(title: str, message: str, settings: dict, devic
         cc = settings.get("notify_email_cc", "")
         if cc:
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
-        if targets:
+        if targets or service.startswith("notify."):
             email_message = message + "\n\nTo mute this device, open it in Battery Sentinel Plus."
             await _fire_notify_service(service, title, email_message, targets)
 
@@ -102,7 +104,7 @@ async def fire_notification(title: str, message: str, settings: dict, device: di
         cc = settings.get("notify_email_cc", "")
         if cc:
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
-        if targets:
+        if targets or service.startswith("notify."):
             await _fire_notify_service(service, title, message, targets)
 
     if device:
@@ -128,7 +130,7 @@ async def fire_unavailable_notification(devices: list, settings: dict):
         cc = settings.get("notify_email_cc", "")
         if cc:
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
-        if targets:
+        if targets or service.startswith("notify."):
             html = build_unavailable_html(devices, datetime.datetime.now())
             await _fire_notify_service(service, title, message, targets, html=html)
 
@@ -148,14 +150,14 @@ async def fire_recovery_notification(devices: list, settings: dict):
         cc = settings.get("notify_email_cc", "")
         if cc:
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
-        if targets:
+        if targets or service.startswith("notify."):
             html = build_recovery_html(devices, datetime.datetime.now())
             await _fire_notify_service(service, title, message, targets, html=html)
 
 
 # ── Daily report ───────────────────────────────────────────────────────
 
-async def send_daily_report(devices: list, settings: dict):
+async def send_daily_report(devices: list, settings: dict, force: bool = False):
     include_all = settings.get("daily_report_include_all", False)
     now = datetime.datetime.now()
 
@@ -169,7 +171,7 @@ async def send_daily_report(devices: list, settings: dict):
         all_devices = low
 
     if not all_devices:
-        if settings.get("daily_report_send_if_ok"):
+        if force or settings.get("daily_report_send_if_ok"):
             _LOGGER.info("Daily report: all batteries OK, sending all-clear")
         else:
             _LOGGER.info("Daily report: nothing to report, skipping send")
@@ -184,7 +186,7 @@ async def send_daily_report(devices: list, settings: dict):
     cc = settings.get("notify_email_cc", "")
     if cc:
         targets.extend(a.strip() for a in cc.split(",") if a.strip())
-    if not targets:
+    if not targets and not service.startswith("notify."):
         return
 
     html = build_report_html(low, ok, settings, now, include_all)
@@ -225,7 +227,7 @@ async def fire_zwave_node_dead(node: dict, settings: dict):
             cc = settings.get("notify_email_cc", "")
             if cc:
                 targets.extend(a.strip() for a in cc.split(",") if a.strip())
-            if targets:
+            if targets or service.startswith("notify."):
                 await _fire_notify_service(service, title, message, targets)
 
     if node.get("notify_mobile", False):
@@ -249,7 +251,7 @@ async def fire_zwave_node_recovered(node: dict, settings: dict):
             cc = settings.get("notify_email_cc", "")
             if cc:
                 targets.extend(a.strip() for a in cc.split(",") if a.strip())
-            if targets:
+            if targets or service.startswith("notify."):
                 await _fire_notify_service(service, title, message, targets)
 
     if node.get("notify_mobile", False):
@@ -274,7 +276,7 @@ async def fire_zwave_controller_alert(dead_count: int, total: int, settings: dic
         cc = settings.get("notify_email_cc", "")
         if cc:
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
-        if targets:
+        if targets or service.startswith("notify."):
             await _fire_notify_service(service, title, message, targets)
 
     mobile = settings.get("notify_mobile_default_service", "").strip()
@@ -296,7 +298,7 @@ async def fire_zwave_controller_recovered(alive_count: int, total: int, settings
         cc = settings.get("notify_email_cc", "")
         if cc:
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
-        if targets:
+        if targets or service.startswith("notify."):
             await _fire_notify_service(service, title, message, targets)
 
     mobile = settings.get("notify_mobile_default_service", "").strip()
@@ -321,7 +323,7 @@ async def fire_zigbee_node_offline(node: dict, settings: dict):
             cc = settings.get("notify_email_cc", "")
             if cc:
                 targets.extend(a.strip() for a in cc.split(",") if a.strip())
-            if targets:
+            if targets or service.startswith("notify."):
                 await _fire_notify_service(service, title, message, targets)
 
     if node.get("notify_mobile", False):
@@ -345,7 +347,7 @@ async def fire_zigbee_node_recovered(node: dict, settings: dict):
             cc = settings.get("notify_email_cc", "")
             if cc:
                 targets.extend(a.strip() for a in cc.split(",") if a.strip())
-            if targets:
+            if targets or service.startswith("notify."):
                 await _fire_notify_service(service, title, message, targets)
 
     if node.get("notify_mobile", False):
@@ -388,25 +390,52 @@ async def _dismiss_persistent(notification_id: str):
 
 
 async def _fire_notify_service(service: str, title: str, message: str, targets: list, html: str = None):
-    # Mobile app services don't support the html data field -- skip it to avoid delivery errors
-    if service.startswith("mobile_app_"):
+    if service.startswith("notify."):
+        # Entity-based notify: flat entity_id, plain text only.
+        # HA's notify.send_message schema has no data field -- HTML is not supported.
+        # Strip HTML tags if message is HTML (e.g. daily report); otherwise use as-is.
+        # Recipients are baked into the integration config; targets are ignored.
+        if message.strip().startswith("<"):
+            plain = re.sub(r'</(?:tr|div|p|li|h[1-6]|span)\s*>', '\n', message, flags=re.IGNORECASE)
+            plain = re.sub(r'</(?:th|td)\s*>', '  ', plain, flags=re.IGNORECASE)
+            plain = re.sub(r'<br\s*/?>', '\n', plain, flags=re.IGNORECASE)
+            plain = re.sub(r'<[^>]+>', ' ', plain)
+            plain = _html.unescape(plain)
+            plain = re.sub(r'[ \t]+', ' ', plain)
+            plain = re.sub(r' \n', '\n', plain)
+            plain = re.sub(r'\n ', '\n', plain)
+            plain = re.sub(r'\n{3,}', '\n\n', plain)
+            plain = plain.strip()
+        else:
+            plain = message
+        payload = {
+            "entity_id": service,
+            "message": plain,
+            "title": title,
+        }
+        url = f"{HA_API_URL}/services/notify/send_message"
+    elif service.startswith("mobile_app_"):
         payload = {"title": title, "message": message}
+        url = f"{HA_API_URL}/services/notify/{service}"
     else:
-        # Convert \n to <br> in message so email clients render line breaks correctly
-        # even if the service ignores data.html and uses message as the body directly
         html_message = "<br>".join(message.split("\n"))
         payload = {"title": title, "message": html_message}
         payload["data"] = {"html": html} if html else {"html": f"<html><body>{html_message}</body></html>"}
-    if targets:
-        payload["target"] = targets
+        if targets:
+            payload["target"] = targets
+        url = f"{HA_API_URL}/services/notify/{service}"
     try:
         async with aiohttp.ClientSession() as session:
-            await session.post(
-                f"{HA_API_URL}/services/notify/{service}",
+            async with session.post(
+                url,
                 headers={**_headers(), "Content-Type": "application/json"},
                 json=payload,
                 timeout=aiohttp.ClientTimeout(total=10),
-            )
-        _LOGGER.info("Notify service '%s' fired: %s", service, title)
+            ) as resp:
+                if resp.status not in (200, 201):
+                    body = await resp.text()
+                    _LOGGER.error("Notify '%s' returned %d: %s | payload: %s", service, resp.status, body, payload)
+                else:
+                    _LOGGER.info("Notify service '%s' fired: %s", service, title)
     except Exception:
         _LOGGER.exception("Failed to fire notify service '%s'", service)

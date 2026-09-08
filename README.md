@@ -82,10 +82,12 @@ Battery Sentinel Plus supports three notification channels, each configurable gl
 - Optional alert when a battery device goes unavailable or unknown (useful for Z-Wave/Zigbee devices that stop reporting after firmware updates or radio changes); configurable delay (default 5 minutes) filters out brief communication blips before firing; a matching recovery notification is sent when the device comes back online
 
 ### Email
-- Select any HA notify service from a dropdown (populated from your installed integrations); the dropdown only shows services registered under the `notify` domain -- this is the Home Assistant standard and is followed by all built-in and most third-party email integrations (SMTP, Gmail, etc.); non-standard integrations that register under a different domain will not appear
+- Select any HA notify service or entity from a dropdown; named services (no suffix) appear alongside new-style notify entities (marked `(entity)`)
 - Global To address and CC field (comma-separated for multiple recipients)
 - Per-device email address override
 - HTML-formatted email body for proper line breaks in all email clients
+
+**Named service vs. entity:** Named services (e.g. a YAML-configured SMTP integration or the Gmail integration) support full HTML email, CC addresses, and per-device email address overrides. Notify entities -- integrations added via Settings > Integrations that appear with an `(entity)` suffix -- are simple no-frills notifications: plain text only, fixed recipient (set when the integration was configured in HA), no CC, and per-device address overrides do not apply. If you want all the features, use a named service. If your only option is an entity entry, it will still deliver a readable plain-text notification.
 
 ### Daily Report
 - Scheduled daily email report at a configurable time

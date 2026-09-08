@@ -23,7 +23,7 @@ from device_utils import device_is_low, level_str, format_line
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.08.1"
+VERSION = "2026.09.1"
 
 _cache: list = []
 _startup_logged = False
@@ -389,13 +389,18 @@ async def handle_api_report_now(request):
     if not settings.get("notify_email_service"):
         return web.Response(status=400, text="No email service configured")
     _LOGGER.info("Manual daily report requested")
-    asyncio.ensure_future(notifications.send_daily_report(_cache, settings))
+    asyncio.ensure_future(notifications.send_daily_report(_cache, settings, force=True))
     return web.Response(text='{"status":"ok"}', content_type="application/json")
 
 
 async def handle_api_notify_services(request):
     services = await ha_api.get_notify_services()
     return web.Response(text=json.dumps(services), content_type="application/json")
+
+
+async def handle_api_notify_entities(request):
+    entities = await ha_api.get_notify_entities()
+    return web.Response(text=json.dumps(entities), content_type="application/json")
 
 
 async def handle_api_scripts(request):
@@ -664,6 +669,7 @@ def main():
     app.router.add_post("/api/scan",                 handle_api_scan)
     app.router.add_post("/api/report-now",           handle_api_report_now)
     app.router.add_get("/api/notify-services",       handle_api_notify_services)
+    app.router.add_get("/api/notify-entities",       handle_api_notify_entities)
     app.router.add_get("/api/scripts",               handle_api_scripts)
     app.router.add_post("/api/device/{entity_id}",          handle_api_device_post)
     app.router.add_delete("/api/device/{entity_id}",        handle_api_device_delete)

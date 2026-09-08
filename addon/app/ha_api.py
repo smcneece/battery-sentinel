@@ -337,6 +337,37 @@ async def get_notify_services() -> list:
         return []
 
 
+async def get_notify_entities() -> list:
+    """Returns sorted list of entity_ids for notify domain entities (new-style integrations).
+    Excludes mobile_app and alexa_media platforms so only email-capable entities are returned."""
+    _exclude_platforms = {"mobile_app", "alexa_media"}
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.ws_connect(
+                _HA_WS_URL, timeout=aiohttp.ClientTimeout(total=15), max_msg_size=0
+            ) as ws:
+                msg = await ws.receive_json()
+                if msg.get("type") != "auth_required":
+                    return []
+                await ws.send_json({"type": "auth", "access_token": _token()})
+                msg = await ws.receive_json()
+                if msg.get("type") != "auth_ok":
+                    return []
+                await ws.send_json({"id": 1, "type": "config/entity_registry/list"})
+                msg = await ws.receive_json()
+                if not msg.get("success"):
+                    return []
+                entries = msg.get("result", [])
+        return sorted(
+            e["entity_id"] for e in entries
+            if e["entity_id"].startswith("notify.")
+            and e.get("platform") not in _exclude_platforms
+        )
+    except Exception:
+        _LOGGER.exception("Failed to fetch notify entities")
+        return []
+
+
 # ── Battery Notes lookup ───────────────────────────────────────────────
 
 # ── Battery Notes community database ──────────────────────────────────

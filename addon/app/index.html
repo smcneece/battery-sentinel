@@ -891,6 +891,7 @@ let _settings       = {};
 let _historyChart   = null;
 let _historyDays    = 30;
 let _notifyServices = [];
+let _notifyEntities = [];
 let _scripts        = [];
 let _sortCol        = "level";
 let _sortDir        = 1;
@@ -1903,15 +1904,17 @@ async function init() {
   await loadLocale();
   applyI18n();
   try {
-    const [devRes, setRes, svcRes, scriptRes] = await Promise.all([
+    const [devRes, setRes, svcRes, entRes, scriptRes] = await Promise.all([
       fetch(BASE + "/api/batteries"),
       fetch(BASE + "/api/settings"),
       fetch(BASE + "/api/notify-services"),
+      fetch(BASE + "/api/notify-entities"),
       fetch(BASE + "/api/scripts"),
     ]);
     _devices        = await devRes.json();
     _settings       = await setRes.json();
     _notifyServices = await svcRes.json();
+    _notifyEntities = entRes.ok ? await entRes.json() : [];
     _scripts        = await scriptRes.json();
 
     if (!_devices.length) {
@@ -1961,14 +1964,19 @@ async function init() {
     document.getElementById("setting-daily-include").value          = _settings.daily_report_include_all ? 'all' : 'low';
     document.getElementById("setting-include-battery-type").checked = !!_settings.report_include_battery_type;
 
-    const _emailExclude = ["persistent_notification", "notify"];
-    const _emailExcludePrefix = ["mobile_app_", "alexa_media_"];
+    const _emailExclude = ["persistent_notification", "notify", "home_assistant", "hass", "send_message"];
+    const _emailExcludePrefix = ["mobile_app_", "alexa_media"];
     const emailSvcs = _notifyServices.filter(s => !_emailExclude.includes(s) && !_emailExcludePrefix.some(p => s.startsWith(p)));
+    const emailEntities = _notifyEntities.filter(eid => {
+      const name = eid.replace("notify.", "");
+      return !_emailExclude.includes(name) && !_emailExcludePrefix.some(p => name.startsWith(p));
+    }).filter(eid => !emailSvcs.includes(eid.replace("notify.", "")));
     const svcEl = document.getElementById("setting-notify-service");
     const savedSvc = _settings.notify_email_service || '';
     svcEl.innerHTML = `<option value="">${t('settings.notifications.none_option')}</option>` +
       emailSvcs.map(s => `<option value="${s}"${savedSvc === s ? ' selected' : ''}>${s}</option>`).join('') +
-      (savedSvc && !emailSvcs.includes(savedSvc) ? `<option value="${savedSvc}" selected>${savedSvc}</option>` : '');
+      emailEntities.map(eid => `<option value="${eid}"${savedSvc === eid ? ' selected' : ''}>${eid.replace("notify.", "")} (entity)</option>`).join('') +
+      (savedSvc && !emailSvcs.includes(savedSvc) && !emailEntities.includes(savedSvc) ? `<option value="${savedSvc}" selected>${savedSvc}</option>` : '');
 
     const mobileSvcs = _notifyServices.filter(s => s.startsWith("mobile_app_"));
     const mobEl = document.getElementById("setting-mobile-default");
