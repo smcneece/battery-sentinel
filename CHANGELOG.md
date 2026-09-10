@@ -2,8 +2,12 @@
 
 For full release notes and details on each version, see the [GitHub Releases page](https://github.com/smcneece/battery-sentinel/releases).
 
+## 2026.09.2
+- Fixed: SMTP entities (added via Settings > Integrations > SMTP) now send full HTML email using `smtp.send_message` instead of falling back to plain text; the `(entity)` suffix in the dropdown still applies but HTML formatting is now preserved for SMTP entities specifically
+- Fixed: selecting an SMTP entity as the email service no longer triggers HA's "deprecated action" repair warning; the old named notify service path was what triggered the warning
+
 ## 2026.09.1
-- New: email notify service dropdown now includes new-style HA notify entities (added via Settings > Integrations, such as the SMTP integration); these appear with an `(entity)` suffix and are called via `notify.send_message`; note that HA's entity API does not currently support HTML so emails sent via an entity entry arrive as plain text -- use a named service entry for HTML-formatted email
+- New: email notify service dropdown now includes new-style HA notify entities (added via Settings > Integrations, such as the SMTP integration); these appear with an `(entity)` suffix; SMTP entities send full HTML email via `smtp.send_message` (see v2026.09.2); other entity types send plain text via `notify.send_message`
 - Fixed: "Send Report Now" button now always sends the email report regardless of the "Send report even when all batteries are OK" setting; that checkbox now applies only to the scheduled daily report
 - Fixed: `home_assistant`, `hass`, and `send_message` no longer appear in the email notify service dropdown; selecting any of them caused Battery Sentinel to call a non-email notify action instead of sending an email
 - Fixed: `alexa_media` (without suffix) was not being filtered from the email notify service dropdown; the prefix filter now correctly excludes it alongside `alexa_media_*` variants

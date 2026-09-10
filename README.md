@@ -87,7 +87,7 @@ Battery Sentinel Plus supports three notification channels, each configurable gl
 - Per-device email address override
 - HTML-formatted email body for proper line breaks in all email clients
 
-**Named service vs. entity:** Named services (e.g. a YAML-configured SMTP integration or the Gmail integration) support full HTML email, CC addresses, and per-device email address overrides. Notify entities -- integrations added via Settings > Integrations that appear with an `(entity)` suffix -- are simple no-frills notifications: plain text only, fixed recipient (set when the integration was configured in HA), no CC, and per-device address overrides do not apply. If you want all the features, use a named service. If your only option is an entity entry, it will still deliver a readable plain-text notification.
+**Named service vs. entity:** Named services (e.g. a YAML-configured SMTP integration or the Gmail integration) support full HTML email, CC addresses, and per-device email address overrides. Notify entities -- integrations added via Settings > Integrations that appear with an `(entity)` suffix -- have a fixed recipient (set when the integration was configured in HA) and CC and per-device address overrides do not apply. SMTP entities send full HTML email via `smtp.send_message`; other entity types (non-SMTP) fall back to plain text. If you want CC support and per-device routing, use a named service.
 
 ### Daily Report
 - Scheduled daily email report at a configurable time

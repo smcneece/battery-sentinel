@@ -83,7 +83,7 @@ def save_settings(updates: dict) -> dict:
     current = {**DEFAULT_SETTINGS, **data.get("settings", {})}
     allowed = (
         "default_threshold", "battery_types",
-        "notify_persistent", "notify_email_service",
+        "notify_persistent", "notify_email_service", "notify_email_service_platform",
         "notify_email_to", "notify_email_cc",
         "notify_mobile_default_service", "notify_script",
         "notify_new_device", "check_interval",

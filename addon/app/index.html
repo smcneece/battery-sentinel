@@ -1859,6 +1859,8 @@ async function saveSettings() {
   _settings.zigbee_scan_interval     = Math.max(1, parseInt(document.getElementById("setting-zigbee-interval").value, 10) || 30);
   _settings.check_interval           = Math.max(1, parseInt(document.getElementById("setting-check-interval").value, 10) || 10);
   _settings.notify_email_service          = document.getElementById("setting-notify-service").value;
+  const _selEntity = _notifyEntities.find(e => e.entity_id === _settings.notify_email_service);
+  _settings.notify_email_service_platform = _selEntity ? _selEntity.platform : "";
   _settings.notify_mobile_default_service = document.getElementById("setting-mobile-default").value;
   _settings.notify_script                 = document.getElementById("setting-notify-script").value;
   _settings.notify_email_to        = document.getElementById("setting-notify-to").value.trim();
@@ -1967,16 +1969,16 @@ async function init() {
     const _emailExclude = ["persistent_notification", "notify", "home_assistant", "hass", "send_message"];
     const _emailExcludePrefix = ["mobile_app_", "alexa_media"];
     const emailSvcs = _notifyServices.filter(s => !_emailExclude.includes(s) && !_emailExcludePrefix.some(p => s.startsWith(p)));
-    const emailEntities = _notifyEntities.filter(eid => {
-      const name = eid.replace("notify.", "");
+    const emailEntities = _notifyEntities.filter(e => {
+      const name = e.entity_id.replace("notify.", "");
       return !_emailExclude.includes(name) && !_emailExcludePrefix.some(p => name.startsWith(p));
-    }).filter(eid => !emailSvcs.includes(eid.replace("notify.", "")));
+    }).filter(e => !emailSvcs.includes(e.entity_id.replace("notify.", "")));
     const svcEl = document.getElementById("setting-notify-service");
     const savedSvc = _settings.notify_email_service || '';
     svcEl.innerHTML = `<option value="">${t('settings.notifications.none_option')}</option>` +
       emailSvcs.map(s => `<option value="${s}"${savedSvc === s ? ' selected' : ''}>${s}</option>`).join('') +
-      emailEntities.map(eid => `<option value="${eid}"${savedSvc === eid ? ' selected' : ''}>${eid.replace("notify.", "")} (entity)</option>`).join('') +
-      (savedSvc && !emailSvcs.includes(savedSvc) && !emailEntities.includes(savedSvc) ? `<option value="${savedSvc}" selected>${savedSvc}</option>` : '');
+      emailEntities.map(e => `<option value="${e.entity_id}"${savedSvc === e.entity_id ? ' selected' : ''}>${e.entity_id.replace("notify.", "")} (entity)</option>`).join('') +
+      (savedSvc && !emailSvcs.includes(savedSvc) && !emailEntities.some(e => e.entity_id === savedSvc) ? `<option value="${savedSvc}" selected>${savedSvc}</option>` : '');
 
     const mobileSvcs = _notifyServices.filter(s => s.startsWith("mobile_app_"));
     const mobEl = document.getElementById("setting-mobile-default");

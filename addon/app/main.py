@@ -21,9 +21,10 @@ import zigbee_monitor
 from device_utils import device_is_low, level_str, format_line
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.09.1"
+VERSION = "2026.09.2"
 
 _cache: list = []
 _startup_logged = False

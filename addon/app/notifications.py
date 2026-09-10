@@ -78,7 +78,7 @@ async def fire_low_battery_email(title: str, message: str, settings: dict, devic
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
         if targets or service.startswith("notify."):
             email_message = message + "\n\nTo mute this device, open it in Battery Sentinel Plus."
-            await _fire_notify_service(service, title, email_message, targets)
+            await _fire_notify_service(service, title, email_message, targets, platform=settings.get("notify_email_service_platform", ""))
 
     if device.get("notify_mobile", False):
         mobile = (device.get("notify_mobile_service", "").strip()
@@ -105,7 +105,7 @@ async def fire_notification(title: str, message: str, settings: dict, device: di
         if cc:
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
         if targets or service.startswith("notify."):
-            await _fire_notify_service(service, title, message, targets)
+            await _fire_notify_service(service, title, message, targets, platform=settings.get("notify_email_service_platform", ""))
 
     if device:
         mobile = device.get("notify_mobile_service", "").strip()
@@ -132,7 +132,7 @@ async def fire_unavailable_notification(devices: list, settings: dict):
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
         if targets or service.startswith("notify."):
             html = build_unavailable_html(devices, datetime.datetime.now())
-            await _fire_notify_service(service, title, message, targets, html=html)
+            await _fire_notify_service(service, title, message, targets, html=html, platform=settings.get("notify_email_service_platform", ""))
 
 
 async def fire_recovery_notification(devices: list, settings: dict):
@@ -152,7 +152,7 @@ async def fire_recovery_notification(devices: list, settings: dict):
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
         if targets or service.startswith("notify."):
             html = build_recovery_html(devices, datetime.datetime.now())
-            await _fire_notify_service(service, title, message, targets, html=html)
+            await _fire_notify_service(service, title, message, targets, html=html, platform=settings.get("notify_email_service_platform", ""))
 
 
 # ── Daily report ───────────────────────────────────────────────────────
@@ -190,7 +190,7 @@ async def send_daily_report(devices: list, settings: dict, force: bool = False):
         return
 
     html = build_report_html(low, ok, settings, now, include_all)
-    await _fire_notify_service(service, "Battery Sentinel Plus: Daily Battery Report", html, targets, html=html)
+    await _fire_notify_service(service, "Battery Sentinel Plus: Daily Battery Report", html, targets, html=html, platform=settings.get("notify_email_service_platform", ""))
     _LOGGER.info("Daily report sent (%d device(s))", len(all_devices))
 
 
@@ -228,7 +228,7 @@ async def fire_zwave_node_dead(node: dict, settings: dict):
             if cc:
                 targets.extend(a.strip() for a in cc.split(",") if a.strip())
             if targets or service.startswith("notify."):
-                await _fire_notify_service(service, title, message, targets)
+                await _fire_notify_service(service, title, message, targets, platform=settings.get("notify_email_service_platform", ""))
 
     if node.get("notify_mobile", False):
         mobile = settings.get("notify_mobile_default_service", "").strip()
@@ -252,7 +252,7 @@ async def fire_zwave_node_recovered(node: dict, settings: dict):
             if cc:
                 targets.extend(a.strip() for a in cc.split(",") if a.strip())
             if targets or service.startswith("notify."):
-                await _fire_notify_service(service, title, message, targets)
+                await _fire_notify_service(service, title, message, targets, platform=settings.get("notify_email_service_platform", ""))
 
     if node.get("notify_mobile", False):
         mobile = settings.get("notify_mobile_default_service", "").strip()
@@ -277,7 +277,7 @@ async def fire_zwave_controller_alert(dead_count: int, total: int, settings: dic
         if cc:
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
         if targets or service.startswith("notify."):
-            await _fire_notify_service(service, title, message, targets)
+            await _fire_notify_service(service, title, message, targets, platform=settings.get("notify_email_service_platform", ""))
 
     mobile = settings.get("notify_mobile_default_service", "").strip()
     if mobile:
@@ -299,7 +299,7 @@ async def fire_zwave_controller_recovered(alive_count: int, total: int, settings
         if cc:
             targets.extend(a.strip() for a in cc.split(",") if a.strip())
         if targets or service.startswith("notify."):
-            await _fire_notify_service(service, title, message, targets)
+            await _fire_notify_service(service, title, message, targets, platform=settings.get("notify_email_service_platform", ""))
 
     mobile = settings.get("notify_mobile_default_service", "").strip()
     if mobile:
@@ -324,7 +324,7 @@ async def fire_zigbee_node_offline(node: dict, settings: dict):
             if cc:
                 targets.extend(a.strip() for a in cc.split(",") if a.strip())
             if targets or service.startswith("notify."):
-                await _fire_notify_service(service, title, message, targets)
+                await _fire_notify_service(service, title, message, targets, platform=settings.get("notify_email_service_platform", ""))
 
     if node.get("notify_mobile", False):
         mobile = settings.get("notify_mobile_default_service", "").strip()
@@ -348,7 +348,7 @@ async def fire_zigbee_node_recovered(node: dict, settings: dict):
             if cc:
                 targets.extend(a.strip() for a in cc.split(",") if a.strip())
             if targets or service.startswith("notify."):
-                await _fire_notify_service(service, title, message, targets)
+                await _fire_notify_service(service, title, message, targets, platform=settings.get("notify_email_service_platform", ""))
 
     if node.get("notify_mobile", False):
         mobile = settings.get("notify_mobile_default_service", "").strip()
@@ -389,31 +389,33 @@ async def _dismiss_persistent(notification_id: str):
         _LOGGER.exception("Failed to dismiss persistent notification %s", notification_id)
 
 
-async def _fire_notify_service(service: str, title: str, message: str, targets: list, html: str = None):
+async def _fire_notify_service(service: str, title: str, message: str, targets: list, html: str = None, platform: str = ""):
     if service.startswith("notify."):
-        # Entity-based notify: flat entity_id, plain text only.
-        # HA's notify.send_message schema has no data field -- HTML is not supported.
-        # Strip HTML tags if message is HTML (e.g. daily report); otherwise use as-is.
-        # Recipients are baked into the integration config; targets are ignored.
-        if message.strip().startswith("<"):
-            plain = re.sub(r'</(?:tr|div|p|li|h[1-6]|span)\s*>', '\n', message, flags=re.IGNORECASE)
-            plain = re.sub(r'</(?:th|td)\s*>', '  ', plain, flags=re.IGNORECASE)
-            plain = re.sub(r'<br\s*/?>', '\n', plain, flags=re.IGNORECASE)
-            plain = re.sub(r'<[^>]+>', ' ', plain)
-            plain = _html.unescape(plain)
-            plain = re.sub(r'[ \t]+', ' ', plain)
-            plain = re.sub(r' \n', '\n', plain)
-            plain = re.sub(r'\n ', '\n', plain)
-            plain = re.sub(r'\n{3,}', '\n\n', plain)
-            plain = plain.strip()
+        # Entity-based notify: recipients are baked into the integration config; targets are ignored.
+        if platform == "smtp":
+            # smtp.send_message accepts an html field -- full HTML email is supported.
+            payload = {"entity_id": service, "title": title, "message": message}
+            if html:
+                payload["html"] = html
+            url = f"{HA_API_URL}/services/smtp/send_message"
         else:
-            plain = message
-        payload = {
-            "entity_id": service,
-            "message": plain,
-            "title": title,
-        }
-        url = f"{HA_API_URL}/services/notify/send_message"
+            # notify.send_message: plain text only (no data field in schema).
+            # Strip HTML tags if message is HTML (e.g. daily report); otherwise use as-is.
+            if message.strip().startswith("<"):
+                plain = re.sub(r'</(?:tr|div|p|li|h[1-6]|span)\s*>', '\n', message, flags=re.IGNORECASE)
+                plain = re.sub(r'</(?:th|td)\s*>', '  ', plain, flags=re.IGNORECASE)
+                plain = re.sub(r'<br\s*/?>', '\n', plain, flags=re.IGNORECASE)
+                plain = re.sub(r'<[^>]+>', ' ', plain)
+                plain = _html.unescape(plain)
+                plain = re.sub(r'[ \t]+', ' ', plain)
+                plain = re.sub(r' \n', '\n', plain)
+                plain = re.sub(r'\n ', '\n', plain)
+                plain = re.sub(r'\n{3,}', '\n\n', plain)
+                plain = plain.strip()
+            else:
+                plain = message
+            payload = {"entity_id": service, "message": plain, "title": title}
+            url = f"{HA_API_URL}/services/notify/send_message"
     elif service.startswith("mobile_app_"):
         payload = {"title": title, "message": message}
         url = f"{HA_API_URL}/services/notify/{service}"

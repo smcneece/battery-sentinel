@@ -359,9 +359,10 @@ async def get_notify_entities() -> list:
                     return []
                 entries = msg.get("result", [])
         return sorted(
-            e["entity_id"] for e in entries
-            if e["entity_id"].startswith("notify.")
-            and e.get("platform") not in _exclude_platforms
+            [{"entity_id": e["entity_id"], "platform": e.get("platform", "")} for e in entries
+             if e["entity_id"].startswith("notify.")
+             and e.get("platform") not in _exclude_platforms],
+            key=lambda x: x["entity_id"],
         )
     except Exception:
         _LOGGER.exception("Failed to fetch notify entities")
