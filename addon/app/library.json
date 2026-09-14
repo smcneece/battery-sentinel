@@ -2982,6 +2982,12 @@
             "battery_quantity": 2
         },
         {
+            "manufacturer": "ECO-WORTHY",
+            "model": "12V 314AH LiFePO4 Lithium Battery Bluetooth",
+            "model_id": "L03L314AHSL-1",
+            "battery_type": "LiFePO4"
+        },
+        {
             "manufacturer": "ecobee",
             "model": "ecobee Room Sensor",
             "battery_type": "CR2032"
@@ -3125,6 +3131,12 @@
             "model": "wh69",
             "battery_type": "AA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "EFEKTA",
+            "model": "Plant Wattering Sensor with e-ink display 1.02",
+            "model_id": "EFEKTA_eFlora",
+            "battery_type": "CR2577"
         },
         {
             "manufacturer": "Elexa Consumer Products Inc.",
@@ -4897,6 +4909,12 @@
         },
         {
             "manufacturer": "GS",
+            "model": "Siren",
+            "model_id": "SRHMP-I1",
+            "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "GS",
             "model": "Smoke detector (SSHM-I1)",
             "battery_type": "CR123A"
         },
@@ -5085,6 +5103,12 @@
             "battery_type": "Rechargeable"
         },
         {
+            "manufacturer": "Heiman",
+            "model": "Smart smoke alarm",
+            "model_id": "HS1SA-E-PLUS",
+            "battery_type": "CR123A"
+        },
+        {
             "manufacturer": "HEIMAN",
             "model": "Smoke detector",
             "model_id": "HS1SA",
@@ -5230,7 +5254,7 @@
             "manufacturer": "HOBEIAN",
             "model": "Motion sensor",
             "model_id": "ZG-204Z",
-            "battery_type": "CR2032"
+            "battery_type": "CR2450"
         },
         {
             "manufacturer": "HOBEIAN",
@@ -9465,6 +9489,13 @@
             "model_id": "SNZB-02",
             "hw_version": "1",
             "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "SONOFF",
+            "model": "Temperature and humidity sensor",
+            "model_id": "SNZB-02B",
+            "battery_type": "AAA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "SONOFF",
