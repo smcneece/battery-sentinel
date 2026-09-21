@@ -1384,6 +1384,11 @@
         },
         {
             "manufacturer": "Aqara",
+            "model": "Aqara Roller Shade Driver E1",
+            "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "Aqara",
             "model": "Aqara Smart Lock U100",
             "battery_type": "AA",
             "battery_quantity": 4
@@ -1689,6 +1694,12 @@
             "manufacturer": "Aqara",
             "model": "Presence sensor FP300 (PS-S04D)",
             "hw_version": "lumi.sensor_occupy.agl8",
+            "battery_type": "CR2450",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Aqara",
+            "model": "PS-S04D",
             "battery_type": "CR2450",
             "battery_quantity": 2
         },
@@ -4106,6 +4117,16 @@
             "battery_quantity": 2
         },
         {
+            "manufacturer": "Eufy",
+            "model": "G30",
+            "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "Eufy",
+            "model": "RoboVac G10 Hybrid",
+            "battery_type": "Rechargeable"
+        },
+        {
             "manufacturer": "Eufy Security",
             "model": "T8113",
             "battery_type": "Rechargeable"
@@ -5084,6 +5105,13 @@
             "battery_type": "CR123A"
         },
         {
+            "manufacturer": "HEIMAN",
+            "model": "Smart CO sensor",
+            "model_id": "4103",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "Heiman",
             "model": "Smart motion sensor",
             "model_id": "HS1MS-EF",
@@ -5101,6 +5129,12 @@
             "model_id": "HS2WD-E",
             "hw_version": "5",
             "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "Heiman",
+            "model": "Smart smoke alarm",
+            "model_id": "HS1SA-E",
+            "battery_type": "CR123A"
         },
         {
             "manufacturer": "Heiman",
@@ -5764,6 +5798,13 @@
         },
         {
             "manufacturer": "IKEA",
+            "model": "STYRBAR remote control",
+            "model_id": "E2001/E2002/E2313",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "IKEA",
             "model": "STYRBAR remote control (E2001/E2002)",
             "battery_type": "AAA",
             "battery_quantity": 2
@@ -6088,6 +6129,12 @@
             "model": "IBS-TH2/P01B",
             "battery_type": "AAA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Innr",
+            "model": "Remote control",
+            "model_id": "RC 250",
+            "battery_type": "CR2450"
         },
         {
             "manufacturer": "Innr",
@@ -6821,6 +6868,13 @@
             "battery_type": "CR2032"
         },
         {
+            "manufacturer": "MiBoxer",
+            "model": "RGB+CCT Remote",
+            "model_id": "FUT089Z",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "Minoston",
             "model": "MR40Z",
             "battery_type": "CR2032",
@@ -7083,6 +7137,12 @@
             "model": "Nedis Smart Climate Sensor Zigbee 3.0 (ZBSC30WT)",
             "battery_type": "AAA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Nedis",
+            "model": "Temperature and humidity sensor",
+            "model_id": "ZBSC10WT",
+            "battery_type": "CR2450"
         },
         {
             "manufacturer": "Neo",
@@ -7375,6 +7435,13 @@
             "battery_type": "CR2032"
         },
         {
+            "manufacturer": "Obi",
+            "model": "OBI meter",
+            "model_id": "506e83",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "Oculus",
             "model": "Quest",
             "battery_type": "Rechargeable"
@@ -7389,6 +7456,13 @@
             "model": "Autodoor",
             "battery_type": "AA",
             "battery_quantity": 4
+        },
+        {
+            "manufacturer": "ONENUO",
+            "model": "Smoke detector",
+            "model_id": "288WZ",
+            "battery_type": "AAA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "OnePlus",
@@ -7630,6 +7704,13 @@
             "model_id": "501.41",
             "hw_version": "64",
             "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Paulmann",
+            "model": "RGB remote control",
+            "model_id": "501.40",
+            "battery_type": "CR2032",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Paulmann",
@@ -8875,6 +8956,13 @@
         {
             "manufacturer": "Signify Netherlands B.V.",
             "model": "Hue motion sensor",
+            "model_id": "SML001",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Signify Netherlands B.V.",
+            "model": "Hue motion sensor",
             "model_id": "SML003",
             "battery_type": "AAA",
             "battery_quantity": 2
@@ -10078,6 +10166,12 @@
             "hw_version": "0",
             "battery_type": "AA",
             "battery_quantity": 3
+        },
+        {
+            "manufacturer": "Third Reality",
+            "model": "Smart Soil Moisture Sensor",
+            "model_id": "3RSM0147Z",
+            "battery_type": "AA"
         },
         {
             "manufacturer": "Third Reality",
