@@ -1384,6 +1384,17 @@
         },
         {
             "manufacturer": "Aqara",
+            "model": "Aqara Presence MultiSensor FP300",
+            "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Aqara",
+            "model": "Aqara Retrofit Valves T1",
+            "battery_type": "AA",
+            "battery_quantity": 4
+        },
+        {
+            "manufacturer": "Aqara",
             "model": "Aqara Roller Shade Driver E1",
             "battery_type": "Rechargeable"
         },
@@ -1501,7 +1512,6 @@
             "manufacturer": "Aqara",
             "model": "Door and window sensor",
             "model_id": "MCCGQ11LM",
-            "hw_version": "2",
             "battery_type": "CR1632"
         },
         {
@@ -6137,6 +6147,11 @@
             "battery_quantity": 2
         },
         {
+            "manufacturer": "Inkbird",
+            "model": "IHT-2PB",
+            "battery_type": "Rechargeable"
+        },
+        {
             "manufacturer": "Innr",
             "model": "Remote control",
             "model_id": "RC 250",
@@ -6824,6 +6839,12 @@
             "battery_type": "Rechargeable"
         },
         {
+            "manufacturer": "Manhot",
+            "model": "Smart blinds motor",
+            "model_id": "MB60L-ZG-ZT-TY",
+            "battery_type": "Rechargeable"
+        },
+        {
             "manufacturer": "Meian",
             "model": "Water leak sensor",
             "model_id": "SW02",
@@ -7445,6 +7466,12 @@
             "model": "OBI meter",
             "model_id": "506e83",
             "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Octopus",
+            "model": "Cosy 6",
+            "battery_type": "AAA",
             "battery_quantity": 2
         },
         {
@@ -9793,6 +9820,13 @@
             "battery_type": "CR2430"
         },
         {
+            "manufacturer": "Sunricher",
+            "model": "4IN1 Sensor",
+            "model_id": "HK-SENSOR-4IN1-A",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "Sure Petcare",
             "model": "Cat flap",
             "battery_type": "AA",
@@ -10174,6 +10208,13 @@
         {
             "manufacturer": "Third Reality",
             "model": "Garage door tilt sensor (3RDTS01056Z)",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Third Reality",
+            "model": "Smart button",
+            "model_id": "3RSB22BZ",
             "battery_type": "AAA",
             "battery_quantity": 2
         },
@@ -11351,6 +11392,13 @@
         },
         {
             "manufacturer": "Tuya",
+            "model": "Temperature & humidity sensor with clock",
+            "model_id": "JM-TRH-ZGB-V1",
+            "battery_type": "AAA",
+            "battery_quantity": 3
+        },
+        {
+            "manufacturer": "Tuya",
             "model": "Temperature & humidity sensor with clock (JM-TRH-ZGB-V1)",
             "model_id": "_TZE200_vvmbj46n",
             "battery_type": "AAA",
@@ -11464,15 +11512,9 @@
             "battery_quantity": 2
         },
         {
-            "manufacturer": "TuYa",
-            "model": "Temperature and humidity sensor (ZG-227Z)",
-            "battery_type": "CR2450"
-        },
-        {
             "manufacturer": "Tuya",
             "model": "Temperature and humidity sensor (ZG-227Z)",
-            "battery_type": "AAA",
-            "battery_quantity": 2
+            "battery_type": "MANUAL"
         },
         {
             "manufacturer": "TuYa",
