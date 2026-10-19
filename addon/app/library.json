@@ -1696,7 +1696,6 @@
             "manufacturer": "Aqara",
             "model": "Presence sensor FP300",
             "model_id": "PS-S04D",
-            "hw_version": "0.0.0_5234",
             "battery_type": "CR2450",
             "battery_quantity": 2
         },
@@ -2232,6 +2231,13 @@
         {
             "manufacturer": "AVATTO",
             "model": "ME167",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "AVATTO",
+            "model": "Thermostatic radiator valve",
+            "model_id": "TRV06_1b",
             "battery_type": "AA",
             "battery_quantity": 2
         },
@@ -3998,7 +4004,6 @@
         {
             "manufacturer": "EQ-3",
             "model": "HmIP-WKP",
-            "hw_version": "1.0.12",
             "battery_type": "AAA",
             "battery_quantity": 2
         },
@@ -5305,6 +5310,13 @@
             "model": "Motion sensor",
             "model_id": "ZG-204Z",
             "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "HOBEIAN",
+            "model": "PIR 24Ghz human presence sensor",
+            "model_id": "ZG-204ZM",
+            "battery_type": "AAA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "HOBEIAN",
@@ -6860,7 +6872,7 @@
             "manufacturer": "Meross",
             "model": "gs559",
             "battery_type": "AA",
-            "battery_quantity": 4
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Meross",
@@ -10158,6 +10170,12 @@
             "battery_type": "AAA"
         },
         {
+            "manufacturer": "ThermoPro",
+            "model": "TP358S",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "Thermoworks",
             "model": "rfx gateway",
             "battery_type": "Rechargeable"
@@ -11545,6 +11563,13 @@
             "hw_version": "1",
             "battery_type": "AAA",
             "battery_quantity": 3
+        },
+        {
+            "manufacturer": "Tuya",
+            "model": "Temperature and humidity sensors",
+            "model_id": "swirjhnver8jqyoa",
+            "battery_type": "AAA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Tuya",
