@@ -1283,6 +1283,11 @@
         },
         {
             "manufacturer": "APC",
+            "model": "Back-UPS RS 700G",
+            "battery_type": "APCRBC17"
+        },
+        {
+            "manufacturer": "APC",
             "model": "Back-UPS RS 900G",
             "hw_version": "879.L4 .I USB FW:L4",
             "battery_type": "APCRBC123"
@@ -1803,6 +1808,12 @@
             "manufacturer": "Aqara",
             "model": "SVD-C02",
             "hw_version": "1.1",
+            "battery_type": "AA",
+            "battery_quantity": 6
+        },
+        {
+            "manufacturer": "Aqara",
+            "model": "SVD-C03/SVD-C04",
             "battery_type": "AA",
             "battery_quantity": 6
         },
@@ -2874,8 +2885,7 @@
             "manufacturer": "Develco",
             "model": "Smoke detector with siren",
             "model_id": "SMSZB-120",
-            "hw_version": "5.0.2",
-            "battery_type": "CR123"
+            "battery_type": "CR123A"
         },
         {
             "manufacturer": "Develco",
@@ -3146,11 +3156,6 @@
         {
             "manufacturer": "Ecowitt",
             "model": "WH51",
-            "battery_type": "AA"
-        },
-        {
-            "manufacturer": "Ecowitt",
-            "model": "wh51",
             "battery_type": "AA"
         },
         {
@@ -5263,6 +5268,13 @@
             "battery_quantity": 2
         },
         {
+            "manufacturer": "Hobeiam",
+            "model": "Star Ring 4 Gang Switch",
+            "model_id": "ZG-101ZS",
+            "battery_type": "CR2032 / CR2016",
+            "battery_quantity": 2
+        },
+        {
             "manufacturer": "HOBEIAN",
             "model": "24Ghz human presence sensor",
             "model_id": "ZG-204ZK",
@@ -5296,6 +5308,12 @@
             "hw_version": "1",
             "battery_type": "AAA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Hobeian",
+            "model": "Luminance door sensor",
+            "model_id": "ZG-102ZL",
+            "battery_type": "CR2032"
         },
         {
             "manufacturer": "HOBEIAN",
@@ -6020,6 +6038,13 @@
             "model_id": "32774",
             "hw_version": "P2.0",
             "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "IKEA of Sweden",
+            "model": "LILJEBAGGE radiator thermostat",
+            "model_id": "20480",
+            "battery_type": "AA",
             "battery_quantity": 2
         },
         {
