@@ -650,6 +650,11 @@
             "battery_type": "CR2450"
         },
         {
+            "manufacturer": "_TZE200_jhhskent",
+            "model": "TS0301",
+            "battery_type": "Rechargeable"
+        },
+        {
             "manufacturer": "_TZE200_kb5noeto",
             "model": "TS0601",
             "battery_type": "AAA",
@@ -759,6 +764,12 @@
             "battery_type": "CR2032"
         },
         {
+            "manufacturer": "_TZE204_k6rdmisz",
+            "model": "TS0601",
+            "battery_type": "AA",
+            "battery_quantity": 3
+        },
+        {
             "manufacturer": "_TZE204_myd45weu",
             "model": "TS0601",
             "battery_type": "AA",
@@ -810,6 +821,12 @@
             "model": "TS0601",
             "battery_type": "AAA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "_TZE284_k6rdmisz",
+            "model": "TS0601",
+            "battery_type": "AA",
+            "battery_quantity": 3
         },
         {
             "manufacturer": "_TZE284_nhgdf6qr",
@@ -3160,6 +3177,11 @@
         },
         {
             "manufacturer": "Ecowitt",
+            "model": "wh52",
+            "battery_type": "AA"
+        },
+        {
+            "manufacturer": "Ecowitt",
             "model": "wh69",
             "battery_type": "AA",
             "battery_quantity": 2
@@ -4455,6 +4477,11 @@
         },
         {
             "manufacturer": "Fakro",
+            "model": "ARF Z-Wave Solar",
+            "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "Fakro",
             "model": "ARZ Z-Wave Solar",
             "battery_type": "Rechargeable"
         },
@@ -4489,13 +4516,28 @@
         },
         {
             "manufacturer": "Fibargroup",
+            "model": "FGCD-001",
+            "battery_type": "CR123A"
+        },
+        {
+            "manufacturer": "Fibargroup",
             "model": "FGCD001",
             "battery_type": "CR123A"
         },
         {
             "manufacturer": "Fibargroup",
+            "model": "FGDW-002",
+            "battery_type": "LS14250"
+        },
+        {
+            "manufacturer": "Fibargroup",
             "model": "FGDW002",
             "battery_type": "LS14250"
+        },
+        {
+            "manufacturer": "Fibargroup",
+            "model": "FGFS-101",
+            "battery_type": "CR123A"
         },
         {
             "manufacturer": "Fibargroup",
@@ -4509,8 +4551,18 @@
         },
         {
             "manufacturer": "Fibargroup",
+            "model": "FGKF-601",
+            "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Fibargroup",
             "model": "FGKF601",
             "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Fibargroup",
+            "model": "FGMS-001",
+            "battery_type": "CR123A"
         },
         {
             "manufacturer": "Fibargroup",
@@ -4521,6 +4573,11 @@
             "manufacturer": "Fibargroup",
             "model": "FGPB-101",
             "battery_type": "ER14250"
+        },
+        {
+            "manufacturer": "Fibargroup",
+            "model": "FGSD-002",
+            "battery_type": "CR123A"
         },
         {
             "manufacturer": "Fibargroup",
@@ -4887,6 +4944,12 @@
             "manufacturer": "Govee",
             "model": "H5105",
             "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Govee",
+            "model": "H5108",
+            "battery_type": "AAA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Govee",
@@ -7841,6 +7904,12 @@
         },
         {
             "manufacturer": "Philio Technology Corp",
+            "model": "PSE04",
+            "battery_type": "AA",
+            "battery_quantity": 4
+        },
+        {
+            "manufacturer": "Philio Technology Corp",
             "model": "PST02A",
             "battery_type": "CR123A"
         },
@@ -8638,6 +8707,12 @@
         },
         {
             "manufacturer": "Schlage",
+            "model": "BE489WB2",
+            "battery_type": "AA",
+            "battery_quantity": 4
+        },
+        {
+            "manufacturer": "Schlage",
             "model": "be499WB",
             "battery_type": "AA",
             "battery_quantity": 4
@@ -9008,6 +9083,12 @@
             "model": "Smart window handle",
             "battery_type": "AAA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Signify Netherlands B.V.",
+            "model": "Hue dimmer switch",
+            "model_id": "RWL020",
+            "battery_type": "CR2023"
         },
         {
             "manufacturer": "Signify Netherlands B.V.",
@@ -11583,6 +11664,13 @@
         },
         {
             "manufacturer": "Tuya",
+            "model": "Temperature and humidity sensor - with or without display",
+            "model_id": "ZY-ZTH02",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Tuya",
             "model": "Temperature and humidity sensor with clock",
             "model_id": "TH01Z",
             "hw_version": "1",
@@ -12253,6 +12341,11 @@
             "model": "Viking 02035,02038",
             "battery_type": "AAA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Vision Security",
+            "model": "ZD2102",
+            "battery_type": "CR123A"
         },
         {
             "manufacturer": "Vision Security",
