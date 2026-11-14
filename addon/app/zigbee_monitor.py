@@ -23,7 +23,7 @@ import notifications
 _LOGGER = logging.getLogger(__name__)
 
 
-async def check_nodes(settings: dict, first_run: bool):
+async def check_nodes(settings: dict, first_run: bool, in_grace: bool = False):
     """Check all Zigbee last_seen timestamps and fire alerts as needed."""
     nodes = await ha_api.get_zigbee_last_seen_entities()
     if not nodes:
@@ -57,7 +57,12 @@ async def check_nodes(settings: dict, first_run: bool):
 
         is_offline = _is_offline(state, threshold_hours, now)
 
-        if is_offline:
+        if is_offline and in_grace:
+            # Zigbee2MQTT may still be reconnecting after a restart; don't start the
+            # offline clock yet. Nodes alerted before the restart keep their flags.
+            if entry.get("offline_since") and not entry.get("alert_sent"):
+                storage.update_zigbee_node(eid, {"offline_since": None})
+        elif is_offline:
             if not entry.get("offline_since"):
                 storage.update_zigbee_node(eid, {
                     "offline_since": datetime.datetime.now().isoformat(),

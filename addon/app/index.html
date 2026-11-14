@@ -376,6 +376,15 @@
             <span style="color:var(--bs-text-muted);font-size:.9rem" data-i18n="settings.notifications.delay_unit">minutes (0 = immediate)</span>
           </div>
         </div>
+        <div class="setting-row" style="margin-bottom:.5rem;padding-left:1.6rem">
+          <label style="font-size:.85rem;color:var(--bs-text-muted)" data-i18n="settings.notifications.grace_label">Startup grace period</label>
+          <p style="font-size:.8rem" data-i18n="settings.notifications.grace_desc">After the add-on starts or Home Assistant restarts, hold all unavailable, dead-node, and offline alerts for this many minutes so Z-Wave, Zigbee, and other integrations have time to finish loading.</p>
+          <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
+            <input type="number" id="setting-startup-grace" min="0" max="120" step="1"
+              style="width:5rem;background:var(--bs-surface2);border:1px solid var(--bs-border);border-radius:4px;color:var(--bs-text);padding:.35rem .5rem;font-size:.9rem">
+            <span style="color:var(--bs-text-muted);font-size:.9rem" data-i18n="settings.notifications.grace_unit">minutes (0 = off)</span>
+          </div>
+        </div>
         <div class="notify-row" style="margin-bottom:.85rem;padding-left:1.6rem">
           <input type="checkbox" id="setting-suppress-unavailable-monitored">
           <label for="setting-suppress-unavailable-monitored" data-i18n="settings.notifications.suppress_label">Skip unavailable alerts for devices already covered by Z-Wave or Zigbee monitoring</label>
@@ -1343,6 +1352,39 @@ function toggleCol(col, show) {
   renderTable();
 }
 
+// ── Deep link (?device=<entity_id>) ──────────────────────────────────
+// Bell notifications link to the HA panel URL with ?device=<entity_id>. HA serves
+// this page in a same-origin ingress iframe and does not forward the query string,
+// so read it from the parent window. HA fires "location-changed" on the parent when
+// navigating, which covers clicking a link while this panel is already open.
+let _lastDeepLink = null;
+function openDeepLinkedDevice() {
+  let eid;
+  try {
+    eid = new URLSearchParams(window.parent.location.search).get('device');
+  } catch {
+    return; // not embedded same-origin; nothing to do
+  }
+  if (!eid || eid === _lastDeepLink) return;
+  _lastDeepLink = eid;
+  openModal(eid);
+}
+
+function watchDeviceDeepLink() {
+  openDeepLinkedDevice();
+  if (window.parent === window) return;
+  const onLocationChanged = () => {
+    _lastDeepLink = null;
+    openDeepLinkedDevice();
+  };
+  try {
+    window.parent.addEventListener('location-changed', onLocationChanged);
+    window.addEventListener('pagehide', () => {
+      try { window.parent.removeEventListener('location-changed', onLocationChanged); } catch {}
+    });
+  } catch {}
+}
+
 // ── Modal ─────────────────────────────────────────────────────────────
 function openModal(eid, tab = 'details') {
   const d = _devices.find(x => x.entity_id === eid);
@@ -1850,6 +1892,7 @@ async function saveSettings() {
   _settings.notify_new_device      = document.getElementById("setting-notify-new-device").checked;
   _settings.notify_unavailable                = document.getElementById("setting-notify-unavailable").checked;
   _settings.notify_unavailable_delay          = Math.max(0, parseInt(document.getElementById("setting-unavailable-delay").value, 10) || 0);
+  _settings.startup_grace_minutes             = Math.min(120, Math.max(0, parseInt(document.getElementById("setting-startup-grace").value, 10) || 0));
   _settings.suppress_unavailable_if_monitored = document.getElementById("setting-suppress-unavailable-monitored").checked;
   _settings.zwave_monitor_enabled    = document.getElementById("setting-zwave-enabled").checked;
   _settings.zwave_ping_enabled       = document.getElementById("setting-zwave-ping-enabled").checked;
@@ -1923,6 +1966,7 @@ async function init() {
       document.getElementById("content").innerHTML = `<p class="loading">${t('device.none')}</p>`;
     } else {
       renderTable();
+      watchDeviceDeepLink();
     }
 
     const langEl = document.getElementById("setting-language");
@@ -1945,6 +1989,7 @@ async function init() {
     document.getElementById("setting-notify-new-device").checked = _settings.notify_new_device !== false;
     document.getElementById("setting-notify-unavailable").checked              = !!_settings.notify_unavailable;
     document.getElementById("setting-unavailable-delay").value                = _settings.notify_unavailable_delay ?? 5;
+    document.getElementById("setting-startup-grace").value                    = _settings.startup_grace_minutes ?? 10;
     document.getElementById("setting-suppress-unavailable-monitored").checked = _settings.suppress_unavailable_if_monitored !== false;
     document.getElementById("setting-zwave-enabled").checked       = !!_settings.zwave_monitor_enabled;
     document.getElementById("setting-zwave-ping-enabled").checked  = !!_settings.zwave_ping_enabled;

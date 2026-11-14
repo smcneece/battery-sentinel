@@ -13,10 +13,12 @@ import html as _html
 import logging
 import re
 
+from urllib.parse import quote
+
 import aiohttp
 
 from ha_config import HA_API_URL, _HA_WS_URL, _headers
-from device_utils import device_is_low, level_str, report_sort_key, format_line
+from device_utils import device_is_low, level_str, report_sort_key, format_line, md_link, count_noun
 from email_html import build_unavailable_html, build_recovery_html, build_report_html
 
 _LOGGER = logging.getLogger(__name__)
@@ -39,9 +41,20 @@ def is_muted_now(device: dict, now: datetime.datetime) -> bool:
         return False
 
 
+# ── Links from bell notifications to the device in the panel ──────────
+
+def device_link_builder(panel: str):
+    """Return a function mapping a device dict to its panel link ('' when links are unavailable).
+
+    Links are only for HA bell notifications; email and mobile messages stay plain text."""
+    if not panel:
+        return lambda device: ""
+    return lambda device: f"{panel}?device={quote(device['entity_id'])}"
+
+
 # ── Consolidated low-battery UI notification ───────────────────────────
 
-async def update_low_battery_notification(devices: list, settings: dict):
+async def update_low_battery_notification(devices: list, settings: dict, panel: str = ""):
     if not settings.get("notify_persistent", True):
         return
 
@@ -57,10 +70,14 @@ async def update_low_battery_notification(devices: list, settings: dict):
         return
 
     _LOGGER.info("Low battery notification: %d device(s) below threshold", len(low))
-    lines = [format_line(d, include_type) for d in low]
-    lines.append("\n*To mute a device, open it in Battery Sentinel Plus.*")
+    link = device_link_builder(panel)
+    lines = [format_line(d, include_type, link(d)) for d in low]
+    if link(low[0]):
+        lines.append("\n*Select a device to open it in Battery Sentinel Plus, where you can mute it.*")
+    else:
+        lines.append("\n*To mute a device, open it in Battery Sentinel Plus.*")
     await _fire_persistent(
-        "Battery Sentinel Plus: Low Batteries",
+        "Battery Sentinel Plus: Low Battery" if len(low) == 1 else "Battery Sentinel Plus: Low Batteries",
         "\n".join(lines),
         notification_id=_LOW_NOTIFICATION_ID,
     )
@@ -89,12 +106,15 @@ async def fire_low_battery_email(title: str, message: str, settings: dict, devic
 
 # ── General notification (new device alerts, etc.) ─────────────────────
 
-async def fire_notification(title: str, message: str, settings: dict, device: dict = None, use_bell: bool = True):
+async def fire_notification(title: str, message: str, settings: dict, device: dict = None, use_bell: bool = True,
+                            bell_message: str = None):
+    """Send to the bell, email and mobile. bell_message, if given, replaces message for the bell only
+    (e.g. a variant with markdown links that would not work in email or mobile notifications)."""
     use_bell  = use_bell and (device.get("notify_bell", True) if device else settings.get("notify_persistent", True))
     use_email = device.get("notify_email", True) if device else True
 
     if use_bell:
-        await _fire_persistent(title, message)
+        await _fire_persistent(title, bell_message or message)
 
     service = settings.get("notify_email_service", "").strip()
     if use_email and service:
@@ -115,13 +135,15 @@ async def fire_notification(title: str, message: str, settings: dict, device: di
 
 # ── Unavailable / recovery notifications ──────────────────────────────
 
-async def fire_unavailable_notification(devices: list, settings: dict):
-    title = f"Battery Sentinel Plus: {len(devices)} device(s) went unavailable"
+async def fire_unavailable_notification(devices: list, settings: dict, panel: str = ""):
+    title = f"Battery Sentinel Plus: {count_noun(len(devices), 'device')} went unavailable"
     lines = [f"- {d['name']} ({d['entity_id']})" for d in devices]
     message = "\n".join(lines)
 
     if settings.get("notify_persistent", True):
-        await _fire_persistent(title, message)
+        link = device_link_builder(panel)
+        bell_lines = [f"- {md_link(d['name'], link(d))} ({d['entity_id']})" for d in devices]
+        await _fire_persistent(title, "\n".join(bell_lines))
 
     service = settings.get("notify_email_service", "").strip()
     if service:
@@ -135,13 +157,15 @@ async def fire_unavailable_notification(devices: list, settings: dict):
             await _fire_notify_service(service, title, message, targets, html=html, platform=settings.get("notify_email_service_platform", ""))
 
 
-async def fire_recovery_notification(devices: list, settings: dict):
-    title = f"Battery Sentinel Plus: {len(devices)} device(s) back online"
+async def fire_recovery_notification(devices: list, settings: dict, panel: str = ""):
+    title = f"Battery Sentinel Plus: {count_noun(len(devices), 'device')} back online"
     lines = [f"- {d['name']} ({d['entity_id']})" for d in devices]
     message = "\n".join(lines)
 
     if settings.get("notify_persistent", True):
-        await _fire_persistent(title, message)
+        link = device_link_builder(panel)
+        bell_lines = [f"- {md_link(d['name'], link(d))} ({d['entity_id']})" for d in devices]
+        await _fire_persistent(title, "\n".join(bell_lines))
 
     service = settings.get("notify_email_service", "").strip()
     if service:

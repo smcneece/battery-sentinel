@@ -2,6 +2,15 @@
 
 For full release notes and details on each version, see the [GitHub Releases page](https://github.com/smcneece/battery-sentinel/releases).
 
+## 2026.11.1
+- New: Startup grace period setting (Settings > Notifications, default 10 minutes); after the add-on starts or Home Assistant restarts, unavailable, Z-Wave dead node, and Zigbee offline alerts are held so integrations have time to finish loading; devices that come back during the grace period never alert, so there are no matching "back online" alerts either; devices still offline once the grace period ends alert normally after the usual alert delay; set to 0 to turn it off
+- HA restarts are now detected even though the add-on keeps running through them: Battery Sentinel checks every 30 seconds whether HA is reachable and starts the grace period once HA is back up
+- New: device names in bell notifications (Low Battery, new devices discovered, went unavailable, back online) are now links; selecting one opens Battery Sentinel Plus with that device's panel already open, so you can mute it or change its threshold straight from the notification; email and mobile messages are unchanged; contributed by Matt Richardson (@matt-richardson) in #45
+- Notification titles now use proper singular and plural wording ("1 new battery device discovered", "Low Battery" when only one device is low) instead of "device(s)"; contributed by Matt Richardson (@matt-richardson) in #45
+
+## 2026.09.3
+- Fixed: spurious Z-Wave node recovery notifications after a Z-Wave JS update or HA restart; while Z-Wave JS is restarting, node status entities briefly show as `unavailable` rather than `dead`, which the monitor was treating as a recovery for any node that had a prior dead alert on record; `unavailable` and `unknown` node states are now treated as transient and leave dead tracking state intact until the node comes back as `alive` or `dead`
+
 ## 2026.09.2
 - Fixed: SMTP entities (added via Settings > Integrations > SMTP) now send full HTML email using `smtp.send_message` instead of falling back to plain text; the `(entity)` suffix in the dropdown still applies but HTML formatting is now preserved for SMTP entities specifically
 - Fixed: selecting an SMTP entity as the email service no longer triggers HA's "deprecated action" repair warning; the old named notify service path was what triggered the warning

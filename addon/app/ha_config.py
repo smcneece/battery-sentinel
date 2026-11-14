@@ -8,6 +8,9 @@ import os
 
 _BASE_URL = os.environ.get("HA_BASE_URL", "").rstrip("/")
 
+# True when running as an HAOS add-on (Supervisor available), False in plain Docker mode
+SUPERVISOR_MODE = not _BASE_URL
+
 if _BASE_URL:
     HA_API_URL = f"{_BASE_URL}/api"
     _HA_WS_URL = (

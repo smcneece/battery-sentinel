@@ -69,7 +69,7 @@ async def get_node_statuses() -> list:
         return []
 
 
-async def check_nodes(settings: dict, first_run: bool, metadata: dict = None):
+async def check_nodes(settings: dict, first_run: bool, metadata: dict = None, in_grace: bool = False):
     """Check all Z-Wave node statuses and fire alerts as needed.
 
     Called from do_refresh() in main.py when zwave_monitor_enabled is True.
@@ -94,6 +94,18 @@ async def check_nodes(settings: dict, first_run: bool, metadata: dict = None):
 
     merged = storage.merge_zwave_nodes(nodes)
     stored = {n["entity_id"]: n for n in merged}
+
+    if in_grace:
+        # Z-Wave JS may still be interviewing nodes after a restart; don't start dead
+        # clocks yet. Nodes alerted before the restart keep their flags.
+        if not _controller_alert_sent:
+            _controller_suspect_since = None
+        for node in nodes:
+            eid = node["entity_id"]
+            entry = stored.get(eid, {})
+            if entry.get("dead_since") and not entry.get("alert_sent"):
+                storage.update_zwave_node(eid, {"dead_since": None})
+        return
 
     total = len(nodes)
     dead_count = sum(1 for n in nodes if n["state"] == "dead")
@@ -128,11 +140,16 @@ async def check_nodes(settings: dict, first_run: bool, metadata: dict = None):
             _LOGGER.info("Z-Wave controller recovered: %d/%d nodes back online", alive_count, total)
             await notifications.fire_zwave_controller_recovered(alive_count, total, settings)
         # Clear dead_since for nodes that recovered during the bulk event so they
-        # don't immediately re-fire as individuals on the next cycle
+        # don't immediately re-fire as individuals on the next cycle.
+        # Also update the stored snapshot so per-node processing below sees the
+        # cleared state -- without this, stale alert_sent=True flags cause spurious
+        # per-node recovery notifications even though no individual alert was sent.
         for node in nodes:
             eid = node["entity_id"]
             if node["state"] != "dead" and stored.get(eid, {}).get("dead_since"):
                 storage.update_zwave_node(eid, {"dead_since": None, "alert_sent": False})
+                if eid in stored:
+                    stored[eid] = {**stored[eid], "dead_since": None, "alert_sent": False}
         # Nodes still dead after bulk clears fall through to normal per-node processing below
 
     # ── Normal per-node processing ────────────────────────────────────────
@@ -183,6 +200,10 @@ async def check_nodes(settings: dict, first_run: bool, metadata: dict = None):
                 except Exception:
                     _LOGGER.exception("Z-Wave dead alert failed for %s", eid)
 
+        elif node["state"] in ("unavailable", "unknown"):
+            # Z-Wave JS is temporarily offline (e.g. during an update or HA restart).
+            # Leave dead_since/alert_sent intact so recovery fires correctly once JS is back.
+            pass
         else:
             if entry.get("dead_since"):
                 was_alerted = entry.get("alert_sent", False)

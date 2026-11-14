@@ -18,19 +18,34 @@ import notifications
 import storage
 import zwave_monitor
 import zigbee_monitor
-from device_utils import device_is_low, level_str, format_line
+from device_utils import count_noun, device_is_low, level_str, format_line
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "2026.09.2"
+VERSION = "2026.11.1"
 
 _cache: list = []
 _startup_logged = False
 _first_run = True
 _zigbee_first_run = True
 _ha_tz: datetime.timezone = None
+_grace_until: datetime.datetime | None = None
+
+
+def _start_grace(reason: str):
+    global _grace_until
+    minutes = int(storage.get_settings().get("startup_grace_minutes", 10))
+    if minutes <= 0:
+        _grace_until = None
+        return
+    _grace_until = datetime.datetime.now() + datetime.timedelta(minutes=minutes)
+    _LOGGER.info("Startup grace period: %s, offline alerts held for %d minute(s)", reason, minutes)
+
+
+def _in_grace() -> bool:
+    return _grace_until is not None and datetime.datetime.now() < _grace_until
 
 
 def _local_now() -> datetime.datetime:
@@ -120,11 +135,15 @@ async def do_refresh():
         _LOGGER.info("New device(s) discovered: %s", ", ".join(new_eids))
     if new_eids and settings.get("notify_new_device"):
         new_devices = [d for d in _cache if d["entity_id"] in new_eids]
-        lines = [format_line(d, settings.get("report_include_battery_type", False)) for d in new_devices]
+        include_type = settings.get("report_include_battery_type", False)
+        link = notifications.device_link_builder(await ha_api.get_panel_path())
+        lines = [format_line(d, include_type) for d in new_devices]
+        bell_lines = [format_line(d, include_type, link(d)) for d in new_devices]
         await notifications.fire_notification(
-            f"Battery Sentinel Plus: {len(new_devices)} new battery device(s) discovered",
+            f"Battery Sentinel Plus: {count_noun(len(new_devices), 'new battery device')} discovered",
             "\n".join(lines),
             settings,
+            bell_message="\n".join(bell_lines),
         )
 
     today = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -200,13 +219,20 @@ async def do_refresh():
     delay_seconds = int(settings.get("notify_unavailable_delay", 5)) * 60
     now = datetime.datetime.now()
 
+    in_grace = _in_grace()
     newly_unavailable = []
     newly_recovered = []
     for device in _cache:
         eid = device["entity_id"]
         is_unavail = device["state"] in ("unavailable", "unknown")
 
-        if is_unavail:
+        if is_unavail and in_grace:
+            # Integrations may still be loading; don't start the offline clock yet.
+            # Devices already alerted before the restart keep their flag.
+            if device.get("unavailable_since") and not device.get("unavailable_sent"):
+                storage.set_unavailable_since(eid, None)
+                device["unavailable_since"] = None
+        elif is_unavail:
             if not device.get("unavailable_since"):
                 ts = now.isoformat()
                 storage.set_unavailable_since(eid, ts)
@@ -256,21 +282,21 @@ async def do_refresh():
     # unavailable before the add-on started would otherwise fire immediately on boot.
     if newly_unavailable and settings.get("notify_unavailable") and not _first_run:
         _LOGGER.info("Unavailable alert: %d device(s)", len(newly_unavailable))
-        await notifications.fire_unavailable_notification(newly_unavailable, settings)
+        await notifications.fire_unavailable_notification(newly_unavailable, settings, await ha_api.get_panel_path())
     elif newly_unavailable and _first_run:
         _LOGGER.info("Suppressed unavailable alert for %d device(s) on first scan (integration startup)", len(newly_unavailable))
 
     if newly_recovered and settings.get("notify_unavailable"):
         _LOGGER.info("Recovery alert: %d device(s) back online", len(newly_recovered))
-        await notifications.fire_recovery_notification(newly_recovered, settings)
+        await notifications.fire_recovery_notification(newly_recovered, settings, await ha_api.get_panel_path())
 
     this_run_is_first = _first_run
     _first_run = False
 
-    await notifications.update_low_battery_notification(_cache, settings)
+    await notifications.update_low_battery_notification(_cache, settings, await ha_api.get_panel_path())
 
     if settings.get("zwave_monitor_enabled"):
-        await zwave_monitor.check_nodes(settings, this_run_is_first, metadata)
+        await zwave_monitor.check_nodes(settings, this_run_is_first, metadata, in_grace=in_grace)
 
     if settings.get("daily_report_enabled"):
         if not settings.get("notify_email_service"):
@@ -308,10 +334,24 @@ async def zigbee_loop():
     while True:
         settings = storage.get_settings()
         if settings.get("zigbee_monitor_enabled"):
-            await zigbee_monitor.check_nodes(settings, _zigbee_first_run)
+            await zigbee_monitor.check_nodes(settings, _zigbee_first_run, in_grace=_in_grace())
             _zigbee_first_run = False
         interval_min = max(1, int(settings.get("zigbee_scan_interval", 30)))
         await asyncio.sleep(interval_min * 60)
+
+
+async def ha_watchdog_loop():
+    """Detect HA core restarts (the add-on keeps running through them) and start
+    a grace period once HA is back, so integrations have time to reload."""
+    was_up = True
+    while True:
+        await asyncio.sleep(30)
+        up = await ha_api.ha_is_running()
+        if up and not was_up:
+            _start_grace("Home Assistant restarted")
+        elif not up and was_up:
+            _LOGGER.info("Home Assistant is not reachable or still starting")
+        was_up = up
 
 
 async def zwave_ping_loop():
@@ -372,7 +412,7 @@ async def handle_api_settings_post(request):
         # Trigger immediate Zigbee scan when monitoring is first enabled
         if result.get("zigbee_monitor_enabled") and not old_settings.get("zigbee_monitor_enabled"):
             _zigbee_first_run = False
-            asyncio.ensure_future(zigbee_monitor.check_nodes(result, False))
+            asyncio.ensure_future(zigbee_monitor.check_nodes(result, False, in_grace=_in_grace()))
         return web.Response(text=json.dumps(result), content_type="application/json")
     except Exception:
         _LOGGER.exception("Failed to save settings")
@@ -571,7 +611,7 @@ async def handle_api_zigbee_scan(request):
     if not settings.get("zigbee_monitor_enabled"):
         return web.Response(status=400, text="Zigbee monitoring is not enabled")
     _LOGGER.info("Manual Zigbee scan requested")
-    asyncio.ensure_future(zigbee_monitor.check_nodes(settings, False))
+    asyncio.ensure_future(zigbee_monitor.check_nodes(settings, False, in_grace=_in_grace()))
     return web.Response(text='{"status":"ok"}', content_type="application/json")
 
 
@@ -652,6 +692,8 @@ def _build_html(base: str) -> str:
 
 
 async def on_startup(app):
+    _start_grace("add-on started")
+    asyncio.ensure_future(ha_watchdog_loop())
     asyncio.ensure_future(refresh_loop())
     asyncio.ensure_future(zigbee_loop())
     asyncio.ensure_future(zwave_ping_loop())
