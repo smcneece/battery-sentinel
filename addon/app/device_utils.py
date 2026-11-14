@@ -57,6 +57,11 @@ def report_sort_key(device: dict) -> float:
         return 100
 
 
+def count_noun(n: int, singular: str, plural: str = "") -> str:
+    """'1 device' / '3 devices' -- count followed by the correctly pluralised noun."""
+    return f"{n} {singular if n == 1 else (plural or singular + 's')}"
+
+
 def md_link(text: str, link: str) -> str:
     """Render text as a markdown link, escaping brackets in the text; plain text when link is empty."""
     if not link:

@@ -18,7 +18,7 @@ import notifications
 import storage
 import zwave_monitor
 import zigbee_monitor
-from device_utils import device_is_low, level_str, format_line
+from device_utils import count_noun, device_is_low, level_str, format_line
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
@@ -125,7 +125,7 @@ async def do_refresh():
         lines = [format_line(d, include_type) for d in new_devices]
         bell_lines = [format_line(d, include_type, link(d)) for d in new_devices]
         await notifications.fire_notification(
-            f"Battery Sentinel Plus: {len(new_devices)} new battery device(s) discovered",
+            f"Battery Sentinel Plus: {count_noun(len(new_devices), 'new battery device')} discovered",
             "\n".join(lines),
             settings,
             bell_message="\n".join(bell_lines),

@@ -19,7 +19,7 @@ import aiohttp
 
 import ha_api
 from ha_config import HA_API_URL, _HA_WS_URL, _headers
-from device_utils import device_is_low, level_str, report_sort_key, format_line, md_link
+from device_utils import device_is_low, level_str, report_sort_key, format_line, md_link, count_noun
 from email_html import build_unavailable_html, build_recovery_html, build_report_html
 
 _LOGGER = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ async def update_low_battery_notification(devices: list, settings: dict):
     else:
         lines.append("\n*To mute a device, open it in Battery Sentinel Plus.*")
     await _fire_persistent(
-        "Battery Sentinel Plus: Low Batteries",
+        "Battery Sentinel Plus: Low Battery" if len(low) == 1 else "Battery Sentinel Plus: Low Batteries",
         "\n".join(lines),
         notification_id=_LOW_NOTIFICATION_ID,
     )
@@ -138,7 +138,7 @@ async def fire_notification(title: str, message: str, settings: dict, device: di
 # ── Unavailable / recovery notifications ──────────────────────────────
 
 async def fire_unavailable_notification(devices: list, settings: dict):
-    title = f"Battery Sentinel Plus: {len(devices)} device(s) went unavailable"
+    title = f"Battery Sentinel Plus: {count_noun(len(devices), 'device')} went unavailable"
     lines = [f"- {d['name']} ({d['entity_id']})" for d in devices]
     message = "\n".join(lines)
 
@@ -160,7 +160,7 @@ async def fire_unavailable_notification(devices: list, settings: dict):
 
 
 async def fire_recovery_notification(devices: list, settings: dict):
-    title = f"Battery Sentinel Plus: {len(devices)} device(s) back online"
+    title = f"Battery Sentinel Plus: {count_noun(len(devices), 'device')} back online"
     lines = [f"- {d['name']} ({d['entity_id']})" for d in devices]
     message = "\n".join(lines)
 

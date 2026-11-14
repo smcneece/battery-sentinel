@@ -371,7 +371,7 @@ Devices that report battery as a binary state (low/ok) rather than a percentage 
 Battery Sentinel Plus avoids notification spam by design across all three channels.
 
 - On each check cycle, the add-on builds a list of every device currently below its threshold
-- **UI:** a single notification titled **Battery Sentinel Plus: Low Batteries** is created or updated in place with that list; it dismisses automatically when all batteries recover
+- **UI:** a single notification titled **Battery Sentinel Plus: Low Batteries** (or **Low Battery** when only one device is low) is created or updated in place with that list; it dismisses automatically when all batteries recover
 - **Email:** each device fires one email when it first crosses its threshold and resets when the battery recovers or is replaced; no repeat emails for a battery that stays low
 - **Mobile:** same single-fire behaviour as email; uses the device-specific `mobile_app_*` service if set, otherwise falls back to the global default
 - The check interval is configurable; changing it in Settings takes effect after the current cycle completes without restarting the add-on
