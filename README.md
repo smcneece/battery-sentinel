@@ -445,6 +445,7 @@ A few things to keep in mind before opening one:
 
 - [Marc Easen](https://github.com/Easen): responsive mobile/tablet layout and HTML extraction into a standalone file
 - [IsaTTeN](https://github.com/IsaTTeN): Spanish (Español) translation
+- [Matt Richardson](https://github.com/matt-richardson): clickable device links in bell notifications and singular/plural notification titles
 
 ## Acknowledgments
 
