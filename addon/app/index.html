@@ -1343,6 +1343,39 @@ function toggleCol(col, show) {
   renderTable();
 }
 
+// ── Deep link (?device=<entity_id>) ──────────────────────────────────
+// Bell notifications link to the HA panel URL with ?device=<entity_id>. HA serves
+// this page in a same-origin ingress iframe and does not forward the query string,
+// so read it from the parent window. HA fires "location-changed" on the parent when
+// navigating, which covers clicking a link while this panel is already open.
+let _lastDeepLink = null;
+function openDeepLinkedDevice() {
+  let eid;
+  try {
+    eid = new URLSearchParams(window.parent.location.search).get('device');
+  } catch {
+    return; // not embedded same-origin; nothing to do
+  }
+  if (!eid || eid === _lastDeepLink) return;
+  _lastDeepLink = eid;
+  openModal(eid);
+}
+
+function watchDeviceDeepLink() {
+  openDeepLinkedDevice();
+  if (window.parent === window) return;
+  const onLocationChanged = () => {
+    _lastDeepLink = null;
+    openDeepLinkedDevice();
+  };
+  try {
+    window.parent.addEventListener('location-changed', onLocationChanged);
+    window.addEventListener('pagehide', () => {
+      try { window.parent.removeEventListener('location-changed', onLocationChanged); } catch {}
+    });
+  } catch {}
+}
+
 // ── Modal ─────────────────────────────────────────────────────────────
 function openModal(eid, tab = 'details') {
   const d = _devices.find(x => x.entity_id === eid);
@@ -1923,6 +1956,7 @@ async function init() {
       document.getElementById("content").innerHTML = `<p class="loading">${t('device.none')}</p>`;
     } else {
       renderTable();
+      watchDeviceDeepLink();
     }
 
     const langEl = document.getElementById("setting-language");

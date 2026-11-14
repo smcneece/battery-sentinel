@@ -10,7 +10,7 @@ import re
 
 import aiohttp
 
-from ha_config import HA_API_URL, _HA_WS_URL, _headers, _token
+from ha_config import HA_API_URL, SUPERVISOR_MODE, _HA_WS_URL, _headers, _token
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,6 +40,35 @@ async def get_ha_config() -> dict:
     except Exception:
         _LOGGER.exception("Failed to fetch HA config")
         return {}
+
+
+async def get_panel_path() -> str:
+    """Return the HA frontend path that opens this add-on's ingress UI.
+
+    The repository hash prefix on the slug differs per install, so it is looked up from the
+    Supervisor. With "Show in sidebar" on, the add-on has its own panel at /<slug>; otherwise
+    HA's generic app panel at /app/<slug> is used. Not cached, since the sidebar setting can
+    change at runtime. Returns '' when not running under the Supervisor or when the lookup fails."""
+    if not SUPERVISOR_MODE:
+        return ""
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                "http://supervisor/addons/self/info",
+                headers=_headers(),
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as resp:
+                if resp.status != 200:
+                    _LOGGER.warning("Could not look up add-on slug (HTTP %s)", resp.status)
+                    return ""
+                info = (await resp.json()).get("data", {})
+    except Exception:
+        _LOGGER.exception("Failed to look up add-on slug")
+        return ""
+    slug = info.get("slug", "")
+    if not slug:
+        return ""
+    return f"/{slug}" if info.get("ingress_panel") else f"/app/{slug}"
 
 
 async def get_ha_timezone() -> str:

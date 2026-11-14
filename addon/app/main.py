@@ -120,11 +120,15 @@ async def do_refresh():
         _LOGGER.info("New device(s) discovered: %s", ", ".join(new_eids))
     if new_eids and settings.get("notify_new_device"):
         new_devices = [d for d in _cache if d["entity_id"] in new_eids]
-        lines = [format_line(d, settings.get("report_include_battery_type", False)) for d in new_devices]
+        include_type = settings.get("report_include_battery_type", False)
+        link = await notifications.device_link_builder()
+        lines = [format_line(d, include_type) for d in new_devices]
+        bell_lines = [format_line(d, include_type, link(d)) for d in new_devices]
         await notifications.fire_notification(
             f"Battery Sentinel Plus: {len(new_devices)} new battery device(s) discovered",
             "\n".join(lines),
             settings,
+            bell_message="\n".join(bell_lines),
         )
 
     today = datetime.datetime.now().strftime("%Y-%m-%d")

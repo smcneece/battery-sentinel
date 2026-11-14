@@ -57,8 +57,18 @@ def report_sort_key(device: dict) -> float:
         return 100
 
 
-def format_line(device: dict, include_type: bool) -> str:
-    """Single text line for a device, used in bell notifications and plain-text emails."""
+def md_link(text: str, link: str) -> str:
+    """Render text as a markdown link, escaping brackets in the text; plain text when link is empty."""
+    if not link:
+        return text
+    escaped = text.replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
+    return f"[{escaped}]({link})"
+
+
+def format_line(device: dict, include_type: bool, link: str = "") -> str:
+    """Single text line for a device, used in bell notifications and plain-text emails.
+
+    When link is given, the device name is rendered as a markdown link to it."""
     area  = f" ({device['area']})" if device.get("area") else ""
     btype = f" [{device['battery_type']}]" if include_type and device.get("battery_type") else ""
-    return f"- {device['name']}{area}: {level_str(device)}{btype}"
+    return f"- {md_link(device['name'], link)}{area}: {level_str(device)}{btype}"
