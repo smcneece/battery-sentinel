@@ -12,6 +12,11 @@
             "battery_type": "AAA"
         },
         {
+            "manufacturer": "303Bryan",
+            "model": "RadiaCode",
+            "battery_type": "Rechargeable"
+        },
+        {
             "manufacturer": "_TYST11_jeaxp72v",
             "model": "eaxp72v",
             "battery_type": "AA",
@@ -606,6 +611,11 @@
             "model": "TS0601",
             "battery_type": "AA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "_TZE200_cf1sl3tj",
+            "model": "TS0601",
+            "battery_type": "Rechargeable"
         },
         {
             "manufacturer": "_TZE200_ckud7u2l",
@@ -3153,9 +3163,25 @@
         },
         {
             "manufacturer": "Ecowitt",
+            "model": "Soil moisture",
+            "battery_type": "AA"
+        },
+        {
+            "manufacturer": "Ecowitt",
             "model": "Soil moisture sensor",
             "model_id": "WH51",
             "battery_type": "AA"
+        },
+        {
+            "manufacturer": "Ecowitt",
+            "model": "Temp",
+            "battery_type": "AA"
+        },
+        {
+            "manufacturer": "Ecowitt",
+            "model": "Temp & Humidity",
+            "battery_type": "AA",
+            "battery_quantity": 2
         },
         {
             "manufacturer": "Ecowitt",
@@ -3188,6 +3214,12 @@
         {
             "manufacturer": "Ecowitt",
             "model": "wh69",
+            "battery_type": "AA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Ecowitt",
+            "model": "Wind & Rain",
             "battery_type": "AA",
             "battery_quantity": 2
         },
@@ -4282,6 +4314,12 @@
             "model": "Eve MotionBlinds 20CAA9901",
             "model_id": "85",
             "hw_version": "1.1",
+            "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "Eve Systems",
+            "model": "Eve MotionBlinds 20CAH9901",
+            "model_id": "100",
             "battery_type": "Rechargeable"
         },
         {
@@ -5427,6 +5465,12 @@
         },
         {
             "manufacturer": "HOBEIAN",
+            "model": "Temperature & humidity sensor",
+            "model_id": "ZG-227Z",
+            "battery_type": "MANUAL"
+        },
+        {
+            "manufacturer": "HOBEIAN",
             "model": "Temperature and humidity sensor",
             "model_id": "ZG-227Z",
             "hw_version": "1",
@@ -5514,6 +5558,12 @@
             "model": "ZG-303Z",
             "battery_type": "AAA",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Holman",
+            "model": "WX4",
+            "battery_type": "AA",
+            "battery_quantity": 4
         },
         {
             "manufacturer": "Homematic",
@@ -8921,6 +8971,19 @@
         },
         {
             "manufacturer": "Shelly",
+            "model": "BLU Door/Window Mini ZB",
+            "model_id": "SBDW-203C",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Shelly",
+            "model": "BLU H&T display Zigbee",
+            "model_id": "SBHT-103C",
+            "battery_type": "CR2032",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Shelly",
             "model": "Blu Motion",
             "battery_type": "CR2477"
         },
@@ -9651,6 +9714,13 @@
         {
             "manufacturer": "SONOFF",
             "model": "DW2-WI-FI-L",
+            "battery_type": "AAA",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "SONOFF",
+            "model": "E-ink screen temperature and humidity sensor",
+            "model_id": "SNZB-02UL",
             "battery_type": "AAA",
             "battery_quantity": 2
         },
@@ -12905,6 +12975,11 @@
         },
         {
             "manufacturer": "Xiaomi",
+            "model": "BLE: LYWSD03MMC, miaomiaoce.sensor_ht.t2",
+            "battery_type": "CR2032"
+        },
+        {
+            "manufacturer": "Xiaomi",
             "model": "BLE: MCCGQ02HL, isa.magnet.dw2hl",
             "battery_type": "CR2032"
         },
@@ -13621,6 +13696,12 @@
             "manufacturer": "ZEMISMART",
             "model": "TS0044",
             "battery_type": "CR2450"
+        },
+        {
+            "manufacturer": "Zemismart",
+            "model": "Tubular motor",
+            "model_id": "ZM16B",
+            "battery_type": "Rechargeable"
         },
         {
             "manufacturer": "Zemismart Technology Limited",
