@@ -45,6 +45,11 @@
             "battery_type": "CR123A"
         },
         {
+            "manufacturer": "_TYZB01_o63ssaah",
+            "model": "TS0207",
+            "battery_type": "CR2032"
+        },
+        {
             "manufacturer": "_TYZB01_ohyttvf6",
             "model": "TS0205",
             "battery_type": "CR123A"
@@ -931,7 +936,6 @@
             "manufacturer": "ADEO",
             "model": "ENKI LEXMAN wireless smart door window sensor with vibration",
             "model_id": "LDSENK08",
-            "hw_version": "2.02",
             "battery_type": "CR2"
         },
         {
@@ -1645,7 +1649,6 @@
             "manufacturer": "Aqara",
             "model": "Motion sensor",
             "model_id": "RTCGQ11LM",
-            "hw_version": "1",
             "battery_type": "CR2450"
         },
         {
@@ -2102,6 +2105,12 @@
             "manufacturer": "Arlo",
             "model": "Pro 2",
             "battery_type": "Rechargeable"
+        },
+        {
+            "manufacturer": "Aroha",
+            "model": "SM1M",
+            "model_id": "22552",
+            "battery_type": "CR123A"
         },
         {
             "manufacturer": "arre home LLC",
@@ -6325,6 +6334,11 @@
             "battery_type": "Rechargeable"
         },
         {
+            "manufacturer": "innr",
+            "model": "RC 250",
+            "battery_type": "CR2450"
+        },
+        {
             "manufacturer": "Innr",
             "model": "Remote control",
             "model_id": "RC 250",
@@ -8977,10 +8991,21 @@
         },
         {
             "manufacturer": "Shelly",
+            "model": "BLU H&T Display ZB",
+            "battery_type": "CR2032",
+            "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Shelly",
             "model": "BLU H&T display Zigbee",
             "model_id": "SBHT-103C",
             "battery_type": "CR2032",
             "battery_quantity": 2
+        },
+        {
+            "manufacturer": "Shelly",
+            "model": "BLU H&T ZB",
+            "battery_type": "CR2032"
         },
         {
             "manufacturer": "Shelly",
@@ -13455,6 +13480,12 @@
         {
             "manufacturer": "Yale Home Inc.",
             "model": "ASL6_05/101110/MB",
+            "battery_type": "AA",
+            "battery_quantity": 4
+        },
+        {
+            "manufacturer": "Yale/August",
+            "model": "ASL-3B",
             "battery_type": "AA",
             "battery_quantity": 4
         },
